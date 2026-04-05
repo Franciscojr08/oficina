@@ -38,7 +38,7 @@ para facilitar a execução do ambiente.
 1.  Suba os containers:
 
 ``` bash
-docker-compose up --build
+docker-compose up --build -d
 ```
 
 2.  Documentação disponível em:
