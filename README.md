@@ -41,10 +41,10 @@ para facilitar a execução do ambiente.
 docker-compose up --build
 ```
 
-2.  A aplicação estará disponível em:
+2.  Documentação disponível em:
 
 ```{=html}
-<!-- -->
+http://localhost:8080/swagger-ui.html
 ```
     http://localhost:8080
 
