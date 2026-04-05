@@ -46,7 +46,6 @@ docker-compose up --build
 ```{=html}
 http://localhost:8080/swagger-ui.html
 ```
-    http://localhost:8080
 
 3.  Para parar os containers:
 
