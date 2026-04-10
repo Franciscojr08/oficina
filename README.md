@@ -18,14 +18,41 @@ para facilitar a execução do ambiente.
 
 ## 📁 Estrutura do Projeto
 
-    .
-    ├── .mvn/
-    ├── src/
-    ├── Dockerfile
-    ├── docker-compose.yml
-    ├── mvnw
-    ├── mvnw.cmd
-    ├── pom.xml
+```text
+.
+├── .mvn/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── br/com/prime/oficina/
+│   │   │       ├── auth/
+│   │   │       ├── cliente/
+│   │   │       │   ├── api/
+│   │   │       │   │   └── ClienteController.java
+│   │   │       │   ├── application/
+│   │   │       │   │   ├── ClienteRequest.java
+│   │   │       │   │   ├── ClienteResponse.java
+│   │   │       │   │   └── ClienteService.java
+│   │   │       │   ├── domain/
+│   │   │       │   │   └── Cliente.java
+│   │   │       │   └── infrastructure/
+│   │   │       │       └── ClienteRepository.java
+│   │   │       ├── shared/
+│   │   │       │   ├── exception/
+│   │   │       │   └── util/
+│   │   │       └── OficinaApplication.java
+│   │   └── resources/
+│   │       ├── db/
+│   │       │   └── migration/
+│   │       │       └── V1__create_table_cliente.sql
+│   │       └── application.properties
+│   └── test/
+├── Dockerfile
+├── docker-compose.yml
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+└── README.md
 
 ------------------------------------------------------------------------
 
