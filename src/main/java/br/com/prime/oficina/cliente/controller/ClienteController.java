@@ -1,4 +1,4 @@
-package br.com.prime.oficina.cliente.api;
+package br.com.prime.oficina.cliente.controller;
 
 import java.net.URI;
 import java.util.List;

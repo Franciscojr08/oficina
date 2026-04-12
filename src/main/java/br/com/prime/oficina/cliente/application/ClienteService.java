@@ -2,6 +2,8 @@ package br.com.prime.oficina.cliente.application;
 
 import java.util.List;
 
+import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
+import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,18 +42,18 @@ public class ClienteService {
     @Transactional(readOnly = true)
     public ClienteResponse buscarPorId(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
         return toResponse(cliente);
     }
 
     @Transactional
     public ClienteResponse atualizar(Long id, ClienteRequest request) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
 
         if (!cliente.getCpfCnpj().equals(request.cpfCnpj())
                 && clienteRepository.existsByCpfCnpj(request.cpfCnpj())) {
-            throw new RuntimeException("Já existe cliente cadastrado com este CPF/CNPJ");
+            throw new RegraNegocioException("Já existe cliente cadastrado com este CPF/CNPJ");
         }
 
         cliente.setNome(request.nome());
@@ -66,7 +68,7 @@ public class ClienteService {
     @Transactional
     public void inativar(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
 
         cliente.setAtivo(false);
         clienteRepository.save(cliente);
@@ -74,7 +76,7 @@ public class ClienteService {
 
     private void validarCpfCnpjDuplicado(String cpfCnpj) {
         if (clienteRepository.existsByCpfCnpj(cpfCnpj)) {
-            throw new RuntimeException("Já existe cliente cadastrado com este CPF/CNPJ");
+            throw new RegraNegocioException("Já existe cliente cadastrado com este CPF/CNPJ");
         }
     }
 
