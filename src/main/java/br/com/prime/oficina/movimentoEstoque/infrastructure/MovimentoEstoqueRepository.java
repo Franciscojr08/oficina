@@ -14,4 +14,6 @@ public interface MovimentoEstoqueRepository extends JpaRepository<MovimentoEstoq
             Long itemId,
             TipoMovimentoEstoque tipo
     );
+
+    List<MovimentoEstoque> findAllByOrderByDataMovimentacaoDesc();
 }

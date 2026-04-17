@@ -33,4 +33,10 @@ public class MovimentoEstoqueController {
     ) {
         return ResponseEntity.ok(movimentoEstoqueService.listarPorItemETipo(itemId, tipo));
     }
+
+    @GetMapping
+    public ResponseEntity<List<MovimentoEstoqueResponse>> listarTodos() {
+        return ResponseEntity.ok(movimentoEstoqueService.listarTodos());
+    }
+
 }

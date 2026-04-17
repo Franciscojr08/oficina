@@ -54,4 +54,11 @@ public class MovimentoEstoqueService {
                 movimentacao.getDataMovimentacao()
         );
     }
+
+    public List<MovimentoEstoqueResponse> listarTodos() {
+        return movimentoEstoqueRepository.findAllByOrderByDataMovimentacaoDesc()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 }
