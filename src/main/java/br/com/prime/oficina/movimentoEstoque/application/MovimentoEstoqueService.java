@@ -18,7 +18,6 @@ public class MovimentoEstoqueService {
     private final MovimentoEstoqueRepository movimentoEstoqueRepository;
     private final ItemRepository itemRepository;
 
-    @Transactional(readOnly = true)
     public List<MovimentoEstoqueResponse> listarPorItem(Long itemId) {
         validarItemExiste(itemId);
 
@@ -28,7 +27,6 @@ public class MovimentoEstoqueService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<MovimentoEstoqueResponse> listarPorItemETipo(Long itemId, TipoMovimentoEstoque tipo) {
         validarItemExiste(itemId);
 

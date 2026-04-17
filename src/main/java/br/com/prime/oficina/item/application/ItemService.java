@@ -1,8 +1,13 @@
 package br.com.prime.oficina.item.application;
 
+import br.com.prime.oficina.estoque.domain.Estoque;
+import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.domain.TipoItem;
 import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.movimentoEstoque.domain.MovimentoEstoque;
+import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
+import br.com.prime.oficina.movimentoEstoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +20,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ItemService {
 
+    private static final String OBSERVACAO_PADRAO_CADASTRO = "Cadastro inicial do item";
+
     private final ItemRepository itemRepository;
+    private final EstoqueRepository estoqueRepository;
+    private final MovimentoEstoqueRepository movimentoEstoqueRepository;
 
     @Transactional
     public ItemResponse criar(ItemRequest request) {
@@ -25,29 +34,47 @@ public class ItemService {
         preencherItem(item, request);
 
         Item salvo = itemRepository.save(item);
-        return toResponse(salvo);
+
+        Estoque estoque = new Estoque();
+        estoque.setItem(salvo);
+        estoque.setQuantidade(request.quantidadeInicial());
+        estoque.setEstoqueMinimo(request.estoqueMinimo());
+        Estoque estoqueSalvo = estoqueRepository.save(estoque);
+
+        if (request.quantidadeInicial() > 0) {
+            MovimentoEstoque movimento = new MovimentoEstoque();
+            movimento.setItem(salvo);
+            movimento.setTipo(TipoMovimentoEstoque.ENTRADA);
+            movimento.setQuantidade(request.quantidadeInicial());
+            movimento.setObservacao(
+                    request.observacaoInicial() != null && !request.observacaoInicial().isBlank()
+                            ? request.observacaoInicial()
+                            : OBSERVACAO_PADRAO_CADASTRO
+            );
+            movimentoEstoqueRepository.save(movimento);
+        }
+
+        return toResponse(salvo, estoqueSalvo);
     }
 
-    @Transactional(readOnly = true)
     public List<ItemResponse> listar() {
         return itemRepository.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(item -> toResponse(item, buscarEstoquePorItemId(item.getId())))
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<ItemResponse> listarPorTipo(TipoItem tipo) {
         return itemRepository.findByTipo(tipo)
                 .stream()
-                .map(this::toResponse)
+                .map(item -> toResponse(item, buscarEstoquePorItemId(item.getId())))
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public ItemResponse buscarPorId(Long id) {
         Item item = buscarItemPorId(id);
-        return toResponse(item);
+        Estoque estoque = buscarEstoquePorItemId(id);
+        return toResponse(item, estoque);
     }
 
     @Transactional
@@ -64,9 +91,13 @@ public class ItemService {
         }
 
         preencherItem(item, request);
-
         Item atualizado = itemRepository.save(item);
-        return toResponse(atualizado);
+
+        Estoque estoque = buscarEstoquePorItemId(id);
+        estoque.setEstoqueMinimo(request.estoqueMinimo());
+        Estoque estoqueAtualizado = estoqueRepository.save(estoque);
+
+        return toResponse(atualizado, estoqueAtualizado);
     }
 
     @Transactional
@@ -89,6 +120,11 @@ public class ItemService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Item não encontrado"));
     }
 
+    private Estoque buscarEstoquePorItemId(Long itemId) {
+        return estoqueRepository.findByItemId(itemId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Estoque do item não encontrado"));
+    }
+
     private void preencherItem(Item item, ItemRequest request) {
         item.setNome(request.nome());
         item.setDescricao(request.descricao());
@@ -97,7 +133,7 @@ public class ItemService {
         item.setUnidadeMedida(request.unidadeMedida());
     }
 
-    private ItemResponse toResponse(Item item) {
+    private ItemResponse toResponse(Item item, Estoque estoque) {
         return new ItemResponse(
                 item.getId(),
                 item.getNome(),
@@ -106,6 +142,8 @@ public class ItemService {
                 item.getValorUnitario(),
                 item.getUnidadeMedida(),
                 item.getAtivo(),
+                estoque.getQuantidade(),
+                estoque.getEstoqueMinimo(),
                 item.getDataCriacao(),
                 item.getDataAtualizacao()
         );

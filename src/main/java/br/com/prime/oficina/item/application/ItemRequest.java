@@ -2,6 +2,7 @@ package br.com.prime.oficina.item.application;
 
 import br.com.prime.oficina.item.domain.TipoItem;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -26,6 +27,17 @@ public record ItemRequest(
 
         @NotBlank(message = "Unidade de medida é obrigatória")
         @Size(max = 10, message = "Unidade de medida deve ter no máximo 10 caracteres")
-        String unidadeMedida
+        String unidadeMedida,
+
+        @NotNull(message = "Quantidade inicial é obrigatória")
+        @Min(value = 0, message = "Quantidade inicial não pode ser negativa")
+        Integer quantidadeInicial,
+
+        @NotNull(message = "Estoque mínimo é obrigatório")
+        @Min(value = 0, message = "Estoque mínimo não pode ser negativo")
+        Integer estoqueMinimo,
+
+        @Size(max = 150, message = "Observação inicial deve ter no máximo 150 caracteres")
+        String observacaoInicial
 ) {
 }

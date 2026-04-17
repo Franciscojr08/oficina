@@ -13,6 +13,8 @@ public record ItemResponse(
         BigDecimal valorUnitario,
         String unidadeMedida,
         Boolean ativo,
+        Integer quantidadeEstoque,
+        Integer estoqueMinimo,
         LocalDateTime dataCriacao,
         LocalDateTime dataAtualizacao
 ) {
