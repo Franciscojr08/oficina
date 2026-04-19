@@ -73,7 +73,7 @@ public class OrdemServicoService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrdemServicoResponse> listarPorStatus(String status) {
+    public List<OrdemServicoResponse> listarPorStatus(StatusOrdemServico status) {
         return repository.findByStatus(status)
                 .stream()
                 .map(this::toResponse)

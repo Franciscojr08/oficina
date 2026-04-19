@@ -1,5 +1,6 @@
 package br.com.prime.oficina.ordemServico.infrastructure;
 
+import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemServico.domain.OrdemServico;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,7 +12,7 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 
     List<OrdemServico> findByCodigo(int codigo);
 
-    List<OrdemServico> findByStatus(String status);
+    List<OrdemServico> findByStatus(StatusOrdemServico status);
 
     boolean existsByCodigo(int codigo);
 }

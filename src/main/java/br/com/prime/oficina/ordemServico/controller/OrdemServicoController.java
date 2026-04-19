@@ -1,11 +1,8 @@
 package br.com.prime.oficina.ordemServico.controller;
 
-import br.com.prime.oficina.item.application.ItemRequest;
 import br.com.prime.oficina.ordemServico.application.*;
-import br.com.prime.oficina.ordemServico.domain.ItemOrdemServico;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +34,7 @@ public class OrdemServicoController {
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<OrdemServicoResponse>> listarPorStatus(@PathVariable String status) {
+    public ResponseEntity<List<OrdemServicoResponse>> listarPorStatus(@PathVariable StatusOrdemServico status) {
         return ResponseEntity.ok(service.listarPorStatus(status));
     }
 

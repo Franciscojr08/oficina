@@ -1,7 +1,6 @@
 package br.com.prime.oficina.ordemServico.domain;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import jakarta.persistence.*;

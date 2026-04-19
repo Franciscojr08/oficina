@@ -1,7 +1,6 @@
 package br.com.prime.oficina.servico.application;
 
 import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemServico.domain.ItemOrdemServico;
 import br.com.prime.oficina.ordemServico.domain.OrdemServico;
 import br.com.prime.oficina.ordemServico.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemServico.infrastructure.ServicoOrdemServicoRepository;
