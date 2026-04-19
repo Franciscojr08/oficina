@@ -43,6 +43,11 @@ public class ClienteController {
         return ResponseEntity.ok(clienteService.atualizar(id, request));
     }
 
+    @GetMapping("/documento/{documento}")
+    public ResponseEntity<ClienteResponse> buscarPorDocumento(@PathVariable String documento) {
+        return ResponseEntity.ok(clienteService.findByCpfCnpj(documento));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> inativar(@PathVariable Long id) {
         clienteService.inativar(id);

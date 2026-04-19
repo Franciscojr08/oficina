@@ -74,6 +74,14 @@ public class ClienteService {
         clienteRepository.save(cliente);
     }
 
+    @Transactional(readOnly = true)
+    public ClienteResponse findByCpfCnpj(String cpfCnpj) {
+        Cliente cliente = clienteRepository.findByCpfCnpj(cpfCnpj)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+
+        return toResponse(cliente);
+    }
+
     private void validarCpfCnpjDuplicado(String cpfCnpj) {
         if (clienteRepository.existsByCpfCnpj(cpfCnpj)) {
             throw new RegraNegocioException("Já existe cliente cadastrado com este CPF/CNPJ");

@@ -2,6 +2,7 @@ package br.com.prime.oficina.veiculo.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
@@ -59,7 +60,7 @@ public class VeiculoService {
 
         if (!veiculo.getPlaca().equals(request.placa())
                 && veiculoRepository.existsByPlaca(request.placa())) {
-            throw new RuntimeException("Já existe veículo cadastrado com esta placa");
+            throw new RecursoDuplicadoException("Já existe veículo cadastrado com esta placa");
         }
 
         preencherVeiculo(veiculo, request, cliente);
@@ -74,6 +75,14 @@ public class VeiculoService {
 
         veiculo.setAtivo(false);
         veiculoRepository.save(veiculo);
+    }
+
+    @Transactional(readOnly = true)
+    public VeiculoResponse buscarPorPlaca(String placa) {
+        Veiculo veiculo = veiculoRepository.findByPlaca(placa)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Veículo não encontrado"));
+
+        return toResponse(veiculo);
     }
 
     private void validarPlacaDuplicada(String placa) {
