@@ -45,9 +45,7 @@ public class Estoque {
 
     @PrePersist
     public void prePersist() {
-        LocalDateTime agora = LocalDateTime.now();
-        this.dataCriacao = agora;
-        this.dataAtualizacao = agora;
+		this.dataCriacao = LocalDateTime.now();
     }
 
     @PreUpdate
