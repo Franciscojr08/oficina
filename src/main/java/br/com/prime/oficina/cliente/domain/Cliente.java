@@ -1,15 +1,12 @@
 package br.com.prime.oficina.cliente.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import br.com.prime.oficina.veiculo.domain.Veiculo;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
@@ -48,14 +45,20 @@ public class Cliente {
 	@Column(name = "uf", length = 2)
 	private String uf;
 
+	@Column(name = "data_nascimento", nullable = false)
+	private LocalDate dataNascimento;
+
 	@Column(name = "ativo", nullable = false)
 	private Boolean ativo = true;
 
 	@Column(name = "data_criacao", nullable = false)
 	private LocalDateTime dataCriacao;
 
-	@Column(name = "data_atualizacao", nullable = false)
+	@Column(name = "data_atualizacao")
 	private LocalDateTime dataAtualizacao;
+
+	@OneToMany(mappedBy = "cliente", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<Veiculo> veiculos = new ArrayList<>();
 
 	@PrePersist
 	public void prePersist() {

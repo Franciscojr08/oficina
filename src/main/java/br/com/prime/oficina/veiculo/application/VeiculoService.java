@@ -2,6 +2,7 @@ package br.com.prime.oficina.veiculo.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.shared.exception.ClienteInativoException;
 import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
@@ -26,12 +27,20 @@ public class VeiculoService {
 
         Cliente cliente = buscarClientePorId(request.clienteId());
 
-        Veiculo veiculo = new Veiculo();
-        preencherVeiculo(veiculo, request, cliente);
+		validarCliente(cliente);
+
+		Veiculo veiculo = new Veiculo();
+		preencherVeiculo(veiculo, request, cliente);
 
         Veiculo salvo = veiculoRepository.save(veiculo);
         return toResponse(salvo);
     }
+
+	private static void validarCliente(Cliente cliente) {
+		if (!cliente.getAtivo()) {
+			throw new ClienteInativoException("O cliente informado não está ativo");
+		}
+	}
 
     public List<VeiculoResponse> listar() {
         return veiculoRepository.findAll()
@@ -57,6 +66,7 @@ public class VeiculoService {
         Veiculo veiculo = buscarVeiculoPorId(id);
 
         Cliente cliente = buscarClientePorId(request.clienteId());
+		validarCliente(cliente);
 
         if (!veiculo.getPlaca().equals(request.placa())
                 && veiculoRepository.existsByPlaca(request.placa())) {

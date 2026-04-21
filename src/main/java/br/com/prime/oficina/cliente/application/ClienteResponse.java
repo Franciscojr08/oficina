@@ -1,5 +1,6 @@
 package br.com.prime.oficina.cliente.application;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record ClienteResponse(
@@ -13,6 +14,7 @@ public record ClienteResponse(
 		String bairro,
 		String cidade,
 		String uf,
+		LocalDate dataNascimento,
 		Boolean ativo,
 		LocalDateTime dataCriacao,
 		LocalDateTime dataAtualizacao

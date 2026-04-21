@@ -4,6 +4,7 @@ import java.util.List;
 
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
+import br.com.prime.oficina.veiculo.domain.Veiculo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +70,7 @@ public class ClienteService {
 		cliente.setBairro(request.bairro());
 		cliente.setCidade(request.cidade());
 		cliente.setUf(request.uf());
+		cliente.setDataNascimento(request.data_nascimento());
 	}
 
 	@Transactional
@@ -77,6 +79,11 @@ public class ClienteService {
 				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
 
 		cliente.setAtivo(false);
+
+		for (Veiculo veiculo : cliente.getVeiculos()) {
+			veiculo.setAtivo(false);
+		}
+
 		clienteRepository.save(cliente);
 	}
 
@@ -106,6 +113,7 @@ public class ClienteService {
 				cliente.getBairro(),
 				cliente.getCidade(),
 				cliente.getUf(),
+				cliente.getDataNascimento(),
 				cliente.getAtivo(),
 				cliente.getDataCriacao(),
 				cliente.getDataAtualizacao()

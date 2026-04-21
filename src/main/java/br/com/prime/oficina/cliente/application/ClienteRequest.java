@@ -2,7 +2,10 @@ package br.com.prime.oficina.cliente.application;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.time.LocalDate;
 
 public record ClienteRequest(
 
@@ -39,6 +42,9 @@ public record ClienteRequest(
 
 		@NotBlank(message = "A uf do estado é obrigatória")
 		@Size(min = 2, max = 2, message = "A uf deve ter 2 caracteres")
-		String uf
+		String uf,
+
+		@NotNull(message = "A data de nascimento é obrigatória")
+		LocalDate data_nascimento
 ) {
 }
