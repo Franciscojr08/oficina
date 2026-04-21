@@ -37,19 +37,22 @@ public class ItemService {
         validarDuplicidade(request.tipo(), request.descricao(), request.unidadeMedida());
 
         Item item = new Item();
-        preencherItem(item, request);
-
-        Item salvo = itemRepository.save(item);
+		item.setNome(request.nome());
+		item.setDescricao(request.descricao());
+		item.setTipo(request.tipo());
+		item.setValorUnitario(request.valorUnitario());
+		item.setUnidadeMedida(request.unidadeMedida());
+		itemRepository.save(item);
 
         Estoque estoque = new Estoque();
-        estoque.setItem(salvo);
+		estoque.setItem(item);
         estoque.setQuantidade(request.quantidadeInicial());
         estoque.setEstoqueMinimo(request.estoqueMinimo());
-        Estoque estoqueSalvo = estoqueRepository.save(estoque);
+		estoqueRepository.save(estoque);
 
         if (request.quantidadeInicial() > 0) {
             MovimentoEstoque movimento = new MovimentoEstoque();
-            movimento.setItem(salvo);
+			movimento.setItem(item);
             movimento.setTipo(TipoMovimentoEstoque.ENTRADA);
             movimento.setQuantidade(request.quantidadeInicial());
             movimento.setObservacao(
@@ -60,7 +63,7 @@ public class ItemService {
             movimentoEstoqueRepository.save(movimento);
         }
 
-        return toResponse(salvo, estoqueSalvo);
+		return toResponse(item, estoque);
     }
 
     public List<ItemResponse> listar() {
@@ -84,7 +87,7 @@ public class ItemService {
     }
 
     @Transactional
-    public ItemResponse atualizar(Long id, ItemRequest request) {
+    public ItemResponse atualizar(Long id, ItemAtualizacaoRequest request) {
         Item item = buscarItemPorId(id);
 
         if (itemRepository.existsDuplicadoNaAtualizacao(
@@ -96,14 +99,16 @@ public class ItemService {
             throw new RegraNegocioException("Já existe item cadastrado com o mesmo tipo, descrição e unidade de medida");
         }
 
-        preencherItem(item, request);
-        Item atualizado = itemRepository.save(item);
+		item.setNome(request.nome());
+		item.setDescricao(request.descricao());
+		item.setTipo(request.tipo());
+		item.setValorUnitario(request.valorUnitario());
+		item.setUnidadeMedida(request.unidadeMedida());
+		itemRepository.save(item);
 
-        Estoque estoque = buscarEstoquePorItemId(id);
-        estoque.setEstoqueMinimo(request.estoqueMinimo());
-        Estoque estoqueAtualizado = estoqueRepository.save(estoque);
+		Estoque estoque = buscarEstoquePorItemId(id);
 
-        return toResponse(atualizado, estoqueAtualizado);
+		return toResponse(item, estoque);
     }
 
     @Transactional
@@ -135,14 +140,6 @@ public class ItemService {
     private Estoque buscarEstoquePorItemId(Long itemId) {
         return estoqueRepository.findByItemId(itemId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Estoque do item não encontrado"));
-    }
-
-    private void preencherItem(Item item, ItemRequest request) {
-        item.setNome(request.nome());
-        item.setDescricao(request.descricao());
-        item.setTipo(request.tipo());
-        item.setValorUnitario(request.valorUnitario());
-        item.setUnidadeMedida(request.unidadeMedida());
     }
 
     private ItemResponse toResponse(Item item, Estoque estoque) {

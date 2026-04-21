@@ -1,5 +1,6 @@
 package br.com.prime.oficina.item.controller;
 
+import br.com.prime.oficina.item.application.ItemAtualizacaoRequest;
 import br.com.prime.oficina.item.application.ItemRequest;
 import br.com.prime.oficina.item.application.ItemResponse;
 import br.com.prime.oficina.item.application.ItemService;
@@ -52,7 +53,7 @@ public class ItemController {
     @PutMapping("/{id}")
     public ResponseEntity<ItemResponse> atualizar(
             @PathVariable Long id,
-            @RequestBody @Valid ItemRequest request
+            @RequestBody @Valid ItemAtualizacaoRequest request
     ) {
         return ResponseEntity.ok(itemService.atualizar(id, request));
     }

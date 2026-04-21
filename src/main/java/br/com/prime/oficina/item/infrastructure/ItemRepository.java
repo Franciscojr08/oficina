@@ -12,21 +12,25 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByTipo(TipoItem tipo);
 
     @Query("""
-        select case when count(i) > 0 then true else false end
-        from Item i
-        where i.tipo = :tipo
-          and lower(coalesce(i.descricao, '')) = lower(coalesce(:descricao, ''))
-          and lower(i.unidadeMedida) = lower(:unidadeMedida)
-    """)
+		select exists (
+		    select 1
+		    from Item i
+		    where
+				i.tipo = :tipo
+		        and lower(coalesce(i.descricao, '')) = lower(coalesce(:descricao, ''))
+		        and lower(i.unidadeMedida) = lower(:unidadeMedida))
+	""")
     boolean existsDuplicado(TipoItem tipo, String descricao, String unidadeMedida);
 
     @Query("""
-        select case when count(i) > 0 then true else false end
-        from Item i
-        where i.tipo = :tipo
-          and lower(coalesce(i.descricao, '')) = lower(coalesce(:descricao, ''))
-          and lower(i.unidadeMedida) = lower(:unidadeMedida)
-          and i.id <> :id
+        select exists (
+            select 1
+            from Item i
+            where
+                i.tipo = :tipo
+                and lower(coalesce(i.descricao, '')) = lower(coalesce(:descricao, ''))
+                and lower(i.unidadeMedida) = lower(:unidadeMedida)
+                and i.id <> :id)
     """)
     boolean existsDuplicadoNaAtualizacao(Long id, TipoItem tipo, String descricao, String unidadeMedida);
 }
