@@ -29,8 +29,9 @@ public class ServicoService {
         Servico servico = new Servico();
         preencherServico(servico, request);
 
-        Servico salvo = servicoRepository.save(servico);
-        return toResponse(salvo);
+		servicoRepository.save(servico);
+
+		return toResponse(servico);
     }
 
     public List<ServicoResponse> listar() {
@@ -56,8 +57,9 @@ public class ServicoService {
 
         preencherServico(servico, request);
 
-        Servico atualizado = servicoRepository.save(servico);
-        return toResponse(atualizado);
+		servicoRepository.saveAndFlush(servico);
+
+		return toResponse(servico);
     }
 
     @Transactional
@@ -89,8 +91,7 @@ public class ServicoService {
     private void preencherServico(Servico servico, ServicoRequest request) {
         servico.setNome(request.nome());
         servico.setDescricao(request.descricao());
-        servico.setPrecoBase(request.precoBase());
-        servico.setTempoEstimadoMinutos(request.tempoEstimadoMinutos());
+		servico.setValor(request.valor());
     }
 
     private ServicoResponse toResponse(Servico servico) {
@@ -98,8 +99,7 @@ public class ServicoService {
                 servico.getId(),
                 servico.getNome(),
                 servico.getDescricao(),
-                servico.getPrecoBase(),
-                servico.getTempoEstimadoMinutos(),
+				servico.getValor(),
                 servico.getAtivo(),
                 servico.getDataCriacao(),
                 servico.getDataAtualizacao()

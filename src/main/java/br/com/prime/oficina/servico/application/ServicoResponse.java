@@ -7,8 +7,7 @@ public record ServicoResponse(
         Long id,
         String nome,
         String descricao,
-        BigDecimal precoBase,
-        Integer tempoEstimadoMinutos,
+        BigDecimal valor,
         Boolean ativo,
         LocalDateTime dataCriacao,
         LocalDateTime dataAtualizacao

@@ -138,7 +138,7 @@ public class OrdemServicoService {
         preencherServicoOrdemServico(servicoOrdemServico, ordemServico, servico, request);
 
         servicoOrdemServicoRepository.save(servicoOrdemServico);
-        ordemServico.setValorTotalServicos(ordemServico.getValorTotalServicos().add(servicoOrdemServico.getValorUnitario().multiply(servicoOrdemServico.getServico().getPrecoBase())));
+        ordemServico.setValorTotalServicos(ordemServico.getValorTotalServicos().add(servicoOrdemServico.getValorUnitario().multiply(servicoOrdemServico.getServico().getValor())));
 
         OrdemServico atualizado = repository.save(ordemServico);
         return toResponse(atualizado);
