@@ -37,15 +37,7 @@ public class EstoqueService {
     @Transactional
     public EstoqueResponse atualizarPorItem(Long itemId, EstoqueRequest request) {
         Item item = buscarItemPorId(itemId);
-
-        Estoque estoque = estoqueRepository.findByItemId(itemId)
-                .orElseGet(() -> {
-                    Estoque novoEstoque = new Estoque();
-                    novoEstoque.setItem(item);
-                    novoEstoque.setQuantidade(0);
-                    novoEstoque.setEstoqueMinimo(0);
-                    return novoEstoque;
-                });
+		Estoque estoque = buscarEstoquePorItemId(itemId);
 
         Integer quantidadeAnterior = estoque.getQuantidade();
         Integer quantidadeNova = request.quantidade();
@@ -53,24 +45,34 @@ public class EstoqueService {
         estoque.setQuantidade(quantidadeNova);
         estoque.setEstoqueMinimo(request.estoqueMinimo());
 
-        Estoque atualizado = estoqueRepository.save(estoque);
+        estoqueRepository.save(estoque);
 
-        if (!quantidadeAnterior.equals(quantidadeNova)) {
-            MovimentoEstoque movimentacao = new MovimentoEstoque();
-            movimentacao.setItem(item);
-            movimentacao.setTipo(TipoMovimentoEstoque.AJUSTE);
-            movimentacao.setQuantidade(Math.abs(quantidadeNova - quantidadeAnterior));
-            movimentacao.setObservacao(
-                    "Ajuste manual de estoque. Quantidade anterior: "
-                            + quantidadeAnterior + ", nova quantidade: " + quantidadeNova
-            );
-            movimentoEstoqueRepository.save(movimentacao);
-        }
+		lancarMovimentacaoEstoque(quantidadeNova, quantidadeAnterior, item);
 
-        return toResponse(atualizado);
+        return toResponse(estoque);
     }
 
-    private Item buscarItemPorId(Long itemId) {
+	private void lancarMovimentacaoEstoque(Integer quantidadeNova, Integer quantidadeAnterior, Item item) {
+		if (quantidadeAnterior.equals(quantidadeNova)) {
+			return;
+		}
+
+		Integer quantidadeMovimentacao = Math.abs(quantidadeNova - quantidadeAnterior);
+		String observacao = String.format(
+			"Ajuste manual de estoque. Quantidade anterior: %d, nova quantidade: %d",
+			quantidadeAnterior,
+			quantidadeNova
+		);
+
+		MovimentoEstoque movimentacao = new MovimentoEstoque();
+		movimentacao.setItem(item);
+		movimentacao.setTipo(TipoMovimentoEstoque.AJUSTE);
+		movimentacao.setQuantidade(quantidadeMovimentacao);
+		movimentacao.setObservacao(observacao);
+		movimentoEstoqueRepository.save(movimentacao);
+	}
+
+	private Item buscarItemPorId(Long itemId) {
         return itemRepository.findById(itemId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Item não encontrado"));
     }

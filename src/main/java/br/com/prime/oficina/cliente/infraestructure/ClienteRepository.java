@@ -8,8 +8,8 @@ import br.com.prime.oficina.cliente.domain.Cliente;
 
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
-    Optional<Cliente> findByCpfCnpj(String cpfCnpj);
+	Optional<Cliente> findByCpfCnpj(String cpfCnpj);
 
-    boolean existsByCpfCnpj(String cpfCnpj);
+	boolean existsByCpfCnpj(String cpfCnpj);
 
-    }
+}

@@ -52,7 +52,7 @@ public class Item {
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
 
-    @Column(name = "data_atualizacao", nullable = false)
+    @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
 
     @OneToOne(mappedBy = "item", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -60,9 +60,8 @@ public class Item {
 
     @PrePersist
     public void prePersist() {
-        LocalDateTime agora = LocalDateTime.now();
-        this.dataCriacao = agora;
-        this.dataAtualizacao = agora;
+		this.dataCriacao = LocalDateTime.now();
+
         if (this.ativo == null) {
             this.ativo = true;
         }
