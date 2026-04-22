@@ -19,12 +19,12 @@ import br.com.prime.oficina.ordemServico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemServico.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
-import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,57 +105,90 @@ public class OrdemServicoService {
 		repository.saveAndFlush(ordemServico);
 		entityManager.refresh(ordemServico);
 
+		salvarHistorico(ordemServico);
+
         return toResponse(ordemServico);
     }
 
-    @Transactional
+	private void salvarHistorico(OrdemServico ordemServico) {
+		HistoricoOrdemServico historicoOrdemServico = new HistoricoOrdemServico();
+		historicoOrdemServico.setOrdemServico(ordemServico);
+		historicoOrdemServico.setStatus(StatusOrdemServico.RECEBIDA);
+		historicoOrdemServico.setObservacao("OS cadastrada");
+		historicoOrdemServicoRepository.save(historicoOrdemServico);
+	}
+
+	@Transactional
     public OrdemServicoResponse atualizar(Long id, OrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
         Cliente cliente = buscarClientePorId(request.clienteId());
-        Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
+		if (!cliente.getAtivo()) {
+			throw new RegraNegocioException("O cliente informado não está ativo");
+		}
 
-        if(!(ordemServico.getCodigo() == request.codigo())
-            && repository.existsByCodigo(request.codigo())) {
-            throw new RecursoDuplicadoException("Já existe ordem de serviço cadastrada com esse código");
-        }
+        Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
+		if (!veiculo.getAtivo()) {
+			throw new RegraNegocioException("O Veículo informado não está ativo");
+		}
 
         preencherOrdemServico(ordemServico, request, veiculo, cliente);
-        OrdemServico atualizado = repository.save(ordemServico);
+		repository.saveAndFlush(ordemServico);
 
-        return toResponse(atualizado);
+		return toResponse(ordemServico);
     }
 
     @Transactional
     public OrdemServicoResponse adicionarItem(Long id, ItemOrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
         Item item = buscarItemPorId(request.itemId());
+		if (!item.getAtivo()) {
+			throw new RegraNegocioException("O Item informado não está ativo");
+		}
 
         ItemOrdemServico itemOrdemServico = new ItemOrdemServico();
         preencherItemOrdemServico(itemOrdemServico, ordemServico, item, request);
 
         itemOrdemServicoRepository.save(itemOrdemServico);
-        ordemServico.setValorTotalItens(ordemServico.getValorTotalItens().add(itemOrdemServico.getValorUnitario().multiply(BigDecimal.valueOf(itemOrdemServico.getQuantidade()))));
 
-        OrdemServico atualizado = repository.save(ordemServico);
-        return toResponse(atualizado);
+		BigDecimal novoTotal = getValorTotalItens(itemOrdemServico, ordemServico);
+		ordemServico.setValorTotalItens(novoTotal);
+
+        repository.saveAndFlush(ordemServico);
+        return toResponse(ordemServico);
     }
 
-    @Transactional
+	private BigDecimal getValorTotalItens(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico) {
+		BigDecimal valorItem = itemOrdemServico.getValorUnitario()
+				.multiply(BigDecimal.valueOf(itemOrdemServico.getQuantidade()));
+		return ordemServico.getValorTotalItens().add(valorItem);
+	}
+
+	@Transactional
     public OrdemServicoResponse adicionarServico(Long id, ServicoOrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
         Servico servico = buscarServicoPorId(request.servicoId());
+		if (!servico.getAtivo()) {
+			throw new RegraNegocioException("O Serviço informado não está ativo");
+		}
 
         ServicoOrdemServico servicoOrdemServico = new ServicoOrdemServico();
-        preencherServicoOrdemServico(servicoOrdemServico, ordemServico, servico, request);
+        preencherServicoOrdemServico(servicoOrdemServico, ordemServico, servico);
 
         servicoOrdemServicoRepository.save(servicoOrdemServico);
-        ordemServico.setValorTotalServicos(ordemServico.getValorTotalServicos().add(servicoOrdemServico.getValorUnitario().multiply(servicoOrdemServico.getServico().getValor())));
 
-        OrdemServico atualizado = repository.save(ordemServico);
-        return toResponse(atualizado);
+		BigDecimal novoTotal = getValorTotalServicos(ordemServico, servicoOrdemServico);
+		ordemServico.setValorTotalServicos(novoTotal);
+
+        repository.saveAndFlush(ordemServico);
+        return toResponse(ordemServico);
     }
 
-    @Transactional
+	private BigDecimal getValorTotalServicos(OrdemServico ordemServico, ServicoOrdemServico servicoOrdemServico) {
+		BigDecimal valorServico = servicoOrdemServico.getValorUnitario();
+		return ordemServico.getValorTotalServicos().add(valorServico);
+	}
+
+	@Transactional
     public OrdemServicoResponse aprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
         ItemOrdemServico itemOrdemServico = itemOrdemServicoRepository.findByOrdemServicoId(ordemServico.getId()).orElseThrow(() -> new RecursoNaoEncontradoException("Item ordem não encontrado"));
@@ -185,8 +218,8 @@ public class OrdemServicoService {
                 .orElseGet(() -> {
                     HistoricoOrdemServico historico = new HistoricoOrdemServico();
                     historico.setOrdemServico(ordemServico);
-                    historico.setObservacao("Abertura de Historico");
-                    historico.setStatus(StatusHistorico.ATIVO);
+                    historico.setObservacao("Abertura de Histórico");
+                    historico.setStatus(StatusOrdemServico.EM_EXECUCAO);
                     return historico;
                 });
 
@@ -266,17 +299,26 @@ public class OrdemServicoService {
         ordemServico.setDescricaoServicosExecutados(request.descricaoServicosExecutados());
     }
 
-    private void preencherItemOrdemServico(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico, Item item, ItemOrdemServicoRequest request) {
+    private void preencherItemOrdemServico(
+		ItemOrdemServico itemOrdemServico,
+		OrdemServico ordemServico,
+		Item item,
+		ItemOrdemServicoRequest request
+    ) {
         itemOrdemServico.setOrdemServico(ordemServico);
         itemOrdemServico.setItem(item);
         itemOrdemServico.setQuantidade(request.quantidade());
-        itemOrdemServico.setValorUnitario(request.valorUnitario());
+        itemOrdemServico.setValorUnitario(item.getValorUnitario());
     }
 
-    private void preencherServicoOrdemServico(ServicoOrdemServico servicoOrdemServico, OrdemServico ordemServico, Servico servico, ServicoOrdemServicoRequest request) {
+    private void preencherServicoOrdemServico(
+			ServicoOrdemServico servicoOrdemServico,
+			OrdemServico ordemServico,
+			Servico servico
+    ) {
         servicoOrdemServico.setOrdemServico(ordemServico);
         servicoOrdemServico.setServico(servico);
-        servicoOrdemServico.setValorUnitario(request.valorUnitario());
-        servicoOrdemServico.setStatus(request.status());
+        servicoOrdemServico.setValorUnitario(servico.getValor());
+        servicoOrdemServico.setStatus(StatusServico.PENDENTE);
     }
 }

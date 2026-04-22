@@ -1,5 +1,6 @@
 package br.com.prime.oficina.ordemServico.domain;
 
+import br.com.prime.oficina.ordemServico.application.StatusServico;
 import br.com.prime.oficina.servico.domain.Servico;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -15,13 +16,15 @@ import java.time.LocalDateTime;
 public class ServicoOrdemServico {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "valor_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorUnitario;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status;
+    private StatusServico status;
 
     @Column(name = "data_cadastro", nullable = false)
     private LocalDateTime dataCadastro;

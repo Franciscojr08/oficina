@@ -1,24 +1,23 @@
 package br.com.prime.oficina.ordemServico.domain;
 
-import br.com.prime.oficina.ordemServico.application.StatusHistorico;
+import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "historico_ordem_servico")
 public class HistoricoOrdemServico {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private StatusHistorico status;
+    private StatusOrdemServico status;
 
     @Column(name = "observacao", length = 150)
     private String observacao;
