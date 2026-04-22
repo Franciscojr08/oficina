@@ -10,6 +10,6 @@ CREATE TABLE veiculo
     observacao       VARCHAR(255) NULL,
     ativo            BOOLEAN      NOT NULL DEFAULT TRUE,
     data_criacao     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP NULL,
     CONSTRAINT fk_veiculo_cliente FOREIGN KEY (cliente_id) REFERENCES cliente (id)
 );

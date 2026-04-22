@@ -8,5 +8,5 @@ CREATE TABLE item
     unidade_medida   VARCHAR(10)    NOT NULL,
     ativo            BOOLEAN        NOT NULL DEFAULT TRUE,
     data_criacao     TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+    data_atualizacao TIMESTAMP NULL
 );

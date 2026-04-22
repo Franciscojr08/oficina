@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface HistoricoOrdemServicoRepository extends JpaRepository<HistoricoOrdemServico, Long> {
 
-    Optional<HistoricoOrdemServico> findByOrdemServicoId(Long ordemServicoId);
+    HistoricoOrdemServico findByOrdemServicoId(Long ordemServicoId);
 }

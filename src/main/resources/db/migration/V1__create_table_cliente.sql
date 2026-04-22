@@ -13,5 +13,5 @@ CREATE TABLE cliente
     data_nascimento  DATE         NOT NULL,
     ativo            BOOLEAN      NOT NULL DEFAULT TRUE,
     data_criacao     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+    data_atualizacao TIMESTAMP NULL
 );
