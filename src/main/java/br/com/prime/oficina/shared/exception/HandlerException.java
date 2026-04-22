@@ -19,17 +19,10 @@ public class HandlerException {
 
     @ExceptionHandler(RegraNegocioException.class)
     public ProblemDetail handleRegraNegocio(RegraNegocioException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
         problemDetail.setTitle("Regra de negócio violada");
         return problemDetail;
     }
-
-	@ExceptionHandler(ClienteInativoException.class)
-	public ProblemDetail handleClienteInativo(ClienteInativoException ex) {
-		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
-		problemDetail.setTitle("Cliente inativo");
-		return problemDetail;
-	}
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidacao(MethodArgumentNotValidException ex) {

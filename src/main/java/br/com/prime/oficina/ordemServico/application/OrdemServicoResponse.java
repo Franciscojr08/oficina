@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 public record OrdemServicoResponse(
         Long id,
-        int codigo,
+        String codigo,
         String descricaoProblema,
         String observacoesGerais,
         String descricaoServicosExecutados,
@@ -16,6 +16,8 @@ public record OrdemServicoResponse(
         LocalDateTime dataEnvioAprovacao,
         LocalDateTime dataAprovacao,
         LocalDateTime dataInicioExecucao,
-        LocalDateTime dataFinalizada
+        LocalDateTime dataFimExecucao,
+        LocalDateTime dataEntregue,
+        LocalDateTime dataCancelada
 ) {
 }

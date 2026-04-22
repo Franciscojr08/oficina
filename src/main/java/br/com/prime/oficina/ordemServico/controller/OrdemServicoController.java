@@ -29,7 +29,7 @@ public class OrdemServicoController {
     }
 
     @GetMapping("/codigo/{codigo}")
-    public ResponseEntity<List<OrdemServicoResponse>> listarPorCodigo(@PathVariable int codigo) {
+    public ResponseEntity<List<OrdemServicoResponse>> listarPorCodigo(@PathVariable String codigo) {
         return ResponseEntity.ok(service.listarPorCodigo(codigo));
     }
 

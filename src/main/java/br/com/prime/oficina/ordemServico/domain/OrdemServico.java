@@ -21,7 +21,7 @@ public class OrdemServico {
     private Long id;
 
     @Column(name = "codigo", nullable = false, unique = true)
-    private int codigo;
+    private String codigo;
 
     @Column(name = "descricao_problema")
     private String descricaoProblema;
@@ -54,8 +54,14 @@ public class OrdemServico {
     @Column(name = "data_inicio_execucao")
     private LocalDateTime dataInicioExecucao;
 
-    @Column(name = "data_finalizada")
-    private LocalDateTime dataFinalizada;
+    @Column(name = "data_fim_execucao")
+    private LocalDateTime dataFimExecucao;
+
+    @Column(name = "data_entregue")
+    private LocalDateTime dataEntregue;
+
+    @Column(name = "data_cancelada")
+    private LocalDateTime dataCancelada;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cliente_id", nullable = false)
@@ -68,6 +74,6 @@ public class OrdemServico {
     @PrePersist
     public void prePersist() {
         this.dataCadastro = LocalDateTime.now();
-        this.status = StatusOrdemServico.ABERTA;
+        this.status = StatusOrdemServico.RECEBIDA;
     }
 }

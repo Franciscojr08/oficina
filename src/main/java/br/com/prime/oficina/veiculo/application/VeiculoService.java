@@ -2,7 +2,6 @@ package br.com.prime.oficina.veiculo.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
-import br.com.prime.oficina.shared.exception.ClienteInativoException;
 import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
@@ -38,7 +37,7 @@ public class VeiculoService {
 
 	private static void validarCliente(Cliente cliente) {
 		if (!cliente.getAtivo()) {
-			throw new ClienteInativoException("O cliente informado não está ativo");
+			throw new RegraNegocioException("O cliente informado não está ativo");
 		}
 	}
 

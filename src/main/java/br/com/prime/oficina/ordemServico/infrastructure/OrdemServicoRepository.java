@@ -10,9 +10,9 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 
     List<OrdemServico> findByClienteId(Long clienteId);
 
-    List<OrdemServico> findByCodigo(int codigo);
+    List<OrdemServico> findByCodigo(String codigo);
 
     List<OrdemServico> findByStatus(StatusOrdemServico status);
 
-    boolean existsByCodigo(int codigo);
+    boolean existsByCodigo(String codigo);
 }

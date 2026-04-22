@@ -46,6 +46,10 @@ public class OrdemServicoService {
     private final EstoqueRepository estoqueRepository;
     private final MovimentoEstoqueRepository movimentoEstoqueRepository;
     private final HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
+    
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
+
     private final static String SAIDA_DEFAULT_ITEM = "BAIXA DE ITEM NO ESTOQUE";
 
     @Transactional(readOnly = true)
@@ -65,7 +69,7 @@ public class OrdemServicoService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrdemServicoResponse> listarPorCodigo(int codigo) {
+    public List<OrdemServicoResponse> listarPorCodigo(String codigo) {
         return repository.findByCodigo(codigo)
                 .stream()
                 .map(this::toResponse)
@@ -82,19 +86,26 @@ public class OrdemServicoService {
 
     @Transactional
     public OrdemServicoResponse criar(OrdemServicoRequest request) {
-        validarOrdemServicoDuplicada(request.codigo());
-
         Cliente cliente = buscarClientePorId(request.clienteId());
-        if(!cliente.getAtivo()) throw new RegraNegocioException("Cliente inativo");
+		if (!cliente.getAtivo()) {
+			throw new RegraNegocioException("O cliente informado não está ativo");
+		}
 
         Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
-        if(!veiculo.getAtivo()) throw new RegraNegocioException("Veiculo Inativo");
+		if (!veiculo.getAtivo()) {
+			throw new RegraNegocioException("O Veículo informado não está ativo");
+		}
 
         OrdemServico ordemServico = new OrdemServico();
+		ordemServico.setStatus(StatusOrdemServico.RECEBIDA);
+		ordemServico.setValorTotalServicos(BigDecimal.ZERO);
+		ordemServico.setValorTotalItens(BigDecimal.ZERO);
         preencherOrdemServico(ordemServico, request, veiculo, cliente);
 
-        OrdemServico salvo = repository.save(ordemServico);
-        return toResponse(salvo);
+		repository.saveAndFlush(ordemServico);
+		entityManager.refresh(ordemServico);
+
+        return toResponse(ordemServico);
     }
 
     @Transactional
@@ -210,11 +221,13 @@ public class OrdemServicoService {
                 ordemServico.getDataEnvioAprovacao(),
                 ordemServico.getDataAprovacao(),
                 ordemServico.getDataInicioExecucao(),
-                ordemServico.getDataFinalizada()
+                ordemServico.getDataFimExecucao(),
+                ordemServico.getDataEntregue(),
+                ordemServico.getDataCancelada()
         );
     }
 
-    private void validarOrdemServicoDuplicada(int codigo) {
+    private void validarOrdemServicoDuplicada(String codigo) {
         if (repository.existsByCodigo(codigo)) {
             throw new RegraNegocioException("Já existe ordem de serviço cadastrada com esse código");
         }
@@ -248,13 +261,9 @@ public class OrdemServicoService {
     private void preencherOrdemServico(OrdemServico ordemServico, OrdemServicoRequest request, Veiculo veiculo, Cliente cliente) {
         ordemServico.setCliente(cliente);
         ordemServico.setVeiculo(veiculo);
-        ordemServico.setCodigo(request.codigo());
         ordemServico.setDescricaoProblema(request.descricaoProblema());
         ordemServico.setObservacoesGerais(request.observacoesGerais());
         ordemServico.setDescricaoServicosExecutados(request.descricaoServicosExecutados());
-        ordemServico.setStatus(request.status());
-        ordemServico.setValorTotalServicos(request.valorTotalServicos());
-        ordemServico.setValorTotalItens(request.valorTotalItens());
     }
 
     private void preencherItemOrdemServico(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico, Item item, ItemOrdemServicoRequest request) {
