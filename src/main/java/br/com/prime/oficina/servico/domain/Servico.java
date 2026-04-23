@@ -23,11 +23,8 @@ public class Servico {
     @Column(name = "descricao", length = 255)
     private String descricao;
 
-    @Column(name = "preco_base", nullable = false, precision = 10, scale = 2)
-    private BigDecimal precoBase;
-
-    @Column(name = "tempo_estimado_minutos", nullable = false)
-    private Integer tempoEstimadoMinutos;
+    @Column(name = "valor", nullable = false, precision = 10, scale = 2)
+    private BigDecimal valor;
 
     @Column(name = "ativo", nullable = false)
     private Boolean ativo = true;
@@ -35,14 +32,12 @@ public class Servico {
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
 
-    @Column(name = "data_atualizacao", nullable = false)
+    @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
 
     @PrePersist
     public void prePersist() {
-        LocalDateTime agora = LocalDateTime.now();
-        this.dataCriacao = agora;
-        this.dataAtualizacao = agora;
+		this.dataCriacao = LocalDateTime.now();
 
         if (this.ativo == null) {
             this.ativo = true;

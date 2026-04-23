@@ -50,6 +50,11 @@ public class VeiculoController {
         return ResponseEntity.ok(veiculoService.atualizar(id, request));
     }
 
+    @GetMapping("/placa/{placa}")
+    public ResponseEntity<VeiculoResponse> buscarPorPlaca(@PathVariable String placa) {
+        return ResponseEntity.ok(veiculoService.buscarPorPlaca(placa));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> inativar(@PathVariable Long id) {
         veiculoService.inativar(id);

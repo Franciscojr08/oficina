@@ -2,6 +2,7 @@ package br.com.prime.oficina.veiculo.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
@@ -25,12 +26,20 @@ public class VeiculoService {
 
         Cliente cliente = buscarClientePorId(request.clienteId());
 
-        Veiculo veiculo = new Veiculo();
-        preencherVeiculo(veiculo, request, cliente);
+		validarCliente(cliente);
+
+		Veiculo veiculo = new Veiculo();
+		preencherVeiculo(veiculo, request, cliente);
 
         Veiculo salvo = veiculoRepository.save(veiculo);
         return toResponse(salvo);
     }
+
+	private static void validarCliente(Cliente cliente) {
+		if (!cliente.getAtivo()) {
+			throw new RegraNegocioException("O cliente informado não está ativo");
+		}
+	}
 
     public List<VeiculoResponse> listar() {
         return veiculoRepository.findAll()
@@ -56,10 +65,11 @@ public class VeiculoService {
         Veiculo veiculo = buscarVeiculoPorId(id);
 
         Cliente cliente = buscarClientePorId(request.clienteId());
+		validarCliente(cliente);
 
         if (!veiculo.getPlaca().equals(request.placa())
                 && veiculoRepository.existsByPlaca(request.placa())) {
-            throw new RuntimeException("Já existe veículo cadastrado com esta placa");
+            throw new RecursoDuplicadoException("Já existe veículo cadastrado com esta placa");
         }
 
         preencherVeiculo(veiculo, request, cliente);
@@ -74,6 +84,14 @@ public class VeiculoService {
 
         veiculo.setAtivo(false);
         veiculoRepository.save(veiculo);
+    }
+
+    @Transactional(readOnly = true)
+    public VeiculoResponse buscarPorPlaca(String placa) {
+        Veiculo veiculo = veiculoRepository.findByPlaca(placa)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Veículo não encontrado"));
+
+        return toResponse(veiculo);
     }
 
     private void validarPlacaDuplicada(String placa) {

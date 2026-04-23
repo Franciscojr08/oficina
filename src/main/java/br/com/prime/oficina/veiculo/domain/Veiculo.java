@@ -2,13 +2,11 @@ package br.com.prime.oficina.veiculo.domain;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "veiculo")
 public class Veiculo {
@@ -45,14 +43,13 @@ public class Veiculo {
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
 
-    @Column(name = "data_atualizacao", nullable = false)
-    private LocalDateTime dataAtualizacao;
+	@Column(name = "data_atualizacao", nullable = true)
+	private LocalDateTime dataAtualizacao;
 
     @PrePersist
     public void prePersist() {
-        LocalDateTime agora = LocalDateTime.now();
-        this.dataCriacao = agora;
-        this.dataAtualizacao = agora;
+		this.dataCriacao = LocalDateTime.now();
+
         if (this.ativo == null) {
             this.ativo = true;
         }

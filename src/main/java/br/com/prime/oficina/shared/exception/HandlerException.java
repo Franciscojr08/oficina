@@ -1,6 +1,7 @@
 package br.com.prime.oficina.shared.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,7 +19,7 @@ public class HandlerException {
 
     @ExceptionHandler(RegraNegocioException.class)
     public ProblemDetail handleRegraNegocio(RegraNegocioException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
         problemDetail.setTitle("Regra de negócio violada");
         return problemDetail;
     }

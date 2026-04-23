@@ -99,7 +99,7 @@ docker-compose up -d postgres
 2.  Documentação disponível em:
 
 ```{=html}
-http://localhost:8080/swagger-ui.html
+http://localhost:8080/oficina/v1/swagger-ui/index.html#/
 ```
 
 3.  Para parar os containers:

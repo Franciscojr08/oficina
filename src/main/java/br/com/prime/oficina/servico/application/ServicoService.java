@@ -1,5 +1,9 @@
 package br.com.prime.oficina.servico.application;
 
+import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemServico.domain.OrdemServico;
+import br.com.prime.oficina.ordemServico.domain.ServicoOrdemServico;
+import br.com.prime.oficina.ordemServico.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
@@ -9,12 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ServicoService {
 
     private final ServicoRepository servicoRepository;
+    private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
 
     @Transactional
     public ServicoResponse criar(ServicoRequest request) {
@@ -23,8 +29,9 @@ public class ServicoService {
         Servico servico = new Servico();
         preencherServico(servico, request);
 
-        Servico salvo = servicoRepository.save(servico);
-        return toResponse(salvo);
+		servicoRepository.save(servico);
+
+		return toResponse(servico);
     }
 
     public List<ServicoResponse> listar() {
@@ -50,14 +57,23 @@ public class ServicoService {
 
         preencherServico(servico, request);
 
-        Servico atualizado = servicoRepository.save(servico);
-        return toResponse(atualizado);
+		servicoRepository.saveAndFlush(servico);
+
+		return toResponse(servico);
     }
 
     @Transactional
     public void inativar(Long id) {
         Servico servico = buscarServicoPorId(id);
         servico.setAtivo(false);
+
+        Optional<ServicoOrdemServico> servicoOrdemServico = servicoOrdemServicoRepository.findByServicoId(servico.getId());
+        if(servicoOrdemServico.isPresent()) {
+            ServicoOrdemServico servicoOrdemServicoAtualizado = servicoOrdemServico.get();
+            OrdemServico ordemServico = servicoOrdemServicoAtualizado.getOrdemServico();
+            if(StatusOrdemServico.EM_EXECUCAO.equals(ordemServico.getStatus())) throw new RegraNegocioException("Servico em execução em ordem de serviço");
+        }
+
         servicoRepository.save(servico);
     }
 
@@ -75,8 +91,7 @@ public class ServicoService {
     private void preencherServico(Servico servico, ServicoRequest request) {
         servico.setNome(request.nome());
         servico.setDescricao(request.descricao());
-        servico.setPrecoBase(request.precoBase());
-        servico.setTempoEstimadoMinutos(request.tempoEstimadoMinutos());
+		servico.setValor(request.valor());
     }
 
     private ServicoResponse toResponse(Servico servico) {
@@ -84,8 +99,7 @@ public class ServicoService {
                 servico.getId(),
                 servico.getNome(),
                 servico.getDescricao(),
-                servico.getPrecoBase(),
-                servico.getTempoEstimadoMinutos(),
+				servico.getValor(),
                 servico.getAtivo(),
                 servico.getDataCriacao(),
                 servico.getDataAtualizacao()
