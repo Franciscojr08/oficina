@@ -78,4 +78,12 @@ public class OpenApiGroupsConfig {
                 .pathsToMatch("/ordens/**")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi apiPublicaOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("api-publica")
+                .pathsToMatch("/public/**")
+                .build();
+    }
 }
