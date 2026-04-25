@@ -4,6 +4,8 @@ import java.util.List;
 
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
+import br.com.prime.oficina.shared.validator.ValidadorCNPJ;
+import br.com.prime.oficina.shared.validator.ValidadorCPF;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +48,8 @@ public class ClienteService {
 
 	@Transactional
 	public ClienteResponse atualizar(Long id, ClienteRequest request) {
+		validarCpfCnpj(request.cpfCnpj());
+
 		Cliente cliente = clienteRepository.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
 
@@ -96,8 +100,30 @@ public class ClienteService {
 	}
 
 	private void validarCpfCnpjDuplicado(String cpfCnpj) {
+		validarCpfCnpj(cpfCnpj);
+
 		if (clienteRepository.existsByCpfCnpj(cpfCnpj)) {
 			throw new RegraNegocioException("Já existe cliente cadastrado com este CPF/CNPJ");
+		}
+	}
+
+	private void validarCpfCnpj(String cpfCnpj) {
+		validarCpfCnpjDuplicado(cpfCnpj);
+
+		String valor = cpfCnpj.replaceAll("\\D", "");
+
+		if (valor.length() == 11) {
+			boolean cpfValido = ValidadorCPF.isValido(cpfCnpj);
+			if (!cpfValido) {
+				throw new RegraNegocioException("CPF inválido");
+			}
+		}
+
+		if (valor.length() == 14) {
+			boolean cnpjValido = ValidadorCNPJ.isValido(valor);
+			if (!cnpjValido) {
+				throw new RegraNegocioException("CNPJ inválido");
+			}
 		}
 	}
 

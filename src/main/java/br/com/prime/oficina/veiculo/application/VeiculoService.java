@@ -5,6 +5,7 @@ import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
 import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
+import br.com.prime.oficina.shared.validator.ValidadorPlaca;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +63,8 @@ public class VeiculoService {
 
     @Transactional
     public VeiculoResponse atualizar(Long id, VeiculoRequest request) {
+		validarPlaca(request.placa());
+
         Veiculo veiculo = buscarVeiculoPorId(id);
 
         Cliente cliente = buscarClientePorId(request.clienteId());
@@ -95,10 +98,20 @@ public class VeiculoService {
     }
 
     private void validarPlacaDuplicada(String placa) {
+		validarPlaca(placa);
+
         if (veiculoRepository.existsByPlaca(placa)) {
             throw new RegraNegocioException("Já existe veículo cadastrado com esta placa");
         }
     }
+
+	private void validarPlaca(String placa) {
+		boolean placaValida = ValidadorPlaca.isValida(placa);
+
+		if (!placaValida) {
+			throw new RegraNegocioException("Placa inválida, não segue o padrão.");
+		}
+	}
 
     private Cliente buscarClientePorId(Long clienteId) {
         return clienteRepository.findById(clienteId)
