@@ -24,7 +24,6 @@ import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -118,16 +117,6 @@ public class OrdemServicoService {
 		historicoOrdemServicoRepository.save(historicoOrdemServico);
 	}
 
-	private static void validarOrdemServico(OrdemServico ordemServico) {
-		if (ordemServico.getStatus() == StatusOrdemServico.EM_EXECUCAO) {
-			throw new RegraNegocioException("Ordem de Serviço já em execução");
-		}
-
-		if (ordemServico.getStatus() == StatusOrdemServico.CANCELADA) {
-			throw new RegraNegocioException("Ordem de Serviço cancelada");
-		}
-	}
-
 	@Transactional
     public OrdemServicoResponse atualizar(Long id, OrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
@@ -150,7 +139,14 @@ public class OrdemServicoService {
     @Transactional
     public OrdemServicoResponse adicionarItem(Long id, ItemOrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-		validarOrdemServico(ordemServico);
+
+		if (ordemServico.getStatus().estaEmEdicao()) {
+			String mensagem = String.format(
+				"Não é possível adicionar o item, pois a ordem de serviço está %s",
+				ordemServico.getStatus().getDescricao()
+			);
+			throw new RegraNegocioException(mensagem);
+		}
 
 		Item item = buscarItemPorId(request.itemId());
 		if (!item.getAtivo()) {
@@ -178,7 +174,14 @@ public class OrdemServicoService {
 	@Transactional
     public OrdemServicoResponse adicionarServico(Long id, ServicoOrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-		validarOrdemServico(ordemServico);
+
+		if (ordemServico.getStatus().estaEmEdicao()) {
+			String mensagem = String.format(
+					"Não é possível adicionar o serviço, pois a ordem de serviço está %s",
+					ordemServico.getStatus().getDescricao()
+			);
+			throw new RegraNegocioException(mensagem);
+		}
 
 		Servico servico = buscarServicoPorId(request.servicoId());
 		if (!servico.getAtivo()) {
@@ -205,7 +208,14 @@ public class OrdemServicoService {
 	@Transactional
     public OrdemServicoResponse aprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-		validarOrdemServico(ordemServico);
+
+		if (ordemServico.getStatus() != StatusOrdemServico.AGUARDANDO_APROVACAO) {
+			String mensagem = String.format(
+					"Não é possível aprovar a ordem de serviço, pois ela está %s",
+				ordemServico.getStatus().getDescricao()
+			);
+			throw new RegraNegocioException(mensagem);
+		}
 
 		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoRepository.findByOrdemServicoId(id);
 
@@ -251,7 +261,14 @@ public class OrdemServicoService {
     @Transactional
     public OrdemServicoResponse reprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-		validarOrdemServico(ordemServico);
+
+		if (ordemServico.getStatus() != StatusOrdemServico.AGUARDANDO_APROVACAO) {
+			String mensagem = String.format(
+					"Não é possível cancelar a ordem de serviço, pois ela está %s",
+					ordemServico.getStatus().getDescricao()
+			);
+			throw new RegraNegocioException(mensagem);
+		}
 
 		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
 
