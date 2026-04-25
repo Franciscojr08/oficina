@@ -149,8 +149,19 @@ public class OrdemServicoService {
 		}
 
 		Item item = buscarItemPorId(request.itemId());
+		Estoque estoque = item.getEstoque();
+
 		if (!item.getAtivo()) {
 			throw new RegraNegocioException("O Item informado não está ativo");
+		}
+
+		int quantidadeAtual = itemOrdemServicoRepository.sumQuantidadeByOrdemServicoIdAndItemId(id, item.getId());
+		int totalSolicitado = quantidadeAtual + request.quantidade();
+
+		if (estoque.getQuantidade() < totalSolicitado) {
+			throw new RegraNegocioException(
+					"Estoque insuficiente para o item: " + item.getNome()
+			);
 		}
 
         ItemOrdemServico itemOrdemServico = new ItemOrdemServico();
@@ -209,31 +220,21 @@ public class OrdemServicoService {
     public OrdemServicoResponse aprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		if (ordemServico.getStatus() != StatusOrdemServico.AGUARDANDO_APROVACAO) {
-			String mensagem = String.format(
-					"Não é possível aprovar a ordem de serviço, pois ela está %s",
-				ordemServico.getStatus().getDescricao()
-			);
-			throw new RegraNegocioException(mensagem);
-		}
+		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_APROVACAO, "aprovar a ordem de serviço");
 
 		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoRepository.findByOrdemServicoId(id);
 
 		for (ItemOrdemServico itemOrdemServico : itemOrdemServicoList) {
 			Item item = itemOrdemServico.getItem();
-			Estoque estoque = item.getEstoque();
 
-			int quantidade = estoque.getQuantidade() - itemOrdemServico.getQuantidade();
+			int atualizado = estoqueRepository.baixarEstoque(
+				item.getEstoque().getId(),
+				itemOrdemServico.getQuantidade()
+			);
 
-			if (quantidade < 0) {
-				throw new RegraNegocioException("Quantidade de estoque insuficiente");
+			if (atualizado == 0) {
+				throw new RegraNegocioException("Estoque insuficiente para o item: " + item.getNome());
 			}
-
-			estoque.setQuantidade(quantidade);
-			item.setEstoque(estoque);
-
-			itemRepository.saveAndFlush(item);
-			estoqueRepository.saveAndFlush(estoque);
 
 			MovimentoEstoque movimento = new MovimentoEstoque();
 			movimento.setItem(item);
@@ -241,19 +242,11 @@ public class OrdemServicoService {
 			movimento.setQuantidade(itemOrdemServico.getQuantidade());
 			movimento.setOrdemServicoId(ordemServico.getId());
 			movimento.setObservacao(SAIDA_DEFAULT_ITEM);
-			movimentoEstoqueRepository.saveAndFlush(movimento);
 
-			HistoricoOrdemServico historicoOrdemServico = historicoOrdemServicoRepository.findByOrdemServicoId(ordemServico.getId());
-
-			historicoOrdemServicoRepository.saveAndFlush(historicoOrdemServico);
+			movimentoEstoqueRepository.save(movimento);
 		}
 
-		ordemServico.setStatus(StatusOrdemServico.EM_EXECUCAO);
-		ordemServico.setDataAprovacao(LocalDateTime.now());
-		ordemServico.setDataInicioExecucao(LocalDateTime.now());
-		repository.saveAndFlush(ordemServico);
-
-		salvarHistorico(ordemServico,StatusOrdemServico.EM_EXECUCAO);
+		atualizarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO);
 
         return toResponse(ordemServico);
     }
@@ -262,13 +255,7 @@ public class OrdemServicoService {
     public OrdemServicoResponse reprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		if (ordemServico.getStatus() != StatusOrdemServico.AGUARDANDO_APROVACAO) {
-			String mensagem = String.format(
-					"Não é possível cancelar a ordem de serviço, pois ela está %s",
-					ordemServico.getStatus().getDescricao()
-			);
-			throw new RegraNegocioException(mensagem);
-		}
+		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_APROVACAO, "reprovar a ordem de serviço");
 
 		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
 
@@ -277,15 +264,19 @@ public class OrdemServicoService {
 			servicoOrdemServicoRepository.saveAndFlush(servico);
 		}
 
-		ordemServico.setStatus(StatusOrdemServico.CANCELADA);
-		ordemServico.setDataCancelada(LocalDateTime.now());
-
-		repository.saveAndFlush(ordemServico);
-
-		salvarHistorico(ordemServico,StatusOrdemServico.CANCELADA);
+		atualizarStatus(ordemServico, StatusOrdemServico.CANCELADA);
 
 		return toResponse(ordemServico);
     }
+
+	private void validarStatus(OrdemServico os, StatusOrdemServico statusEsperado, String acao) {
+		if (os.getStatus() != statusEsperado) {
+			throw new RegraNegocioException(
+					"Não é possível %s, pois a ordem de serviço está %s"
+							.formatted(acao, os.getStatus().getDescricao())
+			);
+		}
+	}
 
     private OrdemServicoResponse toResponse(OrdemServico ordemServico) {
         return new OrdemServicoResponse(
@@ -367,4 +358,57 @@ public class OrdemServicoService {
         servicoOrdemServico.setValorUnitario(servico.getValor());
         servicoOrdemServico.setStatus(StatusServico.PENDENTE);
     }
+
+	public OrdemServicoResponse iniciarDiagnostico(Long id) {
+		return alterarStatus(
+			id,
+			StatusOrdemServico.RECEBIDA,
+			StatusOrdemServico.EM_DIAGNOSTICO,
+			"iniciar diagnóstico"
+		);
+	}
+
+
+	public OrdemServicoResponse solicitarAprovacao(Long id) {
+		return alterarStatus(
+			id,
+			StatusOrdemServico.EM_DIAGNOSTICO,
+			StatusOrdemServico.AGUARDANDO_APROVACAO,
+			"solicitar aprovação"
+		);
+	}
+
+	private OrdemServicoResponse alterarStatus(
+			Long id,
+			StatusOrdemServico statusAtualPermitido,
+			StatusOrdemServico novoStatus,
+			String acao
+	) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		validarStatus(ordemServico, statusAtualPermitido, acao);
+		atualizarStatus(ordemServico, novoStatus);
+
+		return toResponse(ordemServico);
+	}
+
+	private void atualizarStatus(OrdemServico os, StatusOrdemServico status) {
+		os.setStatus(status);
+		aplicarRegrasDeStatus(os, status);
+
+		repository.save(os);
+		salvarHistorico(os, status);
+	}
+
+	private void aplicarRegrasDeStatus(OrdemServico os, StatusOrdemServico status) {
+		switch (status) {
+			case AGUARDANDO_APROVACAO -> os.setDataEnvioAprovacao(LocalDateTime.now());
+			case EM_EXECUCAO -> {
+				os.setDataAprovacao(LocalDateTime.now());
+				os.setDataInicioExecucao(LocalDateTime.now());
+			}
+			case CANCELADA -> os.setDataCancelada(LocalDateTime.now());
+			default -> {}
+		}
+	}
 }

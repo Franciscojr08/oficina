@@ -54,24 +54,33 @@ public class OrdemServicoController {
         return ResponseEntity.ok(service.atualizar(id, request));
     }
 
-    @PutMapping("/{id}/item")
+    @PostMapping("/{id}/item")
     public ResponseEntity<OrdemServicoResponse> adicionarItem(@PathVariable Long id, @RequestBody ItemOrdemServicoRequest request) {
         return ResponseEntity.ok(service.adicionarItem(id, request));
     }
 
-    @PutMapping("/{id}/servico")
+    @PostMapping("/{id}/servico")
     public ResponseEntity<OrdemServicoResponse> adicionarServico(@PathVariable Long id, @RequestBody ServicoOrdemServicoRequest request) {
         return ResponseEntity.ok(service.adicionarServico(id, request));
     }
 
-    @PutMapping("/{id}/aprovar")
+	@PatchMapping("/{id}/aprovar")
     public ResponseEntity<OrdemServicoResponse> aprovarOrdemServico(@PathVariable Long id) {
         return ResponseEntity.ok(service.aprovarOrdemServico(id));
     }
 
-    @PutMapping("/{id}/reprovar")
+	@PatchMapping("/{id}/reprovar")
     public ResponseEntity<OrdemServicoResponse> reprovarOrdemServico(@PathVariable Long id) {
         return ResponseEntity.ok(service.reprovarOrdemServico(id));
     }
 
+	@PatchMapping("/{id}/iniciar-diagnostico")
+	public ResponseEntity<OrdemServicoResponse> iniciarDiagnostico(@PathVariable Long id) {
+		return ResponseEntity.ok(service.iniciarDiagnostico(id));
+	}
+
+	@PatchMapping("/{id}/solicitar-aprovacao")
+	public ResponseEntity<OrdemServicoResponse> solicitarAprovacao(@PathVariable Long id) {
+		return ResponseEntity.ok(service.solicitarAprovacao(id));
+	}
 }
