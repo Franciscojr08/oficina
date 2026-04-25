@@ -83,4 +83,17 @@ public class OrdemServicoController {
 	public ResponseEntity<OrdemServicoResponse> solicitarAprovacao(@PathVariable Long id) {
 		return ResponseEntity.ok(service.solicitarAprovacao(id));
 	}
+
+	@PatchMapping("/{id}/servicos/{servicoId}/iniciar")
+	public ResponseEntity<ServicoOrdemServicoResponse> iniciarServico(@PathVariable Long id, @PathVariable Long servicoId) {
+		return ResponseEntity.ok(service.iniciarServico(id,servicoId));
+	}
+
+	@PatchMapping("/{id}/servicos/{servicoId}/finalizar")
+	public ResponseEntity<ServicoOrdemServicoResponse> finalizarServico(
+		@PathVariable Long id,
+		@PathVariable Long servicoId
+	) {
+		return ResponseEntity.ok(service.finalizarServico(id,servicoId));
+	}
 }

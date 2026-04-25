@@ -368,7 +368,6 @@ public class OrdemServicoService {
 		);
 	}
 
-
 	public OrdemServicoResponse solicitarAprovacao(Long id) {
 		return alterarStatus(
 			id,
@@ -407,8 +406,78 @@ public class OrdemServicoService {
 				os.setDataAprovacao(LocalDateTime.now());
 				os.setDataInicioExecucao(LocalDateTime.now());
 			}
+			case FINALIZADA -> os.setDataFimExecucao(LocalDateTime.now());
 			case CANCELADA -> os.setDataCancelada(LocalDateTime.now());
 			default -> {}
+		}
+	}
+
+	public ServicoOrdemServicoResponse iniciarServico(Long id, Long servicoId) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "iniciar o serviço");
+
+		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository.findByOrdemServicoIdAndServicoId(id, servicoId);
+
+		if (servicoOS.getStatus() != StatusServico.PENDENTE) {
+			throw new RegraNegocioException("Serviço já iniciado ou finalizado");
+		}
+
+		servicoOS.setStatus(StatusServico.INICIADO);
+		servicoOS.setDataInicio(LocalDateTime.now());
+
+		servicoOrdemServicoRepository.save(servicoOS);
+
+		return new ServicoOrdemServicoResponse(
+			ordemServico.getCodigo(),
+			servicoOS.getServico().getId(),
+			servicoOS.getServico().getNome(),
+			servicoOS.getValorUnitario(),
+			servicoOS.getStatus(),
+			servicoOS.getDataCadastro(),
+			servicoOS.getDataInicio(),
+			servicoOS.getDataFim()
+		);
+	}
+
+	public ServicoOrdemServicoResponse finalizarServico(Long id, Long servicoId) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "iniciar o serviço");
+
+		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository.findByOrdemServicoIdAndServicoId(id, servicoId);
+
+		if (servicoOS.getStatus() != StatusServico.INICIADO) {
+			throw new RegraNegocioException("Serviço finalizado ou cancelado");
+		}
+
+		servicoOS.setStatus(StatusServico.FINALIZADO);
+		servicoOS.setDataFim(LocalDateTime.now());
+
+		servicoOrdemServicoRepository.save(servicoOS);
+
+		checarServicosOrdemServico(ordemServico);
+
+		return new ServicoOrdemServicoResponse(
+			ordemServico.getCodigo(),
+			servicoOS.getServico().getId(),
+			servicoOS.getServico().getNome(),
+			servicoOS.getValorUnitario(),
+			servicoOS.getStatus(),
+			servicoOS.getDataCadastro(),
+			servicoOS.getDataInicio(),
+			servicoOS.getDataFim()
+		);
+	}
+
+	private void checarServicosOrdemServico(OrdemServico ordemServico) {
+		boolean existeNaoFinalizado = servicoOrdemServicoRepository.existsByOrdemServicoIdAndStatusNot(
+			ordemServico.getId(),
+			StatusServico.FINALIZADO
+		);
+
+		if (!existeNaoFinalizado) {
+			atualizarStatus(ordemServico, StatusOrdemServico.FINALIZADA);
 		}
 	}
 }
