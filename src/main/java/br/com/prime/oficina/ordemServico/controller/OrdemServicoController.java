@@ -54,15 +54,25 @@ public class OrdemServicoController {
         return ResponseEntity.ok(service.atualizar(id, request));
     }
 
-    @PostMapping("/{id}/item")
+    @PostMapping("/{id}/itens")
     public ResponseEntity<OrdemServicoResponse> adicionarItem(@PathVariable Long id, @RequestBody ItemOrdemServicoRequest request) {
         return ResponseEntity.ok(service.adicionarItem(id, request));
     }
 
-    @PostMapping("/{id}/servico")
+	@GetMapping("/{id}/itens")
+	public ResponseEntity<List<ItemOrdemServicoResponse>> listarItensPorOrdemServico(@PathVariable Long id) {
+		return ResponseEntity.ok(service.listarItensPorOrdemServico(id));
+	}
+
+    @PostMapping("/{id}/servicos")
     public ResponseEntity<OrdemServicoResponse> adicionarServico(@PathVariable Long id, @RequestBody ServicoOrdemServicoRequest request) {
         return ResponseEntity.ok(service.adicionarServico(id, request));
     }
+
+	@GetMapping("/{id}/servicos")
+	public ResponseEntity<List<ServicoOrdemServicoResponse>> listarServicosPorOrdemServico(@PathVariable Long id) {
+		return ResponseEntity.ok(service.listarServicosPorOrdemServico(id));
+	}
 
 	@PatchMapping("/{id}/aprovar")
     public ResponseEntity<OrdemServicoResponse> aprovarOrdemServico(@PathVariable Long id) {
@@ -95,5 +105,10 @@ public class OrdemServicoController {
 		@PathVariable Long servicoId
 	) {
 		return ResponseEntity.ok(service.finalizarServico(id,servicoId));
+	}
+
+	@PatchMapping("/{id}/entregar")
+	public ResponseEntity<OrdemServicoResponse> entregarOrdemServico(@PathVariable Long id) {
+		return ResponseEntity.ok(service.entregarOrdemServico(id));
 	}
 }

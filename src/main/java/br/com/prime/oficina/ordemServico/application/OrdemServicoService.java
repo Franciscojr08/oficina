@@ -407,6 +407,7 @@ public class OrdemServicoService {
 				os.setDataInicioExecucao(LocalDateTime.now());
 			}
 			case FINALIZADA -> os.setDataFimExecucao(LocalDateTime.now());
+			case ENTREGUE -> os.setDataEntregue(LocalDateTime.now());
 			case CANCELADA -> os.setDataCancelada(LocalDateTime.now());
 			default -> {}
 		}
@@ -428,16 +429,7 @@ public class OrdemServicoService {
 
 		servicoOrdemServicoRepository.save(servicoOS);
 
-		return new ServicoOrdemServicoResponse(
-			ordemServico.getCodigo(),
-			servicoOS.getServico().getId(),
-			servicoOS.getServico().getNome(),
-			servicoOS.getValorUnitario(),
-			servicoOS.getStatus(),
-			servicoOS.getDataCadastro(),
-			servicoOS.getDataInicio(),
-			servicoOS.getDataFim()
-		);
+		return toServicoResponse(servicoOS);
 	}
 
 	public ServicoOrdemServicoResponse finalizarServico(Long id, Long servicoId) {
@@ -458,16 +450,7 @@ public class OrdemServicoService {
 
 		checarServicosOrdemServico(ordemServico);
 
-		return new ServicoOrdemServicoResponse(
-			ordemServico.getCodigo(),
-			servicoOS.getServico().getId(),
-			servicoOS.getServico().getNome(),
-			servicoOS.getValorUnitario(),
-			servicoOS.getStatus(),
-			servicoOS.getDataCadastro(),
-			servicoOS.getDataInicio(),
-			servicoOS.getDataFim()
-		);
+		return toServicoResponse(servicoOS);
 	}
 
 	private void checarServicosOrdemServico(OrdemServico ordemServico) {
@@ -479,5 +462,59 @@ public class OrdemServicoService {
 		if (!existeNaoFinalizado) {
 			atualizarStatus(ordemServico, StatusOrdemServico.FINALIZADA);
 		}
+	}
+
+	public List<ItemOrdemServicoResponse> listarItensPorOrdemServico(Long id) {
+		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoRepository.findByOrdemServicoId(id);
+
+		return itemOrdemServicoList.stream()
+				.map(this::toItemResponse)
+				.toList();
+	}
+
+	public List<ServicoOrdemServicoResponse> listarServicosPorOrdemServico(Long id) {
+		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
+
+		return servicoOrdemServicoList.stream()
+			.map(this::toServicoResponse)
+			.toList();
+	}
+
+	private ItemOrdemServicoResponse toItemResponse(ItemOrdemServico itemOS) {
+		BigDecimal quantidade = BigDecimal.valueOf(itemOS.getQuantidade());
+		BigDecimal valorUnitario = itemOS.getValorUnitario();
+
+		BigDecimal valorTotal = valorUnitario.multiply(quantidade);
+
+		return new ItemOrdemServicoResponse(
+			itemOS.getOrdemServico().getCodigo(),
+			itemOS.getItem().getId(),
+			itemOS.getItem().getNome(),
+			itemOS.getQuantidade(),
+			valorUnitario,
+			valorTotal
+		);
+	}
+
+	private ServicoOrdemServicoResponse toServicoResponse(ServicoOrdemServico servicoOS) {
+		return new ServicoOrdemServicoResponse(
+			servicoOS.getOrdemServico().getCodigo(),
+			servicoOS.getServico().getId(),
+			servicoOS.getServico().getNome(),
+			servicoOS.getValorUnitario(),
+			servicoOS.getStatus(),
+			servicoOS.getDataCadastro(),
+			servicoOS.getDataInicio(),
+			servicoOS.getDataFim()
+		);
+	}
+
+	public OrdemServicoResponse entregarOrdemServico(Long id) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		validarStatus(ordemServico, StatusOrdemServico.FINALIZADA, "entregar");
+		atualizarStatus(ordemServico, StatusOrdemServico.ENTREGUE);
+
+		return toResponse(ordemServico);
 	}
 }
