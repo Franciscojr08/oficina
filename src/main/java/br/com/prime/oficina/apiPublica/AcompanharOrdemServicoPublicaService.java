@@ -1,11 +1,10 @@
 package br.com.prime.oficina.apiPublica;
 
-import br.com.prime.oficina.ordemServico.domain.OrdemServico;
-import br.com.prime.oficina.ordemServico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.domain.OrdemServico;
+import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

@@ -6,12 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long> {
 
     List<OrdemServico> findByClienteId(Long clienteId);
 
-	List<OrdemServico> findByCodigo(String codigo);
+	Optional<OrdemServico> findByCodigo(String codigo);
 
     List<OrdemServico> findByStatus(StatusOrdemServico status);
 
