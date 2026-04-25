@@ -4,6 +4,8 @@ import br.com.prime.oficina.auth.gestaoUsuarios.domain.Usuario;
 import br.com.prime.oficina.auth.gestaoUsuarios.infrastructure.UsuarioRepository;
 import br.com.prime.oficina.security.JwtService;
 import br.com.prime.oficina.security.domain.SecurityUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticação", description = "Endpoints de login e autenticação JWT")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -22,6 +25,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/login")
+    @Operation(summary = "Realizar login", description = "Autentica o usuário e retorna um token JWT")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         Usuario usuario = usuarioRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResponseStatusException(

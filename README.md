@@ -26,26 +26,37 @@ para facilitar a execução do ambiente.
 │   │   ├── java/
 │   │   │   └── br/com/prime/oficina/
 │   │   │       ├── auth/
+│   │   │       │   ├── controller/
+│   │   │       │   │   └── AuthController.java
+│   │   │       │   ├── gestaoUsuarios/
+│   │   │       │   │   ├── application/
+│   │   │       │   │   ├── controller/
+│   │   │       │   │   ├── domain/
+│   │   │       │   │   └── infrastructure/
+│   │   │       │   ├── LoginRequest.java
+│   │   │       │   └── LoginResponse.java
 │   │   │       ├── cliente/
-│   │   │       │   ├── api/
-│   │   │       │   │   └── ClienteController.java
-│   │   │       │   ├── application/
-│   │   │       │   │   ├── ClienteRequest.java
-│   │   │       │   │   ├── ClienteResponse.java
-│   │   │       │   │   └── ClienteService.java
-│   │   │       │   ├── domain/
-│   │   │       │   │   └── Cliente.java
-│   │   │       │   └── infrastructure/
-│   │   │       │       └── ClienteRepository.java
+│   │   │       ├── config/
+│   │   │       │   ├── OpenApiConfig.java
+│   │   │       │   └── SecurityConfig.java
+│   │   │       ├── estoque/
+│   │   │       ├── item/
+│   │   │       ├── movimentoEstoque/
+│   │   │       ├── ordemServico/
+│   │   │       ├── security/
+│   │   │       │   ├── JwtAuthenticationFilter.java
+│   │   │       │   ├── JwtService.java
+│   │   │       │   ├── CustomUserDetailsService.java
+│   │   │       │   └── domain/
+│   │   │       │       └── SecurityUserDetails.java
+│   │   │       ├── servico/
 │   │   │       ├── shared/
-│   │   │       │   ├── exception/
-│   │   │       │   └── util/
+│   │   │       ├── veiculo/
 │   │   │       └── OficinaApplication.java
 │   │   └── resources/
-│   │       ├── db/
-│   │       │   └── migration/
-│   │       │       └── V1__create_table_cliente.sql
-│   │       └── application.properties
+│   │       ├── db/migration/
+│   │       ├── application.properties
+│   │       └── application-docker.properties
 │   └── test/
 ├── Dockerfile
 ├── docker-compose.yml
@@ -53,6 +64,26 @@ para facilitar a execução do ambiente.
 ├── mvnw.cmd
 ├── pom.xml
 └── README.md
+
+## 🔐 Autenticação e Segurança
+
+O projeto utiliza autenticação JWT para proteger as rotas administrativas.
+
+### Fluxo de autenticação
+
+1. O usuário realiza login no endpoint `/auth/login`
+2. A API valida email e senha
+3. A API retorna um token JWT
+4. O token deve ser enviado nas próximas requisições no header:
+
+A aplicação cria um usuário administrador inicial via migration do banco.
+
+### Credenciais iniciais
+
+- **Email:** `admin@oficina.com`
+- **Senha:** admin
+
+A partir do token retornado da api de login será possível acessar as rotas administrativas.
 
 ------------------------------------------------------------------------
 
@@ -71,6 +102,9 @@ POSTGRES_PASSWORD=postgres
 SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/oficina
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=postgres
+
+SECURITY_JWT_SECRET=jwt-docker-secret-123456789012345678901234567890
+SECURITY_JWT_EXPIRATION=7200000
 ```
 
 1.  Suba os containers:
