@@ -1,6 +1,7 @@
-package br.com.prime.oficina.ordemServico.domain;
+package br.com.prime.oficina.ordemServico.servicos.domain;
 
-import br.com.prime.oficina.ordemServico.application.StatusServico;
+import br.com.prime.oficina.ordemServico.domain.OrdemServico;
+import br.com.prime.oficina.ordemServico.servicos.application.StatusServico;
 import br.com.prime.oficina.servico.domain.Servico;
 import jakarta.persistence.*;
 import lombok.Getter;

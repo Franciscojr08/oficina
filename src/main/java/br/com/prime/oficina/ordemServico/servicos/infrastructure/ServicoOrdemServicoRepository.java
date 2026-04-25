@@ -1,7 +1,7 @@
-package br.com.prime.oficina.ordemServico.infrastructure;
+package br.com.prime.oficina.ordemServico.servicos.infrastructure;
 
-import br.com.prime.oficina.ordemServico.application.StatusServico;
-import br.com.prime.oficina.ordemServico.domain.ServicoOrdemServico;
+import br.com.prime.oficina.ordemServico.servicos.application.StatusServico;
+import br.com.prime.oficina.ordemServico.servicos.domain.ServicoOrdemServico;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

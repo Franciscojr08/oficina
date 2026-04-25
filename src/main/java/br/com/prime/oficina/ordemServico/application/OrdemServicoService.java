@@ -10,13 +10,18 @@ import br.com.prime.oficina.movimentoEstoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
 import br.com.prime.oficina.movimentoEstoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.ordemServico.domain.HistoricoOrdemServico;
-import br.com.prime.oficina.ordemServico.domain.ItemOrdemServico;
+import br.com.prime.oficina.ordemServico.itens.domain.ItemOrdemServico;
 import br.com.prime.oficina.ordemServico.domain.OrdemServico;
-import br.com.prime.oficina.ordemServico.domain.ServicoOrdemServico;
+import br.com.prime.oficina.ordemServico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemServico.infrastructure.HistoricoOrdemServicoRepository;
-import br.com.prime.oficina.ordemServico.infrastructure.ItemOrdemServicoRepository;
+import br.com.prime.oficina.ordemServico.itens.infrastructure.ItemOrdemServicoRepository;
 import br.com.prime.oficina.ordemServico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.ordemServico.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemServico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemServico.itens.application.ItemOrdemServicoRequest;
+import br.com.prime.oficina.ordemServico.itens.application.ItemOrdemServicoResponse;
+import br.com.prime.oficina.ordemServico.servicos.application.ServicoOrdemServicoRequest;
+import br.com.prime.oficina.ordemServico.servicos.application.ServicoOrdemServicoResponse;
+import br.com.prime.oficina.ordemServico.servicos.application.StatusServico;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
@@ -38,14 +43,12 @@ public class OrdemServicoService {
     private final OrdemServicoRepository repository;
     private final ClienteRepository clienteRepository;
     private final VeiculoRepository veiculoRepository;
-    private final ItemRepository itemRepository;
-    private final ServicoRepository servicoRepository;
     private final ItemOrdemServicoRepository itemOrdemServicoRepository;
     private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
     private final EstoqueRepository estoqueRepository;
     private final MovimentoEstoqueRepository movimentoEstoqueRepository;
     private final HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
-    
+
     @jakarta.persistence.PersistenceContext
     private jakarta.persistence.EntityManager entityManager;
 
@@ -136,86 +139,6 @@ public class OrdemServicoService {
 		return toResponse(ordemServico);
     }
 
-    @Transactional
-    public OrdemServicoResponse adicionarItem(Long id, ItemOrdemServicoRequest request) {
-        OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-
-		if (ordemServico.getStatus().estaEmEdicao()) {
-			String mensagem = String.format(
-				"Não é possível adicionar o item, pois a ordem de serviço está %s",
-				ordemServico.getStatus().getDescricao()
-			);
-			throw new RegraNegocioException(mensagem);
-		}
-
-		Item item = buscarItemPorId(request.itemId());
-		Estoque estoque = item.getEstoque();
-
-		if (!item.getAtivo()) {
-			throw new RegraNegocioException("O Item informado não está ativo");
-		}
-
-		int quantidadeAtual = itemOrdemServicoRepository.sumQuantidadeByOrdemServicoIdAndItemId(id, item.getId());
-		int totalSolicitado = quantidadeAtual + request.quantidade();
-
-		if (estoque.getQuantidade() < totalSolicitado) {
-			throw new RegraNegocioException(
-					"Estoque insuficiente para o item: " + item.getNome()
-			);
-		}
-
-        ItemOrdemServico itemOrdemServico = new ItemOrdemServico();
-        preencherItemOrdemServico(itemOrdemServico, ordemServico, item, request);
-
-        itemOrdemServicoRepository.save(itemOrdemServico);
-
-		BigDecimal novoTotal = getValorTotalItens(itemOrdemServico, ordemServico);
-		ordemServico.setValorTotalItens(novoTotal);
-
-        repository.saveAndFlush(ordemServico);
-        return toResponse(ordemServico);
-    }
-
-	private BigDecimal getValorTotalItens(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico) {
-		BigDecimal valorItem = itemOrdemServico.getValorUnitario()
-				.multiply(BigDecimal.valueOf(itemOrdemServico.getQuantidade()));
-		return ordemServico.getValorTotalItens().add(valorItem);
-	}
-
-	@Transactional
-    public OrdemServicoResponse adicionarServico(Long id, ServicoOrdemServicoRequest request) {
-        OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-
-		if (ordemServico.getStatus().estaEmEdicao()) {
-			String mensagem = String.format(
-					"Não é possível adicionar o serviço, pois a ordem de serviço está %s",
-					ordemServico.getStatus().getDescricao()
-			);
-			throw new RegraNegocioException(mensagem);
-		}
-
-		Servico servico = buscarServicoPorId(request.servicoId());
-		if (!servico.getAtivo()) {
-			throw new RegraNegocioException("O Serviço informado não está ativo");
-		}
-
-        ServicoOrdemServico servicoOrdemServico = new ServicoOrdemServico();
-        preencherServicoOrdemServico(servicoOrdemServico, ordemServico, servico);
-
-        servicoOrdemServicoRepository.save(servicoOrdemServico);
-
-		BigDecimal novoTotal = getValorTotalServicos(ordemServico, servicoOrdemServico);
-		ordemServico.setValorTotalServicos(novoTotal);
-
-        repository.saveAndFlush(ordemServico);
-        return toResponse(ordemServico);
-    }
-
-	private BigDecimal getValorTotalServicos(OrdemServico ordemServico, ServicoOrdemServico servicoOrdemServico) {
-		BigDecimal valorServico = servicoOrdemServico.getValorUnitario();
-		return ordemServico.getValorTotalServicos().add(valorServico);
-	}
-
 	@Transactional
     public OrdemServicoResponse aprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
@@ -269,7 +192,7 @@ public class OrdemServicoService {
 		return toResponse(ordemServico);
     }
 
-	private void validarStatus(OrdemServico os, StatusOrdemServico statusEsperado, String acao) {
+	public void validarStatus(OrdemServico os, StatusOrdemServico statusEsperado, String acao) {
 		if (os.getStatus() != statusEsperado) {
 			throw new RegraNegocioException(
 					"Não é possível %s, pois a ordem de serviço está %s"
@@ -313,16 +236,6 @@ public class OrdemServicoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de Serviço não encontrada"));
     }
 
-    private Item buscarItemPorId(Long id) {
-        return itemRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Item não encontrado"));
-    }
-
-    private Servico buscarServicoPorId(Long id) {
-        return servicoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Servico não encontrado"));
-    }
-
     private void preencherOrdemServico(
 		OrdemServico ordemServico,
 		OrdemServicoRequest request,
@@ -334,29 +247,6 @@ public class OrdemServicoService {
         ordemServico.setDescricaoProblema(request.descricaoProblema());
         ordemServico.setObservacoesGerais(request.observacoesGerais());
         ordemServico.setDescricaoServicosExecutados(request.descricaoServicosExecutados());
-    }
-
-    private void preencherItemOrdemServico(
-		ItemOrdemServico itemOrdemServico,
-		OrdemServico ordemServico,
-		Item item,
-		ItemOrdemServicoRequest request
-    ) {
-        itemOrdemServico.setOrdemServico(ordemServico);
-        itemOrdemServico.setItem(item);
-        itemOrdemServico.setQuantidade(request.quantidade());
-        itemOrdemServico.setValorUnitario(item.getValorUnitario());
-    }
-
-    private void preencherServicoOrdemServico(
-		ServicoOrdemServico servicoOrdemServico,
-		OrdemServico ordemServico,
-		Servico servico
-    ) {
-        servicoOrdemServico.setOrdemServico(ordemServico);
-        servicoOrdemServico.setServico(servico);
-        servicoOrdemServico.setValorUnitario(servico.getValor());
-        servicoOrdemServico.setStatus(StatusServico.PENDENTE);
     }
 
 	public OrdemServicoResponse iniciarDiagnostico(Long id) {
@@ -377,6 +267,15 @@ public class OrdemServicoService {
 		);
 	}
 
+	public OrdemServicoResponse entregarOrdemServico(Long id) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		validarStatus(ordemServico, StatusOrdemServico.FINALIZADA, "entregar");
+		atualizarStatus(ordemServico, StatusOrdemServico.ENTREGUE);
+
+		return toResponse(ordemServico);
+	}
+
 	private OrdemServicoResponse alterarStatus(
 			Long id,
 			StatusOrdemServico statusAtualPermitido,
@@ -391,7 +290,7 @@ public class OrdemServicoService {
 		return toResponse(ordemServico);
 	}
 
-	private void atualizarStatus(OrdemServico os, StatusOrdemServico status) {
+	public void atualizarStatus(OrdemServico os, StatusOrdemServico status) {
 		os.setStatus(status);
 		aplicarRegrasDeStatus(os, status);
 
@@ -411,110 +310,5 @@ public class OrdemServicoService {
 			case CANCELADA -> os.setDataCancelada(LocalDateTime.now());
 			default -> {}
 		}
-	}
-
-	public ServicoOrdemServicoResponse iniciarServico(Long id, Long servicoId) {
-		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-
-		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "iniciar o serviço");
-
-		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository.findByOrdemServicoIdAndServicoId(id, servicoId);
-
-		if (servicoOS.getStatus() != StatusServico.PENDENTE) {
-			throw new RegraNegocioException("Serviço já iniciado ou finalizado");
-		}
-
-		servicoOS.setStatus(StatusServico.INICIADO);
-		servicoOS.setDataInicio(LocalDateTime.now());
-
-		servicoOrdemServicoRepository.save(servicoOS);
-
-		return toServicoResponse(servicoOS);
-	}
-
-	public ServicoOrdemServicoResponse finalizarServico(Long id, Long servicoId) {
-		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-
-		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "iniciar o serviço");
-
-		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository.findByOrdemServicoIdAndServicoId(id, servicoId);
-
-		if (servicoOS.getStatus() != StatusServico.INICIADO) {
-			throw new RegraNegocioException("Serviço finalizado ou cancelado");
-		}
-
-		servicoOS.setStatus(StatusServico.FINALIZADO);
-		servicoOS.setDataFim(LocalDateTime.now());
-
-		servicoOrdemServicoRepository.save(servicoOS);
-
-		checarServicosOrdemServico(ordemServico);
-
-		return toServicoResponse(servicoOS);
-	}
-
-	private void checarServicosOrdemServico(OrdemServico ordemServico) {
-		boolean existeNaoFinalizado = servicoOrdemServicoRepository.existsByOrdemServicoIdAndStatusNot(
-			ordemServico.getId(),
-			StatusServico.FINALIZADO
-		);
-
-		if (!existeNaoFinalizado) {
-			atualizarStatus(ordemServico, StatusOrdemServico.FINALIZADA);
-		}
-	}
-
-	public List<ItemOrdemServicoResponse> listarItensPorOrdemServico(Long id) {
-		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoRepository.findByOrdemServicoId(id);
-
-		return itemOrdemServicoList.stream()
-				.map(this::toItemResponse)
-				.toList();
-	}
-
-	public List<ServicoOrdemServicoResponse> listarServicosPorOrdemServico(Long id) {
-		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
-
-		return servicoOrdemServicoList.stream()
-			.map(this::toServicoResponse)
-			.toList();
-	}
-
-	private ItemOrdemServicoResponse toItemResponse(ItemOrdemServico itemOS) {
-		BigDecimal quantidade = BigDecimal.valueOf(itemOS.getQuantidade());
-		BigDecimal valorUnitario = itemOS.getValorUnitario();
-
-		BigDecimal valorTotal = valorUnitario.multiply(quantidade);
-
-		return new ItemOrdemServicoResponse(
-			itemOS.getOrdemServico().getCodigo(),
-			itemOS.getItem().getId(),
-			itemOS.getItem().getNome(),
-			itemOS.getQuantidade(),
-			valorUnitario,
-			valorTotal
-		);
-	}
-
-	private ServicoOrdemServicoResponse toServicoResponse(ServicoOrdemServico servicoOS) {
-		return new ServicoOrdemServicoResponse(
-			servicoOS.getOrdemServico().getCodigo(),
-			servicoOS.getServico().getId(),
-			servicoOS.getServico().getNome(),
-			servicoOS.getValorUnitario(),
-			servicoOS.getStatus(),
-			servicoOS.getDataCadastro(),
-			servicoOS.getDataInicio(),
-			servicoOS.getDataFim()
-		);
-	}
-
-	public OrdemServicoResponse entregarOrdemServico(Long id) {
-		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-
-		validarStatus(ordemServico, StatusOrdemServico.FINALIZADA, "entregar");
-		atualizarStatus(ordemServico, StatusOrdemServico.ENTREGUE);
-
-		return toResponse(ordemServico);
 	}
 }

@@ -1,4 +1,4 @@
-package br.com.prime.oficina.ordemServico.application;
+package br.com.prime.oficina.ordemServico.itens.application;
 
 import java.math.BigDecimal;
 

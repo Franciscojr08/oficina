@@ -10,13 +10,18 @@ import br.com.prime.oficina.movimentoEstoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
 import br.com.prime.oficina.movimentoEstoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.ordemServico.domain.HistoricoOrdemServico;
-import br.com.prime.oficina.ordemServico.domain.ItemOrdemServico;
+import br.com.prime.oficina.ordemServico.itens.application.ItemOrdemServicoResponse;
+import br.com.prime.oficina.ordemServico.itens.application.ItemOrdemServicoService;
+import br.com.prime.oficina.ordemServico.itens.application.ListaItensOrdemServicoResponse;
+import br.com.prime.oficina.ordemServico.itens.domain.ItemOrdemServico;
 import br.com.prime.oficina.ordemServico.domain.OrdemServico;
-import br.com.prime.oficina.ordemServico.domain.ServicoOrdemServico;
+import br.com.prime.oficina.ordemServico.servicos.application.*;
+import br.com.prime.oficina.ordemServico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemServico.infrastructure.HistoricoOrdemServicoRepository;
-import br.com.prime.oficina.ordemServico.infrastructure.ItemOrdemServicoRepository;
+import br.com.prime.oficina.ordemServico.itens.infrastructure.ItemOrdemServicoRepository;
 import br.com.prime.oficina.ordemServico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.ordemServico.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemServico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemServico.itens.application.ItemOrdemServicoRequest;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
@@ -69,6 +74,8 @@ class OrdemServicoServiceTest {
 
     @InjectMocks
     private OrdemServicoService ordemServicoService;
+	private ItemOrdemServicoService itemOrdemServicoService;
+	private ServicoOrdemServicoService servicoOrdemServicoService;
 
     private OrdemServicoRequest ordemServicoRequest;
     private Cliente clienteAtivo;
@@ -189,7 +196,7 @@ class OrdemServicoServiceTest {
         when(itemOrdemServicoRepository.save(any(ItemOrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrdemServicoResponse response = ordemServicoService.adicionarItem(100L, request);
+	    ListaItensOrdemServicoResponse response = itemOrdemServicoService.adicionarItem(100L, request);
 
         assertEquals(BigDecimal.valueOf(150), response.valorTotalItens());
 
@@ -211,7 +218,7 @@ class OrdemServicoServiceTest {
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
-                () -> ordemServicoService.adicionarItem(100L, new ItemOrdemServicoRequest(20L, 2))
+                () -> itemOrdemServicoService.adicionarItem(100L, new ItemOrdemServicoRequest(20L, 2))
         );
 
         assertEquals("O Item informado não está ativo", exception.getMessage());
@@ -230,8 +237,8 @@ class OrdemServicoServiceTest {
         when(servicoOrdemServicoRepository.save(any(ServicoOrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrdemServicoResponse response =
-                ordemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L));
+        ListaServicosOrdemServicoResponse response =
+		        servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L));
 
         assertEquals(BigDecimal.valueOf(120), response.valorTotalServicos());
 
@@ -251,7 +258,7 @@ class OrdemServicoServiceTest {
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
-                () -> ordemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L))
+                () -> servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L))
         );
 
         assertEquals("O Serviço informado não está ativo", exception.getMessage());
@@ -364,7 +371,7 @@ class OrdemServicoServiceTest {
 
         RegraNegocioException exAdicionarItem = assertThrows(
                 RegraNegocioException.class,
-                () -> ordemServicoService.adicionarItem(100L, new ItemOrdemServicoRequest(20L, 1))
+                () -> itemOrdemServicoService.adicionarItem(100L, new ItemOrdemServicoRequest(20L, 1))
         );
         assertEquals("Ordem de Serviço já em execução", exAdicionarItem.getMessage());
 
@@ -383,7 +390,7 @@ class OrdemServicoServiceTest {
 
         RegraNegocioException exAdicionarServico = assertThrows(
                 RegraNegocioException.class,
-                () -> ordemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L))
+                () -> servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L))
         );
         assertEquals("Ordem de Serviço cancelada", exAdicionarServico.getMessage());
 

@@ -1,4 +1,4 @@
-package br.com.prime.oficina.ordemServico.application;
+package br.com.prime.oficina.ordemServico.servicos.application;
 
 public enum StatusServico {
 	PENDENTE,

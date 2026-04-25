@@ -1,4 +1,4 @@
-package br.com.prime.oficina.ordemServico.application;
+package br.com.prime.oficina.ordemServico.servicos.application;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

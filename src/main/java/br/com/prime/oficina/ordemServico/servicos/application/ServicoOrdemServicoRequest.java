@@ -1,8 +1,6 @@
-package br.com.prime.oficina.ordemServico.application;
+package br.com.prime.oficina.ordemServico.servicos.application;
 
 import jakarta.validation.constraints.NotBlank;
-
-import java.math.BigDecimal;
 
 public record ServicoOrdemServicoRequest(
         @NotBlank(message = "Id Servico é obrigatório")
