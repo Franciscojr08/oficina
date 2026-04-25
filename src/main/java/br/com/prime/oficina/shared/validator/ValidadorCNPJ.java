@@ -2,6 +2,8 @@ package br.com.prime.oficina.shared.validator;
 
 public class ValidadorCNPJ {
 
+	private ValidadorCNPJ() {}
+
 	public static boolean isValido(String cnpj) {
 		if (cnpj.matches("(\\d)\\1{13}")) {
 			return false;

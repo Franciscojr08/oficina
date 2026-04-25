@@ -1,9 +1,9 @@
 package br.com.prime.oficina.servico.application;
 
-import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemServico.domain.OrdemServico;
-import br.com.prime.oficina.ordemServico.servicos.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemServico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.domain.OrdemServico;
+import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
+import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;

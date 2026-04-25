@@ -2,8 +2,8 @@ package br.com.prime.oficina.cliente.application;
 
 import java.util.List;
 
-import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemServico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.shared.validator.ValidadorCNPJ;
@@ -26,6 +26,7 @@ public class ClienteService {
 	@Transactional
 	public ClienteResponse criar(ClienteRequest request) {
 		validarCpfCnpjDuplicado(request.cpfCnpj());
+		validarCpfCnpj(request.cpfCnpj());
 
 		Cliente cliente = new Cliente();
 		setDadosCliente(request, cliente);
@@ -112,16 +113,12 @@ public class ClienteService {
 	}
 
 	private void validarCpfCnpjDuplicado(String cpfCnpj) {
-		validarCpfCnpj(cpfCnpj);
-
 		if (clienteRepository.existsByCpfCnpj(cpfCnpj)) {
 			throw new RegraNegocioException("Já existe cliente cadastrado com este CPF/CNPJ");
 		}
 	}
 
 	private void validarCpfCnpj(String cpfCnpj) {
-		validarCpfCnpjDuplicado(cpfCnpj);
-
 		String valor = cpfCnpj.replaceAll("\\D", "");
 
 		if (valor.length() == 11) {

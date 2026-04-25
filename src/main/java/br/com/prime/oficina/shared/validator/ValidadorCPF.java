@@ -2,6 +2,8 @@ package br.com.prime.oficina.shared.validator;
 
 public class ValidadorCPF {
 
+	private ValidadorCPF() {}
+
 	public static boolean isValido(String cpf) {
 		if (cpf.matches("(\\d)\\1{10}")) {
 			return false;

@@ -1,19 +1,12 @@
 package br.com.prime.oficina.relatorio.application;
 
-import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemServico.domain.OrdemServico;
-import br.com.prime.oficina.ordemServico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.ordemServico.servicos.application.StatusServico;
-import br.com.prime.oficina.ordemServico.servicos.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemServico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
