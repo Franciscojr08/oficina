@@ -115,12 +115,17 @@ public class ItemService {
     public void inativar(Long id) {
         Item item = buscarItemPorId(id);
 
-        Optional<ItemOrdemServico> itemOrdemServico = itemOrdemServicoRepository.findByItem(item);
-        if(itemOrdemServico.isPresent()) {
-            ItemOrdemServico itemOrdemServicoAtualizado = itemOrdemServico.get();
-            OrdemServico ordemServico = itemOrdemServicoAtualizado.getOrdemServico();
-            if(StatusOrdemServico.EM_EXECUCAO.equals(ordemServico.getStatus())) throw new RegraNegocioException("Item em uso");
-        }
+		boolean estaEmOrdemAtiva = itemOrdemServicoRepository
+				.existsByItemIdAndOrdemServicoStatusIn(
+						id,
+						StatusOrdemServico.statusAtivos()
+				);
+
+		if (estaEmOrdemAtiva) {
+			throw new RegraNegocioException(
+					"Não é possível inativar o item, pois ele possui ordens de serviço ativas."
+			);
+		}
 
         item.setAtivo(false);
         itemRepository.save(item);

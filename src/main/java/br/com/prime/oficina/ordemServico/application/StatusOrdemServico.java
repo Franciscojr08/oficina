@@ -2,6 +2,8 @@ package br.com.prime.oficina.ordemServico.application;
 
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public enum StatusOrdemServico {
 	RECEBIDA("Recebida"),
@@ -20,5 +22,15 @@ public enum StatusOrdemServico {
 
 	public boolean estaEmEdicao() {
 		return this != RECEBIDA && this != EM_DIAGNOSTICO;
+	}
+
+	public static List<StatusOrdemServico> statusAtivos() {
+		return List.of(
+			RECEBIDA,
+			EM_DIAGNOSTICO,
+			AGUARDANDO_APROVACAO,
+			EM_EXECUCAO,
+			FINALIZADA
+		);
 	}
 }

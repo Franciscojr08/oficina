@@ -1,6 +1,7 @@
 package br.com.prime.oficina.ordemServico.itens.infrastructure;
 
 import br.com.prime.oficina.item.domain.Item;
+import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemServico.itens.domain.ItemOrdemServico;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +26,6 @@ public interface ItemOrdemServicoRepository extends JpaRepository<ItemOrdemServi
         @Param("ordemId") Long ordemId,
         @Param("itemId") Long itemId
 	);
+
+	boolean existsByItemIdAndOrdemServicoStatusIn(Long itemId,List<StatusOrdemServico> status);
 }

@@ -2,6 +2,8 @@ package br.com.prime.oficina.cliente.application;
 
 import java.util.List;
 
+import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemServico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.shared.validator.ValidadorCNPJ;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class ClienteService {
 
 	private final ClienteRepository clienteRepository;
+	private final OrdemServicoRepository ordemServicoRepository;
 
 	@Transactional
 	public ClienteResponse criar(ClienteRequest request) {
@@ -81,6 +84,15 @@ public class ClienteService {
 	public void inativar(Long id) {
 		Cliente cliente = clienteRepository.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+
+		boolean possuiOrdemAtiva = ordemServicoRepository
+				.existsByClienteIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
+
+		if (possuiOrdemAtiva) {
+			throw new RegraNegocioException(
+				"Não é possível inativar o cliente, pois ele possui ordens de serviço ativas."
+			);
+		}
 
 		cliente.setAtivo(false);
 

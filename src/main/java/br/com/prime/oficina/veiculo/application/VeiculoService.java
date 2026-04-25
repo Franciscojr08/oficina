@@ -2,6 +2,8 @@ package br.com.prime.oficina.veiculo.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemServico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
@@ -20,6 +22,7 @@ public class VeiculoService {
 
     private final VeiculoRepository veiculoRepository;
     private final ClienteRepository clienteRepository;
+	private final OrdemServicoRepository ordemServicoRepository;
 
     @Transactional
     public VeiculoResponse criar(VeiculoRequest request) {
@@ -84,6 +87,15 @@ public class VeiculoService {
     @Transactional
     public void inativar(Long id) {
         Veiculo veiculo = buscarVeiculoPorId(id);
+
+		boolean possuiOrdemAtiva = ordemServicoRepository
+				.existsByVeiculoIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
+
+		if (possuiOrdemAtiva) {
+			throw new RegraNegocioException(
+					"Não é possível inativar o veículo, pois ele possui ordens de serviço ativas."
+			);
+		}
 
         veiculo.setAtivo(false);
         veiculoRepository.save(veiculo);

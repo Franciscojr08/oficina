@@ -65,6 +65,19 @@ public class ServicoService {
     @Transactional
     public void inativar(Long id) {
         Servico servico = buscarServicoPorId(id);
+
+		boolean estaEmOrdemAtiva = servicoOrdemServicoRepository
+				.existsByServicoIdAndOrdemServicoStatusIn(
+						id,
+						StatusOrdemServico.statusAtivos()
+				);
+
+		if (estaEmOrdemAtiva) {
+			throw new RegraNegocioException(
+					"Não é possível inativar o serviço, pois ele possui ordens de serviço ativas."
+			);
+		}
+
         servico.setAtivo(false);
 
         Optional<ServicoOrdemServico> servicoOrdemServico = servicoOrdemServicoRepository.findByServicoId(servico.getId());
