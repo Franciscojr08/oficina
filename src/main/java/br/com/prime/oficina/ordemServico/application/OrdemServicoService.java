@@ -40,7 +40,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrdemServicoService {
 
-    private final OrdemServicoRepository repository;
+    private final OrdemServicoRepository ordemServicoRepository;
     private final ClienteRepository clienteRepository;
     private final VeiculoRepository veiculoRepository;
     private final ItemOrdemServicoRepository itemOrdemServicoRepository;
@@ -56,7 +56,7 @@ public class OrdemServicoService {
 
     @Transactional(readOnly = true)
     public List<OrdemServicoResponse> listar() {
-        return repository.findAll()
+        return ordemServicoRepository.findAll()
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -64,7 +64,7 @@ public class OrdemServicoService {
 
     @Transactional(readOnly = true)
     public List<OrdemServicoResponse> listarPorCliente(Long clienteId) {
-        return repository.findByClienteId(clienteId)
+        return ordemServicoRepository.findByClienteId(clienteId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -72,7 +72,7 @@ public class OrdemServicoService {
 
     @Transactional(readOnly = true)
     public List<OrdemServicoResponse> listarPorCodigo(String codigo) {
-        return repository.findByCodigo(codigo)
+        return ordemServicoRepository.findByCodigo(codigo)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -80,7 +80,7 @@ public class OrdemServicoService {
 
     @Transactional(readOnly = true)
     public List<OrdemServicoResponse> listarPorStatus(StatusOrdemServico status) {
-        return repository.findByStatus(status)
+        return ordemServicoRepository.findByStatus(status)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -104,7 +104,7 @@ public class OrdemServicoService {
 		ordemServico.setValorTotalItens(BigDecimal.ZERO);
         preencherOrdemServico(ordemServico, request, veiculo, cliente);
 
-		repository.saveAndFlush(ordemServico);
+		ordemServicoRepository.saveAndFlush(ordemServico);
 		entityManager.refresh(ordemServico);
 
 		salvarHistorico(ordemServico,StatusOrdemServico.RECEBIDA);
@@ -134,7 +134,7 @@ public class OrdemServicoService {
 		}
 
         preencherOrdemServico(ordemServico, request, veiculo, cliente);
-		repository.saveAndFlush(ordemServico);
+		ordemServicoRepository.saveAndFlush(ordemServico);
 
 		return toResponse(ordemServico);
     }
@@ -232,7 +232,7 @@ public class OrdemServicoService {
     }
 
     private OrdemServico buscarOrdemServicoPorId(Long id) {
-        return repository.findById(id)
+        return ordemServicoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de Serviço não encontrada"));
     }
 
@@ -294,7 +294,7 @@ public class OrdemServicoService {
 		os.setStatus(status);
 		aplicarRegrasDeStatus(os, status);
 
-		repository.save(os);
+		ordemServicoRepository.save(os);
 		salvarHistorico(os, status);
 	}
 
