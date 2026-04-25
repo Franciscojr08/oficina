@@ -1,6 +1,6 @@
 package br.com.prime.oficina.security.domain;
 
-import br.com.prime.oficina.auth.domain.Usuario;
+import br.com.prime.oficina.auth.gestaoUsuarios.domain.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +18,7 @@ public class SecurityUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRole()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name()));
     }
 
     @Override
@@ -52,6 +52,6 @@ public class SecurityUserDetails implements UserDetails {
     }
 
     public String getRole() {
-        return usuario.getRole();
+        return usuario.getRole().name();
     }
 }

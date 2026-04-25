@@ -1,4 +1,4 @@
-package br.com.prime.oficina.auth.domain;
+package br.com.prime.oficina.auth.gestaoUsuarios.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -25,8 +25,9 @@ public class Usuario {
     @Column(nullable = false, length = 255)
     private String senha;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private String role;
+    private RoleUsuario role;
 
     @Column(nullable = false)
     private Boolean ativo = true;

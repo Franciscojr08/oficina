@@ -1,10 +1,12 @@
-package br.com.prime.oficina.auth.infrastructure;
+package br.com.prime.oficina.auth.gestaoUsuarios.infrastructure;
 
-import br.com.prime.oficina.auth.domain.Usuario;
+import br.com.prime.oficina.auth.gestaoUsuarios.domain.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }
