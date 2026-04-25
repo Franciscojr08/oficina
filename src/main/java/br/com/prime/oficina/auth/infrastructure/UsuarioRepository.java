@@ -1,4 +1,4 @@
-package br.com.prime.oficina.auth.domain.infrastructure;
+package br.com.prime.oficina.auth.infrastructure;
 
 import br.com.prime.oficina.auth.domain.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
