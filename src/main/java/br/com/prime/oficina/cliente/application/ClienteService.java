@@ -2,8 +2,12 @@ package br.com.prime.oficina.cliente.application;
 
 import java.util.List;
 
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
+import br.com.prime.oficina.shared.validator.ValidadorCNPJ;
+import br.com.prime.oficina.shared.validator.ValidadorCPF;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +21,12 @@ import lombok.RequiredArgsConstructor;
 public class ClienteService {
 
 	private final ClienteRepository clienteRepository;
+	private final OrdemServicoRepository ordemServicoRepository;
 
 	@Transactional
 	public ClienteResponse criar(ClienteRequest request) {
 		validarCpfCnpjDuplicado(request.cpfCnpj());
+		validarCpfCnpj(request.cpfCnpj());
 
 		Cliente cliente = new Cliente();
 		setDadosCliente(request, cliente);
@@ -46,6 +52,8 @@ public class ClienteService {
 
 	@Transactional
 	public ClienteResponse atualizar(Long id, ClienteRequest request) {
+		validarCpfCnpj(request.cpfCnpj());
+
 		Cliente cliente = clienteRepository.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
 
@@ -78,6 +86,15 @@ public class ClienteService {
 		Cliente cliente = clienteRepository.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
 
+		boolean possuiOrdemAtiva = ordemServicoRepository
+				.existsByClienteIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
+
+		if (possuiOrdemAtiva) {
+			throw new RegraNegocioException(
+				"Não é possível inativar o cliente, pois ele possui ordens de serviço ativas."
+			);
+		}
+
 		cliente.setAtivo(false);
 
 		for (Veiculo veiculo : cliente.getVeiculos()) {
@@ -98,6 +115,24 @@ public class ClienteService {
 	private void validarCpfCnpjDuplicado(String cpfCnpj) {
 		if (clienteRepository.existsByCpfCnpj(cpfCnpj)) {
 			throw new RegraNegocioException("Já existe cliente cadastrado com este CPF/CNPJ");
+		}
+	}
+
+	private void validarCpfCnpj(String cpfCnpj) {
+		String valor = cpfCnpj.replaceAll("\\D", "");
+
+		if (valor.length() == 11) {
+			boolean cpfValido = ValidadorCPF.isValido(cpfCnpj);
+			if (!cpfValido) {
+				throw new RegraNegocioException("CPF inválido");
+			}
+		}
+
+		if (valor.length() == 14) {
+			boolean cnpjValido = ValidadorCNPJ.isValido(valor);
+			if (!cnpjValido) {
+				throw new RegraNegocioException("CNPJ inválido");
+			}
 		}
 	}
 

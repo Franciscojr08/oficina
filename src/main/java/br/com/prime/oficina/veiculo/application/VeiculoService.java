@@ -2,9 +2,12 @@ package br.com.prime.oficina.veiculo.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
+import br.com.prime.oficina.shared.validator.ValidadorPlaca;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ public class VeiculoService {
 
     private final VeiculoRepository veiculoRepository;
     private final ClienteRepository clienteRepository;
+	private final OrdemServicoRepository ordemServicoRepository;
 
     @Transactional
     public VeiculoResponse criar(VeiculoRequest request) {
@@ -62,6 +66,8 @@ public class VeiculoService {
 
     @Transactional
     public VeiculoResponse atualizar(Long id, VeiculoRequest request) {
+		validarPlaca(request.placa());
+
         Veiculo veiculo = buscarVeiculoPorId(id);
 
         Cliente cliente = buscarClientePorId(request.clienteId());
@@ -82,6 +88,15 @@ public class VeiculoService {
     public void inativar(Long id) {
         Veiculo veiculo = buscarVeiculoPorId(id);
 
+		boolean possuiOrdemAtiva = ordemServicoRepository
+				.existsByVeiculoIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
+
+		if (possuiOrdemAtiva) {
+			throw new RegraNegocioException(
+					"Não é possível inativar o veículo, pois ele possui ordens de serviço ativas."
+			);
+		}
+
         veiculo.setAtivo(false);
         veiculoRepository.save(veiculo);
     }
@@ -95,10 +110,20 @@ public class VeiculoService {
     }
 
     private void validarPlacaDuplicada(String placa) {
+		validarPlaca(placa);
+
         if (veiculoRepository.existsByPlaca(placa)) {
             throw new RegraNegocioException("Já existe veículo cadastrado com esta placa");
         }
     }
+
+	private void validarPlaca(String placa) {
+		boolean placaValida = ValidadorPlaca.isValida(placa);
+
+		if (!placaValida) {
+			throw new RegraNegocioException("Placa inválida, não segue o padrão.");
+		}
+	}
 
     private Cliente buscarClientePorId(Long clienteId) {
         return clienteRepository.findById(clienteId)
