@@ -1,6 +1,7 @@
 package br.com.prime.oficina.apiPublica;
 
-import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
+
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 
 import java.time.LocalDateTime;
 

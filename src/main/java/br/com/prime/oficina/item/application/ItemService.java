@@ -8,10 +8,8 @@ import br.com.prime.oficina.item.infrastructure.ItemRepository;
 import br.com.prime.oficina.movimentoEstoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
 import br.com.prime.oficina.movimentoEstoque.infrastructure.MovimentoEstoqueRepository;
-import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemServico.domain.ItemOrdemServico;
-import br.com.prime.oficina.ordemServico.domain.OrdemServico;
-import br.com.prime.oficina.ordemServico.infrastructure.ItemOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -115,12 +112,17 @@ public class ItemService {
     public void inativar(Long id) {
         Item item = buscarItemPorId(id);
 
-        Optional<ItemOrdemServico> itemOrdemServico = itemOrdemServicoRepository.findByItem(item);
-        if(itemOrdemServico.isPresent()) {
-            ItemOrdemServico itemOrdemServicoAtualizado = itemOrdemServico.get();
-            OrdemServico ordemServico = itemOrdemServicoAtualizado.getOrdemServico();
-            if(StatusOrdemServico.EM_EXECUCAO.equals(ordemServico.getStatus())) throw new RegraNegocioException("Item em uso");
-        }
+		boolean estaEmOrdemAtiva = itemOrdemServicoRepository
+				.existsByItemIdAndOrdemServicoStatusIn(
+						id,
+						StatusOrdemServico.statusAtivos()
+				);
+
+		if (estaEmOrdemAtiva) {
+			throw new RegraNegocioException(
+					"Não é possível inativar o item, pois ele possui ordens de serviço ativas."
+			);
+		}
 
         item.setAtivo(false);
         itemRepository.save(item);

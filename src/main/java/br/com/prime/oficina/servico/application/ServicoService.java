@@ -1,9 +1,9 @@
 package br.com.prime.oficina.servico.application;
 
-import br.com.prime.oficina.ordemServico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemServico.domain.OrdemServico;
-import br.com.prime.oficina.ordemServico.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemServico.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.domain.OrdemServico;
+import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
+import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
@@ -65,6 +65,19 @@ public class ServicoService {
     @Transactional
     public void inativar(Long id) {
         Servico servico = buscarServicoPorId(id);
+
+		boolean estaEmOrdemAtiva = servicoOrdemServicoRepository
+				.existsByServicoIdAndOrdemServicoStatusIn(
+						id,
+						StatusOrdemServico.statusAtivos()
+				);
+
+		if (estaEmOrdemAtiva) {
+			throw new RegraNegocioException(
+					"Não é possível inativar o serviço, pois ele possui ordens de serviço ativas."
+			);
+		}
+
         servico.setAtivo(false);
 
         Optional<ServicoOrdemServico> servicoOrdemServico = servicoOrdemServicoRepository.findByServicoId(servico.getId());
