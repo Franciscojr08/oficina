@@ -2,6 +2,7 @@ package br.com.prime.oficina.veiculo.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
@@ -30,6 +31,9 @@ class VeiculoServiceTest {
 
     @Mock
     private ClienteRepository clienteRepository;
+
+    @Mock
+    private OrdemServicoRepository ordemServicoRepository;
 
     @InjectMocks
     private VeiculoService veiculoService;
@@ -350,6 +354,8 @@ class VeiculoServiceTest {
         Veiculo veiculo = criarVeiculo(10L, "ABC1234", clienteAtivo);
 
         when(veiculoRepository.findById(10L)).thenReturn(Optional.of(veiculo));
+        when(ordemServicoRepository.existsByVeiculoIdAndStatusIn(eq(10L), anyList()))
+                .thenReturn(false);
 
         veiculoService.inativar(10L);
 
@@ -361,6 +367,7 @@ class VeiculoServiceTest {
         assertFalse(veiculoSalvo.getAtivo());
 
         verify(veiculoRepository).findById(10L);
+        verify(ordemServicoRepository).existsByVeiculoIdAndStatusIn(eq(10L), anyList());
     }
 
     @Test

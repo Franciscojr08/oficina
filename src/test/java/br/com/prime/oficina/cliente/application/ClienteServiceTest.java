@@ -2,6 +2,7 @@ package br.com.prime.oficina.cliente.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
@@ -25,8 +26,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ClienteServiceTest {
 
+    private static final String CPF_VALIDO = "52998224725";
+    private static final String OUTRO_CPF_VALIDO = "39053344705";
+    private static final String CPF_VALIDO_INEXISTENTE = "11144477735";
+
     @Mock
     private ClienteRepository clienteRepository;
+
+    @Mock
+    private OrdemServicoRepository ordemServicoRepository;
 
     @InjectMocks
     private ClienteService clienteService;
@@ -37,7 +45,7 @@ class ClienteServiceTest {
     void setUp() {
         request = new ClienteRequest(
                 "João da Silva",
-                "12345678901",
+                CPF_VALIDO,
                 "85999999999",
                 "joao@email.com",
                 "60000000",
@@ -66,7 +74,7 @@ class ClienteServiceTest {
         assertNotNull(response);
         assertEquals(1L, response.id());
         assertEquals("João da Silva", response.nome());
-        assertEquals("12345678901", response.cpfCnpj());
+        assertEquals(CPF_VALIDO, response.cpfCnpj());
         assertEquals("85999999999", response.telefone());
         assertEquals("joao@email.com", response.email());
         assertEquals("60000000", response.cep());
@@ -97,8 +105,8 @@ class ClienteServiceTest {
 
     @Test
     void deveListarClientes() {
-        Cliente cliente1 = criarCliente(1L, "João da Silva", "12345678901");
-        Cliente cliente2 = criarCliente(2L, "Maria Souza", "98765432100");
+        Cliente cliente1 = criarCliente(1L, "João da Silva", CPF_VALIDO);
+        Cliente cliente2 = criarCliente(2L, "Maria Souza", OUTRO_CPF_VALIDO);
 
         when(clienteRepository.findAll()).thenReturn(List.of(cliente1, cliente2));
 
@@ -113,7 +121,7 @@ class ClienteServiceTest {
 
     @Test
     void deveBuscarClientePorIdComSucesso() {
-        Cliente cliente = criarCliente(1L, "João da Silva", "12345678901");
+        Cliente cliente = criarCliente(1L, "João da Silva", CPF_VALIDO);
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
 
@@ -121,7 +129,7 @@ class ClienteServiceTest {
 
         assertEquals(1L, response.id());
         assertEquals("João da Silva", response.nome());
-        assertEquals("12345678901", response.cpfCnpj());
+        assertEquals(CPF_VALIDO, response.cpfCnpj());
 
         verify(clienteRepository).findById(1L);
     }
@@ -142,11 +150,11 @@ class ClienteServiceTest {
 
     @Test
     void deveAtualizarClienteComSucessoMantendoMesmoCpfCnpj() {
-        Cliente cliente = criarCliente(1L, "João Antigo", "12345678901");
+        Cliente cliente = criarCliente(1L, "João Antigo", CPF_VALIDO);
 
         ClienteRequest requestAtualizacao = new ClienteRequest(
                 "João Atualizado",
-                "12345678901",
+                CPF_VALIDO,
                 "85888888888",
                 "joao.atualizado@email.com",
                 "60100000",
@@ -163,7 +171,7 @@ class ClienteServiceTest {
         ClienteResponse response = clienteService.atualizar(1L, requestAtualizacao);
 
         assertEquals("João Atualizado", response.nome());
-        assertEquals("12345678901", response.cpfCnpj());
+        assertEquals(CPF_VALIDO, response.cpfCnpj());
         assertEquals("85888888888", response.telefone());
         assertEquals("joao.atualizado@email.com", response.email());
         assertEquals("60100000", response.cep());
@@ -178,11 +186,11 @@ class ClienteServiceTest {
 
     @Test
     void deveAtualizarClienteComNovoCpfCnpjQuandoNaoExisteDuplicidade() {
-        Cliente cliente = criarCliente(1L, "João da Silva", "12345678901");
+        Cliente cliente = criarCliente(1L, "João da Silva", CPF_VALIDO);
 
         ClienteRequest requestAtualizacao = new ClienteRequest(
                 "João da Silva",
-                "22222222222",
+                OUTRO_CPF_VALIDO,
                 "85999999999",
                 "joao@email.com",
                 "60000000",
@@ -194,25 +202,25 @@ class ClienteServiceTest {
         );
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(clienteRepository.existsByCpfCnpj("22222222222")).thenReturn(false);
+        when(clienteRepository.existsByCpfCnpj(OUTRO_CPF_VALIDO)).thenReturn(false);
         when(clienteRepository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ClienteResponse response = clienteService.atualizar(1L, requestAtualizacao);
 
-        assertEquals("22222222222", response.cpfCnpj());
+        assertEquals(OUTRO_CPF_VALIDO, response.cpfCnpj());
 
         verify(clienteRepository).findById(1L);
-        verify(clienteRepository).existsByCpfCnpj("22222222222");
+        verify(clienteRepository).existsByCpfCnpj(OUTRO_CPF_VALIDO);
         verify(clienteRepository).save(cliente);
     }
 
     @Test
     void naoDeveAtualizarClienteQuandoNovoCpfCnpjJaExiste() {
-        Cliente cliente = criarCliente(1L, "João da Silva", "12345678901");
+        Cliente cliente = criarCliente(1L, "João da Silva", CPF_VALIDO);
 
         ClienteRequest requestAtualizacao = new ClienteRequest(
                 "João da Silva",
-                "22222222222",
+                OUTRO_CPF_VALIDO,
                 "85999999999",
                 "joao@email.com",
                 "60000000",
@@ -224,7 +232,7 @@ class ClienteServiceTest {
         );
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(clienteRepository.existsByCpfCnpj("22222222222")).thenReturn(true);
+        when(clienteRepository.existsByCpfCnpj(OUTRO_CPF_VALIDO)).thenReturn(true);
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
@@ -234,17 +242,30 @@ class ClienteServiceTest {
         assertEquals("Já existe cliente cadastrado com este CPF/CNPJ", exception.getMessage());
 
         verify(clienteRepository).findById(1L);
-        verify(clienteRepository).existsByCpfCnpj("22222222222");
+        verify(clienteRepository).existsByCpfCnpj(OUTRO_CPF_VALIDO);
         verify(clienteRepository, never()).save(any());
     }
 
     @Test
     void deveLancarExcecaoAoAtualizarClienteInexistente() {
+        ClienteRequest requestValido = new ClienteRequest(
+                "Cliente Inexistente",
+                CPF_VALIDO_INEXISTENTE,
+                "85999999999",
+                "cliente@email.com",
+                "60000000",
+                "Rua A",
+                "Centro",
+                "Fortaleza",
+                "CE",
+                LocalDate.of(1990, 1, 1)
+        );
+
         when(clienteRepository.findById(99L)).thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> clienteService.atualizar(99L, request)
+                () -> clienteService.atualizar(99L, requestValido)
         );
 
         assertEquals("Cliente não encontrado", exception.getMessage());
@@ -256,7 +277,7 @@ class ClienteServiceTest {
 
     @Test
     void deveInativarClienteESeusVeiculos() {
-        Cliente cliente = criarCliente(1L, "João da Silva", "12345678901");
+        Cliente cliente = criarCliente(1L, "João da Silva", CPF_VALIDO);
 
         Veiculo veiculo1 = new Veiculo();
         veiculo1.setAtivo(true);
@@ -267,6 +288,7 @@ class ClienteServiceTest {
         cliente.setVeiculos(new ArrayList<>(List.of(veiculo1, veiculo2)));
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        when(ordemServicoRepository.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(false);
 
         clienteService.inativar(1L);
 
@@ -280,6 +302,29 @@ class ClienteServiceTest {
         assertFalse(clienteSalvo.getVeiculos().get(1).getAtivo());
 
         verify(clienteRepository).findById(1L);
+        verify(ordemServicoRepository).existsByClienteIdAndStatusIn(eq(1L), anyList());
+    }
+
+    @Test
+    void naoDeveInativarClienteQuandoPossuiOrdemServicoAtiva() {
+        Cliente cliente = criarCliente(1L, "João da Silva", CPF_VALIDO);
+
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        when(ordemServicoRepository.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(true);
+
+        RegraNegocioException exception = assertThrows(
+                RegraNegocioException.class,
+                () -> clienteService.inativar(1L)
+        );
+
+        assertEquals(
+                "Não é possível inativar o cliente, pois ele possui ordens de serviço ativas.",
+                exception.getMessage()
+        );
+
+        verify(clienteRepository).findById(1L);
+        verify(ordemServicoRepository).existsByClienteIdAndStatusIn(eq(1L), anyList());
+        verify(clienteRepository, never()).save(any());
     }
 
     @Test
@@ -294,36 +339,37 @@ class ClienteServiceTest {
         assertEquals("Cliente não encontrado", exception.getMessage());
 
         verify(clienteRepository).findById(99L);
+        verify(ordemServicoRepository, never()).existsByClienteIdAndStatusIn(anyLong(), anyList());
         verify(clienteRepository, never()).save(any());
     }
 
     @Test
     void deveBuscarClientePorCpfCnpjComSucesso() {
-        Cliente cliente = criarCliente(1L, "João da Silva", "12345678901");
+        Cliente cliente = criarCliente(1L, "João da Silva", CPF_VALIDO);
 
-        when(clienteRepository.findByCpfCnpj("12345678901")).thenReturn(Optional.of(cliente));
+        when(clienteRepository.findByCpfCnpj(CPF_VALIDO)).thenReturn(Optional.of(cliente));
 
-        ClienteResponse response = clienteService.findByCpfCnpj("12345678901");
+        ClienteResponse response = clienteService.findByCpfCnpj(CPF_VALIDO);
 
         assertEquals(1L, response.id());
         assertEquals("João da Silva", response.nome());
-        assertEquals("12345678901", response.cpfCnpj());
+        assertEquals(CPF_VALIDO, response.cpfCnpj());
 
-        verify(clienteRepository).findByCpfCnpj("12345678901");
+        verify(clienteRepository).findByCpfCnpj(CPF_VALIDO);
     }
 
     @Test
     void deveLancarExcecaoAoBuscarClientePorCpfCnpjInexistente() {
-        when(clienteRepository.findByCpfCnpj("00000000000")).thenReturn(Optional.empty());
+        when(clienteRepository.findByCpfCnpj(CPF_VALIDO_INEXISTENTE)).thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> clienteService.findByCpfCnpj("00000000000")
+                () -> clienteService.findByCpfCnpj(CPF_VALIDO_INEXISTENTE)
         );
 
         assertEquals("Cliente não encontrado", exception.getMessage());
 
-        verify(clienteRepository).findByCpfCnpj("00000000000");
+        verify(clienteRepository).findByCpfCnpj(CPF_VALIDO_INEXISTENTE);
     }
 
     private Cliente criarCliente(Long id, String nome, String cpfCnpj) {
