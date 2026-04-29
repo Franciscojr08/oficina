@@ -461,7 +461,10 @@ class ItemServiceTest {
         Item item = criarItem(1L, "Óleo 5W30", TipoItem.PECA);
 
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(itemOrdemServicoRepository.findByItem(item)).thenReturn(Optional.empty());
+        when(itemOrdemServicoRepository.existsByItemIdAndOrdemServicoStatusIn(
+                eq(1L),
+                anyList()
+        )).thenReturn(false);
 
         itemService.inativar(1L);
 
@@ -471,48 +474,49 @@ class ItemServiceTest {
         assertFalse(itemCaptor.getValue().getAtivo());
 
         verify(itemRepository).findById(1L);
-        verify(itemOrdemServicoRepository).findByItem(item);
+        verify(itemOrdemServicoRepository).existsByItemIdAndOrdemServicoStatusIn(
+                eq(1L),
+                anyList()
+        );
     }
 
     @Test
     void naoDeveInativarItemQuandoEstaEmUsoEmOrdemServicoEmExecucao() {
         Item item = criarItem(1L, "Óleo 5W30", TipoItem.PECA);
 
-        OrdemServico ordemServico = new OrdemServico();
-        ordemServico.setStatus(StatusOrdemServico.EM_EXECUCAO);
-
-        ItemOrdemServico itemOrdemServico = new ItemOrdemServico();
-        itemOrdemServico.setItem(item);
-        itemOrdemServico.setOrdemServico(ordemServico);
-
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(itemOrdemServicoRepository.findByItem(item)).thenReturn(Optional.of(itemOrdemServico));
+        when(itemOrdemServicoRepository.existsByItemIdAndOrdemServicoStatusIn(
+                eq(1L),
+                anyList()
+        )).thenReturn(true);
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
                 () -> itemService.inativar(1L)
         );
 
-        assertEquals("Item em uso", exception.getMessage());
+        assertEquals(
+                "Não é possível inativar o item, pois ele possui ordens de serviço ativas.",
+                exception.getMessage()
+        );
 
         verify(itemRepository).findById(1L);
-        verify(itemOrdemServicoRepository).findByItem(item);
+        verify(itemOrdemServicoRepository).existsByItemIdAndOrdemServicoStatusIn(
+                eq(1L),
+                anyList()
+        );
         verify(itemRepository, never()).save(any());
     }
 
     @Test
-    void deveInativarItemQuandoEstaEmOrdemServicoMasNaoEmExecucao() {
+    void deveInativarItemQuandoNaoPossuiOrdensDeServicoAtivas() {
         Item item = criarItem(1L, "Óleo 5W30", TipoItem.PECA);
 
-        OrdemServico ordemServico = new OrdemServico();
-        ordemServico.setStatus(StatusOrdemServico.RECEBIDA);
-
-        ItemOrdemServico itemOrdemServico = new ItemOrdemServico();
-        itemOrdemServico.setItem(item);
-        itemOrdemServico.setOrdemServico(ordemServico);
-
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(itemOrdemServicoRepository.findByItem(item)).thenReturn(Optional.of(itemOrdemServico));
+        when(itemOrdemServicoRepository.existsByItemIdAndOrdemServicoStatusIn(
+                eq(1L),
+                anyList()
+        )).thenReturn(false);
 
         itemService.inativar(1L);
 
@@ -522,7 +526,10 @@ class ItemServiceTest {
         assertFalse(itemCaptor.getValue().getAtivo());
 
         verify(itemRepository).findById(1L);
-        verify(itemOrdemServicoRepository).findByItem(item);
+        verify(itemOrdemServicoRepository).existsByItemIdAndOrdemServicoStatusIn(
+                eq(1L),
+                anyList()
+        );
     }
 
     @Test
