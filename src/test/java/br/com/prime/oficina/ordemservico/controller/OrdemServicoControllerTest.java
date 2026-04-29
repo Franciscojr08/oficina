@@ -1,5 +1,6 @@
 package br.com.prime.oficina.ordemservico.controller;
 
+import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.ordemservico.application.OrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.application.OrdemServicoResponse;
@@ -14,6 +15,8 @@ import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServic
 import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoResponse;
 import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoService;
 import br.com.prime.oficina.ordemservico.servicos.application.StatusServico;
+import br.com.prime.oficina.security.JwtService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -24,7 +27,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static br.com.prime.oficina.util.JsonStringUtil.toJson;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -34,10 +36,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
-class OrdemServicoControllerTest {
+class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JwtService jwtService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
     private OrdemServicoService ordemServicoService;
@@ -52,7 +59,8 @@ class OrdemServicoControllerTest {
     void testListar() throws Exception {
         when(ordemServicoService.listar()).thenReturn(List.of(criarOrdemServico()));
 
-        mockMvc.perform(get("/oficina/v1/ordens"))
+        mockMvc.perform(get("/ordens")
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -61,7 +69,8 @@ class OrdemServicoControllerTest {
     void testListarPorCliente() throws Exception {
         when(ordemServicoService.listarPorCliente(1L)).thenReturn(List.of(criarOrdemServico()));
 
-        mockMvc.perform(get("/oficina/v1/ordens/cliente/{id}", 1L))
+        mockMvc.perform(get("/ordens/cliente/{id}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -70,7 +79,8 @@ class OrdemServicoControllerTest {
     void testListarPorCodigo() throws Exception {
         when(ordemServicoService.listarPorCodigo("codigo")).thenReturn(List.of(criarOrdemServico()));
 
-        mockMvc.perform(get("/oficina/v1/ordens/codigo/{codigo}", "codigo"))
+        mockMvc.perform(get("/ordens/codigo/{codigo}", "codigo")
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -80,42 +90,52 @@ class OrdemServicoControllerTest {
         when(ordemServicoService.listarPorStatus(StatusOrdemServico.ENTREGUE))
                 .thenReturn(List.of(criarOrdemServico()));
 
-        mockMvc.perform(get("/oficina/v1/ordens/status/{status}", StatusOrdemServico.ENTREGUE))
+        mockMvc.perform(get("/ordens/status/{status}", StatusOrdemServico.ENTREGUE)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void testCriar() throws Exception {
-        when(ordemServicoService.criar(criarOrdemServicoRequest())).thenReturn(criarOrdemServico());
+        OrdemServicoRequest request = criarOrdemServicoRequest();
 
-        mockMvc.perform(post("/oficina/v1/ordens")
+        when(ordemServicoService.criar(request)).thenReturn(criarOrdemServico());
+
+        mockMvc.perform(post("/ordens")
+                        .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(criarOrdemServicoRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isCreated());
     }
 
     @Test
     void testAtualizar() throws Exception {
-        when(ordemServicoService.atualizar(1L, criarOrdemServicoRequest()))
+        OrdemServicoRequest request = criarOrdemServicoRequest();
+
+        when(ordemServicoService.atualizar(1L, request))
                 .thenReturn(criarOrdemServico());
 
-        mockMvc.perform(put("/oficina/v1/ordens/{id}", 1L)
+        mockMvc.perform(put("/ordens/{id}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(criarOrdemServicoRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void testAdicionarItem() throws Exception {
-        when(itemOrdemServicoService.adicionarItem(1L, criarItemOrdemServicoRequest()))
+        ItemOrdemServicoRequest request = criarItemOrdemServicoRequest();
+
+        when(itemOrdemServicoService.adicionarItem(1L, request))
                 .thenReturn(criarListaItensOrdemServicoResponse());
 
-        mockMvc.perform(post("/oficina/v1/ordens/{id}/itens", 1L)
+        mockMvc.perform(post("/ordens/{id}/itens", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(criarItemOrdemServicoRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -125,19 +145,23 @@ class OrdemServicoControllerTest {
         when(itemOrdemServicoService.listarItensPorOrdemServico(1L))
                 .thenReturn(criarListaItensOrdemServicoResponse());
 
-        mockMvc.perform(get("/oficina/v1/ordens/{id}/itens", 1L))
+        mockMvc.perform(get("/ordens/{id}/itens", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void testAdicionarServico() throws Exception {
-        when(servicoOrdemServicoService.adicionarServico(1L, criarServicoOrdemServicoRequest()))
+        ServicoOrdemServicoRequest request = criarServicoOrdemServicoRequest();
+
+        when(servicoOrdemServicoService.adicionarServico(1L, request))
                 .thenReturn(criarListaServicosOrdemServicoResponse());
 
-        mockMvc.perform(post("/oficina/v1/ordens/{id}/servicos", 1L)
+        mockMvc.perform(post("/ordens/{id}/servicos", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(criarServicoOrdemServicoRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -147,7 +171,8 @@ class OrdemServicoControllerTest {
         when(servicoOrdemServicoService.listarServicosPorOrdemServico(1L))
                 .thenReturn(criarListaServicosOrdemServicoResponse());
 
-        mockMvc.perform(get("/oficina/v1/ordens/{id}/servicos", 1L))
+        mockMvc.perform(get("/ordens/{id}/servicos", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -156,7 +181,8 @@ class OrdemServicoControllerTest {
     void testAprovarOrdemServico() throws Exception {
         when(ordemServicoService.aprovarOrdemServico(1L)).thenReturn(criarOrdemServico());
 
-        mockMvc.perform(patch("/oficina/v1/ordens/{id}/aprovar", 1L))
+        mockMvc.perform(patch("/ordens/{id}/aprovar", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -165,7 +191,8 @@ class OrdemServicoControllerTest {
     void testReprovarOrdemServico() throws Exception {
         when(ordemServicoService.reprovarOrdemServico(1L)).thenReturn(criarOrdemServico());
 
-        mockMvc.perform(patch("/oficina/v1/ordens/{id}/reprovar", 1L))
+        mockMvc.perform(patch("/ordens/{id}/reprovar", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -174,7 +201,8 @@ class OrdemServicoControllerTest {
     void testIniciarDiagnostico() throws Exception {
         when(ordemServicoService.iniciarDiagnostico(1L)).thenReturn(criarOrdemServico());
 
-        mockMvc.perform(patch("/oficina/v1/ordens/{id}/iniciar-diagnostico", 1L))
+        mockMvc.perform(patch("/ordens/{id}/iniciar-diagnostico", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -183,7 +211,8 @@ class OrdemServicoControllerTest {
     void testSolicitarAprovacao() throws Exception {
         when(ordemServicoService.solicitarAprovacao(1L)).thenReturn(criarOrdemServico());
 
-        mockMvc.perform(patch("/oficina/v1/ordens/{id}/solicitar-aprovacao", 1L))
+        mockMvc.perform(patch("/ordens/{id}/solicitar-aprovacao", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -193,7 +222,8 @@ class OrdemServicoControllerTest {
         when(servicoOrdemServicoService.iniciarServico(1L, 2L))
                 .thenReturn(criarServicoOrdemServicoResponse());
 
-        mockMvc.perform(patch("/oficina/v1/ordens/{id}/servicos/{servicoId}/iniciar", 1L, 2L))
+        mockMvc.perform(patch("/ordens/{id}/servicos/{servicoId}/iniciar", 1L, 2L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -203,7 +233,8 @@ class OrdemServicoControllerTest {
         when(servicoOrdemServicoService.finalizarServico(1L, 2L))
                 .thenReturn(criarServicoOrdemServicoResponse());
 
-        mockMvc.perform(patch("/oficina/v1/ordens/{id}/servicos/{servicoId}/finalizar", 1L, 2L))
+        mockMvc.perform(patch("/ordens/{id}/servicos/{servicoId}/finalizar", 1L, 2L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -212,7 +243,8 @@ class OrdemServicoControllerTest {
     void testEntregarOrdemServico() throws Exception {
         when(ordemServicoService.entregarOrdemServico(1L)).thenReturn(criarOrdemServico());
 
-        mockMvc.perform(patch("/oficina/v1/ordens/{id}/entregar", 1L))
+        mockMvc.perform(patch("/ordens/{id}/entregar", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
