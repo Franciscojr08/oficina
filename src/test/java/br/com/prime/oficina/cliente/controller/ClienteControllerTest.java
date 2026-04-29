@@ -3,7 +3,11 @@ package br.com.prime.oficina.cliente.controller;
 import br.com.prime.oficina.cliente.application.ClienteRequest;
 import br.com.prime.oficina.cliente.application.ClienteResponse;
 import br.com.prime.oficina.cliente.application.ClienteService;
+import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
+import br.com.prime.oficina.security.JwtService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -14,28 +18,42 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static br.com.prime.oficina.util.JsonStringUtil.toJson;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
-public class ClienteControllerTest {
+class ClienteControllerTest extends ControllerIntegrationTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JwtService jwtService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
 
     @MockitoBean
     private ClienteService service;
 
     @Test
     void testCriar() throws Exception {
-        when(service.criar(criarClienteRequest())).thenReturn(criarCliente());
+        ClienteRequest request = criarClienteRequest();
 
-        mockMvc.perform(post("/oficina/v1/clientes")
+        when(service.criar(request)).thenReturn(criarCliente());
+
+        mockMvc.perform(post("/clientes")
+                        .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(criarClienteRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isCreated());
     }
@@ -44,7 +62,8 @@ public class ClienteControllerTest {
     void testListar() throws Exception {
         when(service.listar()).thenReturn(List.of(criarCliente()));
 
-        mockMvc.perform(get("/oficina/v1/clientes"))
+        mockMvc.perform(get("/clientes")
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -53,27 +72,32 @@ public class ClienteControllerTest {
     void testBuscarPorId() throws Exception {
         when(service.buscarPorId(1L)).thenReturn(criarCliente());
 
-        mockMvc.perform(get("/oficina/v1/clientes/{id}", 1L))
+        mockMvc.perform(get("/clientes/{id}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void testAtualizar() throws Exception {
-        when(service.atualizar(1L, criarClienteRequest())).thenReturn((criarCliente()));
+        ClienteRequest request = criarClienteRequest();
 
-        mockMvc.perform(put("/oficina/v1/clientes/{id}", 1L)
+        when(service.atualizar(1L, request)).thenReturn(criarCliente());
+
+        mockMvc.perform(put("/clientes/{id}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(criarClienteRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void testBuscarPorDocumento() throws Exception {
-        when(service.findByCpfCnpj("12345678901")).thenReturn((criarCliente()));
+        when(service.findByCpfCnpj("12345678901")).thenReturn(criarCliente());
 
-        mockMvc.perform(get("/oficina/v1/clientes/documento/{documento}", "12345678901"))
+        mockMvc.perform(get("/clientes/documento/{documento}", "12345678901")
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -82,7 +106,8 @@ public class ClienteControllerTest {
     void testInativar() throws Exception {
         doNothing().when(service).inativar(1L);
 
-        mockMvc.perform(delete("/oficina/v1/clientes/{id}", 1L))
+        mockMvc.perform(delete("/clientes/{id}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
@@ -101,7 +126,7 @@ public class ClienteControllerTest {
                 "Petropolis",
                 "Higienopolis",
                 "MG",
-                LocalDate.of(1999, 6,26),
+                LocalDate.of(1999, 6, 26),
                 true,
                 LocalDateTime.now(),
                 LocalDateTime.now()
