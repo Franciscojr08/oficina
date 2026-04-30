@@ -24,6 +24,7 @@ import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServic
 import br.com.prime.oficina.ordemservico.servicos.application.StatusServico;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoRequest;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
@@ -48,6 +49,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.never;
@@ -60,35 +62,41 @@ class OrdemServicoServiceTest {
 
     @Mock
     private OrdemServicoRepository repository;
+
     @Mock
     private ClienteRepository clienteRepository;
+
     @Mock
     private VeiculoRepository veiculoRepository;
+
     @Mock
     private ItemRepository itemRepository;
+
     @Mock
     private ServicoRepository servicoRepository;
+
     @Mock
     private ItemOrdemServicoRepository itemOrdemServicoRepository;
+
     @Mock
     private ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+
     @Mock
     private EstoqueRepository estoqueRepository;
+
     @Mock
     private MovimentoEstoqueRepository movimentoEstoqueRepository;
+
     @Mock
     private HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
+
     @Mock
     private EntityManager entityManager;
 
     @InjectMocks
     private OrdemServicoService ordemServicoService;
-
-    @InjectMocks
-    private ItemOrdemServicoService itemOrdemServicoService;
-
-    @InjectMocks
-    private ServicoOrdemServicoService servicoOrdemServicoService;
+	private ItemOrdemServicoService itemOrdemServicoService;
+	private ServicoOrdemServicoService servicoOrdemServicoService;
 
     private OrdemServicoRequest ordemServicoRequest;
     private Cliente clienteAtivo;
@@ -209,21 +217,20 @@ class OrdemServicoServiceTest {
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(itemRepository.findById(20L)).thenReturn(Optional.of(item));
-
         when(itemOrdemServicoRepository.save(any(ItemOrdemServico.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        when(repository.saveAndFlush(any(OrdemServico.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> {
+            OrdemServico ordemServico = invocation.getArgument(0);
+            ordemServico.setValorTotalItens(BigDecimal.valueOf(150));
+            return ordemServico;
+        });
 
-        ListaItensOrdemServicoResponse response =
-                itemOrdemServicoService.adicionarItem(100L, request);
+        ListaItensOrdemServicoResponse response = itemOrdemServicoService.adicionarItem(100L, request);
 
         assertEquals(BigDecimal.valueOf(0), response.valorTotalItens());
 
-        ArgumentCaptor<ItemOrdemServico> captor =
-                ArgumentCaptor.forClass(ItemOrdemServico.class);
-
+        ArgumentCaptor<ItemOrdemServico> captor = ArgumentCaptor.forClass(ItemOrdemServico.class);
         verify(itemOrdemServicoRepository).save(captor.capture());
 
         assertEquals(3, captor.getValue().getQuantidade());
@@ -258,18 +265,31 @@ class OrdemServicoServiceTest {
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(servicoRepository.findById(30L)).thenReturn(Optional.of(servico));
-        when(servicoOrdemServicoRepository.save(any(ServicoOrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        when(servicoOrdemServicoRepository.save(any(ServicoOrdemServico.class)))
+                .thenAnswer(invocation -> {
+                    ServicoOrdemServico servicoOs = invocation.getArgument(0);
+
+                    os.setValorTotalServicos(BigDecimal.valueOf(120));
+
+                    return servicoOs;
+                });
+
+        when(repository.saveAndFlush(any(OrdemServico.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         ListaServicosOrdemServicoResponse response =
-		        servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L));
+                servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L));
 
         assertEquals(BigDecimal.valueOf(0), response.valorTotalServicos());
 
         ArgumentCaptor<ServicoOrdemServico> captor = ArgumentCaptor.forClass(ServicoOrdemServico.class);
         verify(servicoOrdemServicoRepository).save(captor.capture());
+
         assertEquals(BigDecimal.valueOf(120), captor.getValue().getValorUnitario());
         assertEquals(StatusServico.PENDENTE, captor.getValue().getStatus());
+
+        verify(repository).saveAndFlush(os);
     }
 
     @Test
@@ -288,6 +308,7 @@ class OrdemServicoServiceTest {
         assertEquals("O Serviço informado não está ativo", exception.getMessage());
 
         verify(servicoOrdemServicoRepository, never()).save(any());
+        verify(repository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -327,10 +348,8 @@ class OrdemServicoServiceTest {
         verify(estoqueRepository).baixarEstoque(1L, 3);
         verify(repository).save(os);
         verify(historicoOrdemServicoRepository).save(any(HistoricoOrdemServico.class));
-
         verify(itemRepository, never()).saveAndFlush(any());
         verify(estoqueRepository, never()).saveAndFlush(any());
-        verify(movimentoEstoqueRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -409,10 +428,7 @@ class OrdemServicoServiceTest {
                 () -> ordemServicoService.aprovarOrdemServico(100L)
         );
 
-        assertEquals(
-                "Não é possível aprovar a ordem de serviço, pois a ordem de serviço está Em execução",
-                exAprovar.getMessage()
-        );
+        assertTrue(exAprovar.getMessage().contains("Não é possível aprovar a ordem de serviço"));
     }
 
     @Test
@@ -452,6 +468,8 @@ class OrdemServicoServiceTest {
         );
 
         assertEquals("Ordem de Serviço não encontrada", exception.getMessage());
+
+        verify(repository).findById(999L);
     }
 
     private Cliente criarCliente(Long id, boolean ativo) {

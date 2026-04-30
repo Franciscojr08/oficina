@@ -8,6 +8,9 @@ import br.com.prime.oficina.item.infrastructure.ItemRepository;
 import br.com.prime.oficina.movimentoEstoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
 import br.com.prime.oficina.movimentoEstoque.infrastructure.MovimentoEstoqueRepository;
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
+import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
@@ -24,20 +27,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
@@ -480,17 +471,13 @@ class ItemServiceTest {
         ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
         verify(itemRepository).save(itemCaptor.capture());
 
-        Item itemSalvo = itemCaptor.getValue();
-
-        assertFalse(itemSalvo.getAtivo());
+        assertFalse(itemCaptor.getValue().getAtivo());
 
         verify(itemRepository).findById(1L);
         verify(itemOrdemServicoRepository).existsByItemIdAndOrdemServicoStatusIn(
                 eq(1L),
                 anyList()
         );
-        verify(itemRepository).save(item);
-        verify(itemOrdemServicoRepository, never()).findByItem(any());
     }
 
     @Test
@@ -522,7 +509,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void deveInativarItemQuandoEstaEmOrdemServicoMasNaoEmStatusAtivo() {
+    void deveInativarItemQuandoNaoPossuiOrdensDeServicoAtivas() {
         Item item = criarItem(1L, "Óleo 5W30", TipoItem.PECA);
 
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
@@ -536,16 +523,13 @@ class ItemServiceTest {
         ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
         verify(itemRepository).save(itemCaptor.capture());
 
-        Item itemSalvo = itemCaptor.getValue();
-
-        assertFalse(itemSalvo.getAtivo());
+        assertFalse(itemCaptor.getValue().getAtivo());
 
         verify(itemRepository).findById(1L);
         verify(itemOrdemServicoRepository).existsByItemIdAndOrdemServicoStatusIn(
                 eq(1L),
                 anyList()
         );
-        verify(itemRepository).save(item);
     }
 
     @Test

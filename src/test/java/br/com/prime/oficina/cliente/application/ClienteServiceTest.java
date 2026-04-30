@@ -20,25 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ClienteServiceTest {
 
     private static final String CPF_VALIDO = "52998224725";
     private static final String OUTRO_CPF_VALIDO = "39053344705";
-    private static final String TERCEIRO_CPF_VALIDO = "11144477735";
+    private static final String CPF_VALIDO_INEXISTENTE = "11144477735";
 
     @Mock
     private ClienteRepository clienteRepository;
@@ -260,7 +250,7 @@ class ClienteServiceTest {
     void deveLancarExcecaoAoAtualizarClienteInexistente() {
         ClienteRequest requestValido = new ClienteRequest(
                 "Cliente Inexistente",
-                TERCEIRO_CPF_VALIDO,
+                CPF_VALIDO_INEXISTENTE,
                 "85999999999",
                 "cliente@email.com",
                 "60000000",
@@ -298,8 +288,7 @@ class ClienteServiceTest {
         cliente.setVeiculos(new ArrayList<>(List.of(veiculo1, veiculo2)));
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(ordemServicoRepository.existsByClienteIdAndStatusIn(eq(1L), anyList()))
-                .thenReturn(false);
+        when(ordemServicoRepository.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(false);
 
         clienteService.inativar(1L);
 
@@ -321,8 +310,7 @@ class ClienteServiceTest {
         Cliente cliente = criarCliente(1L, "João da Silva", CPF_VALIDO);
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(ordemServicoRepository.existsByClienteIdAndStatusIn(eq(1L), anyList()))
-                .thenReturn(true);
+        when(ordemServicoRepository.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(true);
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
@@ -372,16 +360,16 @@ class ClienteServiceTest {
 
     @Test
     void deveLancarExcecaoAoBuscarClientePorCpfCnpjInexistente() {
-        when(clienteRepository.findByCpfCnpj(TERCEIRO_CPF_VALIDO)).thenReturn(Optional.empty());
+        when(clienteRepository.findByCpfCnpj(CPF_VALIDO_INEXISTENTE)).thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> clienteService.findByCpfCnpj(TERCEIRO_CPF_VALIDO)
+                () -> clienteService.findByCpfCnpj(CPF_VALIDO_INEXISTENTE)
         );
 
         assertEquals("Cliente não encontrado", exception.getMessage());
 
-        verify(clienteRepository).findByCpfCnpj(TERCEIRO_CPF_VALIDO);
+        verify(clienteRepository).findByCpfCnpj(CPF_VALIDO_INEXISTENTE);
     }
 
     private Cliente criarCliente(Long id, String nome, String cpfCnpj) {
