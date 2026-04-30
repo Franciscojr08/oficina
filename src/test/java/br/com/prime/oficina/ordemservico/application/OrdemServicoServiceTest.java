@@ -24,7 +24,6 @@ import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServic
 import br.com.prime.oficina.ordemservico.servicos.application.StatusServico;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
-import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoRequest;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
@@ -95,8 +94,12 @@ class OrdemServicoServiceTest {
 
     @InjectMocks
     private OrdemServicoService ordemServicoService;
-	private ItemOrdemServicoService itemOrdemServicoService;
-	private ServicoOrdemServicoService servicoOrdemServicoService;
+
+    @InjectMocks
+    private ItemOrdemServicoService itemOrdemServicoService;
+
+    @InjectMocks
+    private ServicoOrdemServicoService servicoOrdemServicoService;
 
     private OrdemServicoRequest ordemServicoRequest;
     private Cliente clienteAtivo;
