@@ -1,9 +1,11 @@
 package br.com.prime.oficina.movimentoEstoque.controller;
 
+import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.movimentoEstoque.application.MovimentoEstoqueResponse;
 import br.com.prime.oficina.movimentoEstoque.application.MovimentoEstoqueService;
 import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
+import br.com.prime.oficina.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -18,10 +20,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
-public class MovimentoEstoqueControllerTest {
+class MovimentoEstoqueControllerTest extends ControllerIntegrationTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JwtService jwtService;
 
     @MockitoBean
     private MovimentoEstoqueService service;
@@ -30,16 +35,23 @@ public class MovimentoEstoqueControllerTest {
     void testListarPorItem() throws Exception {
         when(service.listarPorItem(1L)).thenReturn(List.of(criarMovimentoEstoque()));
 
-        mockMvc.perform(get("/oficina/v1/movimentacoes-estoque/item/{itemId}", 1L))
+        mockMvc.perform(get("/movimentacoes-estoque/item/{itemId}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void testListarPorItemETipo() throws Exception {
-        when(service.listarPorItemETipo(1L, TipoMovimentoEstoque.ENTRADA)).thenReturn(List.of(criarMovimentoEstoque()));
+        when(service.listarPorItemETipo(1L, TipoMovimentoEstoque.ENTRADA))
+                .thenReturn(List.of(criarMovimentoEstoque()));
 
-        mockMvc.perform(get("/oficina/v1/movimentacoes-estoque/item/{itemId}/tipo/{tipo}", 1L, TipoMovimentoEstoque.ENTRADA))
+        mockMvc.perform(get(
+                        "/movimentacoes-estoque/item/{itemId}/tipo/{tipo}",
+                        1L,
+                        TipoMovimentoEstoque.ENTRADA
+                )
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -48,7 +60,8 @@ public class MovimentoEstoqueControllerTest {
     void testListarTodos() throws Exception {
         when(service.listarTodos()).thenReturn(List.of(criarMovimentoEstoque()));
 
-        mockMvc.perform(get("/oficina/v1/movimentacoes-estoque"))
+        mockMvc.perform(get("/movimentacoes-estoque")
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -65,5 +78,4 @@ public class MovimentoEstoqueControllerTest {
                 LocalDateTime.now()
         );
     }
-
 }
