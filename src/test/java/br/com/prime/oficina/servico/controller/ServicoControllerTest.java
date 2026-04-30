@@ -1,9 +1,12 @@
 package br.com.prime.oficina.servico.controller;
 
+import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
+import br.com.prime.oficina.security.JwtService;
 import br.com.prime.oficina.servico.application.ServicoRequest;
 import br.com.prime.oficina.servico.application.ServicoResponse;
 import br.com.prime.oficina.servico.application.ServicoService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -14,29 +17,41 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static br.com.prime.oficina.util.JsonStringUtil.toJson;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
-public class ServicoControllerTest {
+class ServicoControllerTest extends ControllerIntegrationTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JwtService jwtService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
     private ServicoService service;
 
     @Test
     void testCriar() throws Exception {
-        when(service.criar(criarServicoRequest())).thenReturn(criarServico());
+        ServicoRequest request = criarServicoRequest();
 
-        mockMvc.perform(post("/oficina/v1/servicos")
+        when(service.criar(request)).thenReturn(criarServico());
+
+        mockMvc.perform(post("/servicos")
+                        .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(criarServicoRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isCreated());
     }
@@ -45,7 +60,8 @@ public class ServicoControllerTest {
     void testListar() throws Exception {
         when(service.listar()).thenReturn(List.of(criarServico()));
 
-        mockMvc.perform(get("/oficina/v1/servicos"))
+        mockMvc.perform(get("/servicos")
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -54,18 +70,22 @@ public class ServicoControllerTest {
     void testBuscarPorId() throws Exception {
         when(service.buscarPorId(1L)).thenReturn(criarServico());
 
-        mockMvc.perform(get("/oficina/v1/servicos/{id}", 1L))
+        mockMvc.perform(get("/servicos/{id}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void testAtualizar() throws Exception {
-        when(service.atualizar(1L, criarServicoRequest())).thenReturn(criarServico());
+        ServicoRequest request = criarServicoRequest();
 
-        mockMvc.perform(put("/oficina/v1/servicos/{id}", 1L)
+        when(service.atualizar(1L, request)).thenReturn(criarServico());
+
+        mockMvc.perform(put("/servicos/{id}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(criarServicoRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -74,9 +94,10 @@ public class ServicoControllerTest {
     void testInativar() throws Exception {
         doNothing().when(service).inativar(1L);
 
-        mockMvc.perform(delete("/oficina/v1/servicos/{id}", 1L))
+        mockMvc.perform(delete("/servicos/{id}", 1L)
+                        .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(service, times(1)).inativar(1L);
     }
