@@ -25,7 +25,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION trigger_atribuir_codigo_os()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.codigo IS NULL OR NEW.codigo = '' THEN
+    IF NEW.codigo IS NULL THEN
         NEW.codigo := calcular_proximo_codigo_os();
     END IF;
     RETURN NEW;
