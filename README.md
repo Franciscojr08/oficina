@@ -310,6 +310,10 @@ Estado atual da suite: 143 testes passando.
 - Springdoc OpenAPI para documentacao interativa.
 - Testes unitarios e testes de controller com Spring.
 
+## Documentacao DDD
+
+- [Linguagem Ubiqua](docs/ddd/linguagem-ubiqua.md)
+
 ## Solucao de problemas
 
 ### Porta 5432 ja esta em uso
