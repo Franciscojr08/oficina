@@ -4,9 +4,9 @@ import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
 import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
 import br.com.prime.oficina.item.domain.Item;
-import br.com.prime.oficina.movimentoEstoque.domain.MovimentoEstoque;
-import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoEstoque.infrastructure.MovimentoEstoqueRepository;
+import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
+import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
+import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.ordemservico.domain.HistoricoOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
@@ -28,6 +28,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
+
 @Service
 @RequiredArgsConstructor
 public class OrdemServicoService {
@@ -44,7 +46,7 @@ public class OrdemServicoService {
     @jakarta.persistence.PersistenceContext
     private jakarta.persistence.EntityManager entityManager;
 
-    private final static String SAIDA_DEFAULT_ITEM = "BAIXA DE ITEM NO ESTOQUE";
+    private static final String SAIDA_DEFAULT_ITEM = "BAIXA DE ITEM NO ESTOQUE";
 
     @Transactional(readOnly = true)
     public List<OrdemServicoResponse> listar() {
@@ -82,12 +84,12 @@ public class OrdemServicoService {
     public OrdemServicoResponse criar(OrdemServicoRequest request) {
         Cliente cliente = buscarClientePorId(request.clienteId());
 		if (!cliente.getAtivo()) {
-			throw new RegraNegocioException("O cliente informado não está ativo");
+			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 
         Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
 		if (!veiculo.getAtivo()) {
-			throw new RegraNegocioException("O Veículo informado não está ativo");
+			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
 		}
 
         OrdemServico ordemServico = new OrdemServico();
@@ -117,12 +119,12 @@ public class OrdemServicoService {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
         Cliente cliente = buscarClientePorId(request.clienteId());
 		if (!cliente.getAtivo()) {
-			throw new RegraNegocioException("O cliente informado não está ativo");
+			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 
         Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
 		if (!veiculo.getAtivo()) {
-			throw new RegraNegocioException("O Veículo informado não está ativo");
+			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
 		}
 
         preencherOrdemServico(ordemServico, request, veiculo, cliente);
@@ -148,7 +150,7 @@ public class OrdemServicoService {
 			);
 
 			if (atualizado == 0) {
-				throw new RegraNegocioException("Estoque insuficiente para o item: " + item.getNome());
+				throw new RegraNegocioException(NOT_ENOUGH_STOCK_ITEM + item.getNome());
 			}
 
 			MovimentoEstoque movimento = new MovimentoEstoque();
@@ -215,17 +217,17 @@ public class OrdemServicoService {
 
     private Cliente buscarClientePorId(Long clienteId) {
         return clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
     }
 
     private Veiculo buscarVeiculoPorId(Long id) {
         return veiculoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Veículo não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
     }
 
     private OrdemServico buscarOrdemServicoPorId(Long id) {
         return ordemServicoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de Serviço não encontrada"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_ORDER_NOT_FOUND));
     }
 
     private void preencherOrdemServico(

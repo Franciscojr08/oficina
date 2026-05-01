@@ -16,6 +16,8 @@ import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
+
 @Service
 @RequiredArgsConstructor
 public class ClienteService {
@@ -46,7 +48,7 @@ public class ClienteService {
 	@Transactional(readOnly = true)
 	public ClienteResponse buscarPorId(Long id) {
 		Cliente cliente = clienteRepository.findById(id)
-				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 		return toResponse(cliente);
 	}
 
@@ -55,11 +57,11 @@ public class ClienteService {
 		validarCpfCnpj(request.cpfCnpj());
 
 		Cliente cliente = clienteRepository.findById(id)
-				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 
 		if (!cliente.getCpfCnpj().equals(request.cpfCnpj())
 				&& clienteRepository.existsByCpfCnpj(request.cpfCnpj())) {
-			throw new RegraNegocioException("Já existe cliente cadastrado com este CPF/CNPJ");
+			throw new RegraNegocioException(EXISTING_CUSTOMER);
 		}
 
 		setDadosCliente(request,cliente);
@@ -84,7 +86,7 @@ public class ClienteService {
 	@Transactional
 	public void inativar(Long id) {
 		Cliente cliente = clienteRepository.findById(id)
-				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 
 		boolean possuiOrdemAtiva = ordemServicoRepository
 				.existsByClienteIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
@@ -107,14 +109,14 @@ public class ClienteService {
 	@Transactional(readOnly = true)
 	public ClienteResponse findByCpfCnpj(String cpfCnpj) {
 		Cliente cliente = clienteRepository.findByCpfCnpj(cpfCnpj)
-				.orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 
 		return toResponse(cliente);
 	}
 
 	private void validarCpfCnpjDuplicado(String cpfCnpj) {
 		if (clienteRepository.existsByCpfCnpj(cpfCnpj)) {
-			throw new RegraNegocioException("Já existe cliente cadastrado com este CPF/CNPJ");
+			throw new RegraNegocioException(EXISTING_CUSTOMER);
 		}
 	}
 
@@ -124,14 +126,14 @@ public class ClienteService {
 		if (valor.length() == 11) {
 			boolean cpfValido = ValidadorCPF.isValido(cpfCnpj);
 			if (!cpfValido) {
-				throw new RegraNegocioException("CPF inválido");
+				throw new RegraNegocioException(INVALID_PERSON_DOCUMENT);
 			}
 		}
 
 		if (valor.length() == 14) {
 			boolean cnpjValido = ValidadorCNPJ.isValido(valor);
 			if (!cnpjValido) {
-				throw new RegraNegocioException("CNPJ inválido");
+				throw new RegraNegocioException(INVALID_COMPANY_DOCUMENT);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 package br.com.prime.oficina.security.domain;
 
-import br.com.prime.oficina.auth.gestaoUsuarios.domain.Usuario;
+import br.com.prime.oficina.auth.gestaousuarios.domain.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
