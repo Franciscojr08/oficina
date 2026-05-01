@@ -368,6 +368,7 @@ Estado atual da suite: 143 testes passando.
 ## Documentacao DDD
 
 - [Linguagem Ubiqua](docs/ddd/linguagem-ubiqua.md)
+- Event Storming de pecas, servicos e ordem de servico: https://miro.com/app/board/uXjVGgeRsuQ=/?share_link_id=397857444241
 
 ## Solucao de problemas
 
