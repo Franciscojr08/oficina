@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:15
     container_name: postgres_oficina
-    restart: always
+    restart: on-failure
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -26,7 +26,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET}
       SECURITY_JWT_EXPIRATION: ${SECURITY_JWT_EXPIRATION}
-    restart: always
+    restart: on-failure
 
 volumes:
   postgres_data:
