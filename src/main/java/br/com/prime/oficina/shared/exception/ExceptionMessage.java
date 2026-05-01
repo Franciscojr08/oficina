@@ -2,6 +2,10 @@ package br.com.prime.oficina.shared.exception;
 
 public class ExceptionMessage {
 
+    private ExceptionMessage() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static final String CUSTOMER_NOT_FOUND = "Cliente não encontrado";
     public static final String VEHICLE_NOT_FOUND = "Veículo não encontrado";
     public static final String SERVICE_ORDER_NOT_FOUND = "Ordem de serviço não encontrada";
