@@ -1,5 +1,7 @@
-package br.com.prime.oficina.apipublica;
+package br.com.prime.oficina.apipublica.application;
 
+import br.com.prime.oficina.apipublica.AcompanharOrdemServicoPublicaResponse;
+import br.com.prime.oficina.apipublica.AcompanharOrdemServicoPublicaService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;

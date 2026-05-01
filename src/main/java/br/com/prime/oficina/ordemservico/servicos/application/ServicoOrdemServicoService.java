@@ -57,7 +57,7 @@ public class ServicoOrdemServicoService {
 		}
 
 		Servico servico = buscarServicoPorId(request.servicoId());
-		if (!servico.getAtivo()) {
+		if (servico.getAtivo() == Boolean.FALSE) {
 			throw new RegraNegocioException(NOT_ACTIVE_SERVICE);
 		}
 
