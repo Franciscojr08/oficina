@@ -1,10 +1,9 @@
 package br.com.prime.oficina.shared.exception;
 
-public class ExceptionMessage {
+import lombok.experimental.UtilityClass;
 
-    private ExceptionMessage() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
+@UtilityClass
+public class ExceptionMessage {
 
     public static final String CUSTOMER_NOT_FOUND = "Cliente não encontrado";
     public static final String VEHICLE_NOT_FOUND = "Veículo não encontrado";
