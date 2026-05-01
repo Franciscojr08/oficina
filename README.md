@@ -29,13 +29,13 @@ O projeto usa Docker Compose para subir o banco e a aplicacao em ambiente local.
 |-- src/
 |   |-- main/
 |   |   |-- java/br/com/prime/oficina/
-|   |   |   |-- apiPublica/
+|   |   |   |-- apipublica/
 |   |   |   |-- auth/
 |   |   |   |-- cliente/
 |   |   |   |-- config/
 |   |   |   |-- estoque/
 |   |   |   |-- item/
-|   |   |   |-- movimentoEstoque/
+|   |   |   |-- movimentoestoque/
 |   |   |   |-- ordemservico/
 |   |   |   |-- relatorio/
 |   |   |   |-- security/

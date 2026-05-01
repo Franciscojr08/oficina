@@ -1,7 +1,7 @@
 package br.com.prime.oficina.config;
 
-import br.com.prime.oficina.auth.gestaoUsuarios.domain.RoleUsuario;
-import br.com.prime.oficina.auth.gestaoUsuarios.domain.Usuario;
+import br.com.prime.oficina.auth.gestaousuarios.domain.RoleUsuario;
+import br.com.prime.oficina.auth.gestaousuarios.domain.Usuario;
 import br.com.prime.oficina.security.JwtService;
 import br.com.prime.oficina.security.domain.SecurityUserDetails;
 

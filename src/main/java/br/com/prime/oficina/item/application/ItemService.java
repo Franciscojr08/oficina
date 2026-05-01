@@ -5,9 +5,9 @@ import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.domain.TipoItem;
 import br.com.prime.oficina.item.infrastructure.ItemRepository;
-import br.com.prime.oficina.movimentoEstoque.domain.MovimentoEstoque;
-import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoEstoque.infrastructure.MovimentoEstoqueRepository;
+import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
+import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
+import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 
 @Service
 @RequiredArgsConstructor
@@ -93,7 +95,7 @@ public class ItemService {
                 request.descricao(),
                 request.unidadeMedida()
         )) {
-            throw new RegraNegocioException("Já existe item cadastrado com o mesmo tipo, descrição e unidade de medida");
+            throw new RegraNegocioException(SAME_ITEM_ERROR);
         }
 
 		item.setNome(request.nome());
@@ -130,18 +132,18 @@ public class ItemService {
 
     private void validarDuplicidade(TipoItem tipo, String descricao, String unidadeMedida) {
         if (itemRepository.existsDuplicado(tipo, descricao, unidadeMedida)) {
-            throw new RegraNegocioException("Já existe item cadastrado com o mesmo tipo, descrição e unidade de medida");
+            throw new RegraNegocioException(SAME_ITEM_ERROR);
         }
     }
 
     private Item buscarItemPorId(Long id) {
         return itemRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Item não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_NOT_FOUND));
     }
 
     private Estoque buscarEstoquePorItemId(Long itemId) {
         return estoqueRepository.findByItemId(itemId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Estoque do item não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_STOCK_ERROR));
     }
 
     private ItemResponse toResponse(Item item, Estoque estoque) {

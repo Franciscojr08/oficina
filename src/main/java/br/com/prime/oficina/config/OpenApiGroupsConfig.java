@@ -16,7 +16,7 @@ public class OpenApiGroupsConfig {
     }
 
     @Bean
-    public GroupedOpenApi gestaoUsuariosOpenApi() {
+    public GroupedOpenApi gestaousuariosOpenApi() {
         return GroupedOpenApi.builder()
                 .group("gestao-usuarios")
                 .pathsToMatch("/usuarios/**")
@@ -56,7 +56,7 @@ public class OpenApiGroupsConfig {
     }
 
     @Bean
-    public GroupedOpenApi movimentoEstoqueOpenApi() {
+    public GroupedOpenApi movimentoestoqueOpenApi() {
         return GroupedOpenApi.builder()
                 .group("movimento-estoque")
                 .pathsToMatch("/movimentacoes-estoque/**")
@@ -88,7 +88,7 @@ public class OpenApiGroupsConfig {
     }
 
     @Bean
-    public GroupedOpenApi apiPublicaOpenApi() {
+    public GroupedOpenApi apipublicaOpenApi() {
         return GroupedOpenApi.builder()
                 .group("api-publica")
                 .pathsToMatch("/public/**")

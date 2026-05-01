@@ -4,15 +4,18 @@ import br.com.prime.oficina.estoque.domain.Estoque;
 import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.infrastructure.ItemRepository;
-import br.com.prime.oficina.movimentoEstoque.domain.MovimentoEstoque;
-import br.com.prime.oficina.movimentoEstoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoEstoque.infrastructure.MovimentoEstoqueRepository;
+import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
+import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
+import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.ITEM_NOT_FOUND;
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.ITEM_STOCK_ERROR;
 
 @Service
 @RequiredArgsConstructor
@@ -74,12 +77,12 @@ public class EstoqueService {
 
 	private Item buscarItemPorId(Long itemId) {
         return itemRepository.findById(itemId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Item não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_NOT_FOUND));
     }
 
     private Estoque buscarEstoquePorItemId(Long itemId) {
         return estoqueRepository.findByItemId(itemId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Estoque do item não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_STOCK_ERROR));
     }
 
     private EstoqueResponse toResponse(Estoque estoque) {
