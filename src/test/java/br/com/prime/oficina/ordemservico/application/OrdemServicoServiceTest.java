@@ -45,6 +45,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.SERVICE_ORDER_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -470,7 +471,7 @@ class OrdemServicoServiceTest {
                 () -> ordemServicoService.aprovarOrdemServico(999L)
         );
 
-        assertEquals("Ordem de Serviço não encontrada", exception.getMessage());
+        assertEquals(SERVICE_ORDER_NOT_FOUND, exception.getMessage());
 
         verify(repository).findById(999L);
     }

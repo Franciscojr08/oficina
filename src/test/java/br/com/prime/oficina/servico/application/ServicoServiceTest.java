@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.SERVICE_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -127,7 +128,7 @@ class ServicoServiceTest {
                 () -> servicoService.buscarPorId(99L)
         );
 
-        assertEquals("Serviço não encontrado", exception.getMessage());
+        assertEquals(SERVICE_NOT_FOUND, exception.getMessage());
 
         verify(servicoRepository).findById(99L);
     }
@@ -215,7 +216,7 @@ class ServicoServiceTest {
                 () -> servicoService.atualizar(99L, request)
         );
 
-        assertEquals("Serviço não encontrado", exception.getMessage());
+        assertEquals(SERVICE_NOT_FOUND, exception.getMessage());
 
         verify(servicoRepository).findById(99L);
         verify(servicoRepository, never()).existsByNomeIgnoreCase(anyString());
@@ -301,7 +302,7 @@ class ServicoServiceTest {
                 () -> servicoService.inativar(99L)
         );
 
-        assertEquals("Serviço não encontrado", exception.getMessage());
+        assertEquals(SERVICE_NOT_FOUND, exception.getMessage());
 
         verify(servicoRepository).findById(99L);
         verify(servicoOrdemServicoRepository, never()).findByServicoId(anyLong());

@@ -43,7 +43,7 @@ public class VeiculoService {
 
 	private static void validarCliente(Cliente cliente) {
 		if (!cliente.getAtivo()) {
-			throw new RegraNegocioException(NOT_ACTIVE_ITEM);
+			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 	}
 
