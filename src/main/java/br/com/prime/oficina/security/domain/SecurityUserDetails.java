@@ -5,35 +5,45 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 
 public class SecurityUserDetails implements UserDetails {
 
-    private final Usuario usuario;
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private final String email;
+    private final String senha;
+    private final String role;
+    private final Boolean ativo;
 
     public SecurityUserDetails(Usuario usuario) {
-        this.usuario = usuario;
+        this.email = usuario.getEmail();
+        this.senha = usuario.getSenha();
+        this.role = usuario.getRole().name();
+        this.ativo = usuario.getAtivo();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     @Override
     public String getPassword() {
-        return usuario.getSenha();
+        return senha;
     }
 
     @Override
     public String getUsername() {
-        return usuario.getEmail();
+        return email;
     }
 
     @Override
     public boolean isEnabled() {
-        return Boolean.TRUE.equals(usuario.getAtivo());
+        return Boolean.TRUE.equals(ativo);
     }
 
     @Override
@@ -52,6 +62,6 @@ public class SecurityUserDetails implements UserDetails {
     }
 
     public String getRole() {
-        return usuario.getRole().name();
+        return role;
     }
 }

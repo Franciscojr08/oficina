@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -49,6 +50,7 @@ class ServicoControllerTest extends ControllerIntegrationTestSupport {
         when(service.criar(request)).thenReturn(criarServico());
 
         mockMvc.perform(post("/servicos")
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -83,6 +85,7 @@ class ServicoControllerTest extends ControllerIntegrationTestSupport {
         when(service.atualizar(1L, request)).thenReturn(criarServico());
 
         mockMvc.perform(put("/servicos/{id}", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -95,6 +98,7 @@ class ServicoControllerTest extends ControllerIntegrationTestSupport {
         doNothing().when(service).inativar(1L);
 
         mockMvc.perform(delete("/servicos/{id}", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
