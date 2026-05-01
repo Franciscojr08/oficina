@@ -83,6 +83,11 @@ public class OrdemServicoController {
 		return ResponseEntity.ok(servicoOrdemServicoService.listarServicosPorOrdemServico(id));
 	}
 
+	@PatchMapping("/{id}/iniciar-execucao")
+	public ResponseEntity<OrdemServicoResponse> iniciarExecucao(@PathVariable Long id) {
+		return ResponseEntity.ok(ordemServicoService.iniciarExecucao(id));
+	}
+
 	@PatchMapping("/{id}/aprovar")
     public ResponseEntity<OrdemServicoResponse> aprovarOrdemServico(@PathVariable Long id) {
         return ResponseEntity.ok(ordemServicoService.aprovarOrdemServico(id));

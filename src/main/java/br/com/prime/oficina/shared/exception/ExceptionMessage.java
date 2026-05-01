@@ -26,6 +26,6 @@ public class ExceptionMessage {
     public static final String INVALID_PERSON_DOCUMENT = "CPF inválido";
     public static final String INVALID_COMPANY_DOCUMENT = "CNPJ inválido";
     public static final String INVALID_VEHICLE_PLATE = "Placa inválida, não segue o padrão.";
-
-
+	public static final String INVALID_STATUS_FOR_MODIFICATION = "Status inválido para alteração";
+	public static final String SERVICE_NOT_FOUNT_FOR_ORDER = "Serviço não encontrado para essa ordem de serviço";
 }

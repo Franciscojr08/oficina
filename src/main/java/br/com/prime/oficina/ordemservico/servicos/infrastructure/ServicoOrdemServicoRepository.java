@@ -15,7 +15,7 @@ public interface ServicoOrdemServicoRepository extends JpaRepository<ServicoOrde
 
 	List<ServicoOrdemServico> findByOrdemServicoId(Long ordemServicoId);
 
-	ServicoOrdemServico findByOrdemServicoIdAndServicoId(Long ordemServicoId, Long servicoId);
+	Optional<ServicoOrdemServico> findByOrdemServicoIdAndServicoId(Long ordemServicoId, Long servicoId);
 
 	boolean existsByOrdemServicoIdAndStatusNot(Long ordemServicoId, StatusServico status);
 
@@ -24,11 +24,11 @@ public interface ServicoOrdemServicoRepository extends JpaRepository<ServicoOrde
 	List<ServicoOrdemServico> findByStatus(StatusServico status);
 
 	@Query(value = """
-		SELECT AVG(EXTRACT(EPOCH FROM (data_fim - data_inicio)) / 60)
-		FROM servico_ordem_servico
-		WHERE status = 'FINALIZADO'
-		AND data_inicio IS NOT NULL
-		AND data_fim IS NOT NULL
+	SELECT AVG(EXTRACT(EPOCH FROM (data_fim - data_inicio)) / 60)
+	FROM servico_ordem_servico
+	WHERE status = 'FINALIZADO'
+	AND data_inicio IS NOT NULL
+	AND data_fim IS NOT NULL
 	""", nativeQuery = true)
 	Double calcularTempoMedioServicosMinutos();
 }

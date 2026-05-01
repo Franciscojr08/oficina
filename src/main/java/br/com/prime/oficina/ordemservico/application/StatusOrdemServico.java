@@ -9,6 +9,8 @@ public enum StatusOrdemServico {
 	RECEBIDA("Recebida"),
 	EM_DIAGNOSTICO("Em diagnóstico"),
 	AGUARDANDO_APROVACAO("Aguardando aprovação"),
+	APROVADA("Aprovada"),
+	AGUARDANDO_ITENS("Aguardando itens"),
 	EM_EXECUCAO("Em execução"),
 	FINALIZADA("Finalizada"),
 	ENTREGUE("Entregue"),
@@ -32,5 +34,17 @@ public enum StatusOrdemServico {
 			EM_EXECUCAO,
 			FINALIZADA
 		);
+	}
+
+	public boolean deveAtualizarDatas() {
+		return switch (this) {
+			case AGUARDANDO_APROVACAO,
+				APROVADA,
+				EM_EXECUCAO,
+				FINALIZADA,
+				ENTREGUE,
+				CANCELADA -> true;
+			default -> false;
+		};
 	}
 }
