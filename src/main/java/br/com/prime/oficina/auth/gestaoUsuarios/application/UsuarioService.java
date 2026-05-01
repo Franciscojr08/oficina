@@ -17,7 +17,7 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse criar(UsuarioRequest request) {
         if (usuarioRepository.existsByEmail(request.email())) {
-            throw new RegraNegocioException("Já existe usuário cadastrado com este email");
+            throw new RegraNegocioException("Ja existe usuario cadastrado com este email");
         }
 
         Usuario usuario = new Usuario();

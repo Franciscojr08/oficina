@@ -4,7 +4,12 @@ import br.com.prime.oficina.auth.gestaoUsuarios.domain.Usuario;
 import br.com.prime.oficina.auth.gestaoUsuarios.infrastructure.UsuarioRepository;
 import br.com.prime.oficina.security.JwtService;
 import br.com.prime.oficina.security.domain.SecurityUserDetails;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +21,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
-@Tag(name = "Autenticação", description = "Endpoints de login e autenticação JWT")
+@Tag(name = "Autenticacao", description = "Endpoints de login e autenticacao JWT")
 @RequiredArgsConstructor
+@SecurityRequirements
 public class AuthController {
 
     private final UsuarioRepository usuarioRepository;
@@ -25,25 +31,45 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/login")
-    @Operation(summary = "Realizar login", description = "Autentica o usuário e retorna um token JWT")
+    @Operation(
+            summary = "Realizar login",
+            description = "Autentica o usuario e retorna um token JWT para acesso as rotas administrativas.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Login realizado com sucesso",
+                            content = @Content(
+                                    schema = @Schema(implementation = LoginResponse.class),
+                                    examples = @ExampleObject(value = """
+                                            {
+                                              "token": "eyJhbGciOiJIUzI1NiJ9...",
+                                              "tipo": "Bearer"
+                                            }
+                                            """)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "401", description = "Credenciais invalidas"),
+                    @ApiResponse(responseCode = "403", description = "Usuario inativo")
+            }
+    )
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         Usuario usuario = usuarioRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
-                        "Credenciais inválidas"
+                        "Credenciais invalidas"
                 ));
 
         if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Credenciais inválidas"
+                    "Credenciais invalidas"
             );
         }
 
         if (!Boolean.TRUE.equals(usuario.getAtivo())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Usuário inativo"
+                    "Usuario inativo"
             );
         }
 

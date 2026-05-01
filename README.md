@@ -1,100 +1,76 @@
-# 🚀 Projeto Oficina API
+# Projeto Oficina API
 
-Projeto backend desenvolvido com **Spring Boot**, utilizando **Docker**
-para facilitar a execução do ambiente.
+Backend para gestao de oficina mecanica, desenvolvido com Spring Boot e PostgreSQL.
+O projeto usa Docker Compose para subir o banco e a aplicacao em ambiente local.
 
-------------------------------------------------------------------------
+## Tecnologias
 
-## 📦 Tecnologias
+- Java 17+
+- Spring Boot
+- Maven Wrapper
+- Docker
+- Docker Compose
+- PostgreSQL
+- Flyway
+- Spring Security com JWT
+- Springdoc OpenAPI
 
--   Java 17+
--   Spring Boot
--   Maven (Wrapper incluído)
--   Docker
--   Docker Compose
--   PostgreSQL
-
-------------------------------------------------------------------------
-
-## 📁 Estrutura do Projeto
+## Estrutura
 
 ```text
 .
-├── .mvn/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── br/com/prime/oficina/
-│   │   │       ├── auth/
-│   │   │       │   ├── controller/
-│   │   │       │   │   └── AuthController.java
-│   │   │       │   ├── gestaoUsuarios/
-│   │   │       │   │   ├── application/
-│   │   │       │   │   ├── controller/
-│   │   │       │   │   ├── domain/
-│   │   │       │   │   └── infrastructure/
-│   │   │       │   ├── LoginRequest.java
-│   │   │       │   └── LoginResponse.java
-│   │   │       ├── cliente/
-│   │   │       ├── config/
-│   │   │       │   ├── OpenApiConfig.java
-│   │   │       │   └── SecurityConfig.java
-│   │   │       ├── estoque/
-│   │   │       ├── item/
-│   │   │       ├── movimentoEstoque/
-│   │   │       ├── ordemServico/
-│   │   │       ├── security/
-│   │   │       │   ├── JwtAuthenticationFilter.java
-│   │   │       │   ├── JwtService.java
-│   │   │       │   ├── CustomUserDetailsService.java
-│   │   │       │   └── domain/
-│   │   │       │       └── SecurityUserDetails.java
-│   │   │       ├── servico/
-│   │   │       ├── shared/
-│   │   │       ├── veiculo/
-│   │   │       └── OficinaApplication.java
-│   │   └── resources/
-│   │       ├── db/migration/
-│   │       ├── application.properties
-│   │       └── application-docker.properties
-│   └── test/
-├── Dockerfile
-├── docker-compose.yml
-├── mvnw
-├── mvnw.cmd
-├── pom.xml
-└── README.md
+|-- src/
+|   |-- main/
+|   |   |-- java/br/com/prime/oficina/
+|   |   |   |-- apiPublica/
+|   |   |   |-- auth/
+|   |   |   |-- cliente/
+|   |   |   |-- config/
+|   |   |   |-- estoque/
+|   |   |   |-- item/
+|   |   |   |-- movimentoEstoque/
+|   |   |   |-- ordemservico/
+|   |   |   |-- relatorio/
+|   |   |   |-- security/
+|   |   |   |-- servico/
+|   |   |   |-- shared/
+|   |   |   `-- veiculo/
+|   |   `-- resources/
+|   |       |-- db/migration/
+|   |       |-- application.properties
+|   |       |-- application-docker.properties
+|   |       `-- application-test.properties
+|   `-- test/
+|-- Dockerfile
+|-- docker-compose.yml
+|-- mvnw
+|-- mvnw.cmd
+|-- pom.xml
+`-- README.md
+```
 
-## 🔐 Autenticação e Segurança
+## Autenticacao e seguranca
 
-O projeto utiliza autenticação JWT para proteger as rotas administrativas.
+As rotas administrativas usam autenticacao JWT.
 
-### Fluxo de autenticação
+Fluxo:
 
-1. O usuário realiza login no endpoint `/auth/login`
-2. A API valida email e senha
-3. A API retorna um token JWT
-4. O token deve ser enviado nas próximas requisições no header:
+1. O usuario faz login em `POST /oficina/v1/auth/login`.
+2. A API valida email e senha.
+3. A API retorna um token JWT.
+4. O token deve ser enviado nas proximas requisicoes:
 
-A aplicação cria um usuário administrador inicial via migration do banco.
+```http
+Authorization: Bearer <token>
+```
 
-### Credenciais iniciais
+Rotas publicas ficam em `/oficina/v1/public/**` e nao exigem token.
 
-- **Email:** `admin@oficina.com`
-- **Senha:** admin
+## Variaveis de ambiente
 
-A partir do token retornado da api de login será possível acessar as rotas administrativas.
+Crie um arquivo `.env` na raiz do projeto:
 
-------------------------------------------------------------------------
-
-## ▶️ Como rodar o projeto
-
-### 🐳 Usando Docker (RECOMENDADO)
-
-> Pré-requisito: Docker e Docker Compose instalados
-
-Criar um arquivo .env na raiz do projeto
-``` bash
+```bash
 POSTGRES_DB=oficina
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
@@ -107,47 +83,96 @@ SECURITY_JWT_SECRET=jwt-docker-secret-123456789012345678901234567890
 SECURITY_JWT_EXPIRATION=7200000
 ```
 
-1.  Suba os containers:
+## Como rodar com Docker
 
-``` bash
+Suba banco e aplicacao:
+
+```bash
 docker-compose up --build -d
 ```
 
-Para verificar os containers:
-``` bash
+Verifique os containers:
+
+```bash
 docker ps
 ```
 
-Para acompanhar os logs da aplicação:
-``` bash
+Acompanhe os logs:
+
+```bash
 docker logs -f app_oficina
 ```
 
-------------------------------------------------------------------------
-Caso rode local: Suba apenas o banco
-``` bash
-docker-compose up -d postgres
-```
+Para parar:
 
-
-2.  Documentação disponível em:
-
-```{=html}
-http://localhost:8080/oficina/v1/swagger-ui/index.html#/
-```
-
-3.  Para parar os containers:
-
-``` bash
+```bash
 docker-compose down
 ```
 
-------------------------------------------------------------------------
+## Como rodar localmente
 
-## 🗄️ Banco de Dados
+Suba apenas o PostgreSQL:
 
-O projeto utiliza **PostgreSQL** via Docker.
+```bash
+docker-compose up -d postgres
+```
 
-As configurações estão no:
+Execute a aplicacao:
 
-    docker-compose.yml
+```bash
+./mvnw spring-boot:run
+```
+
+No Windows:
+
+```bash
+.\mvnw.cmd spring-boot:run
+```
+
+## Documentacao OpenAPI
+
+Swagger UI:
+
+```text
+http://localhost:8080/oficina/v1/swagger-ui/index.html#/
+```
+
+OpenAPI JSON:
+
+```text
+http://localhost:8080/oficina/v1/api-docs
+```
+
+A documentacao esta organizada por grupos:
+
+- `autenticacao`
+- `gestao-usuarios`
+- `cliente`
+- `veiculo`
+- `servico`
+- `item`
+- `movimento-estoque`
+- `estoque`
+- `ordem-servico`
+- `relatorio`
+- `api-publica`
+
+## Testes
+
+Execute:
+
+```bash
+./mvnw test
+```
+
+No Windows:
+
+```bash
+.\mvnw.cmd test
+```
+
+Relatorio de cobertura JaCoCo:
+
+```text
+target/site/jacoco/index.html
+```

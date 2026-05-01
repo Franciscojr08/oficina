@@ -80,6 +80,14 @@ public class OpenApiGroupsConfig {
     }
 
     @Bean
+    public GroupedOpenApi relatorioOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("relatorio")
+                .pathsToMatch("/relatorios/**")
+                .build();
+    }
+
+    @Bean
     public GroupedOpenApi apiPublicaOpenApi() {
         return GroupedOpenApi.builder()
                 .group("api-publica")

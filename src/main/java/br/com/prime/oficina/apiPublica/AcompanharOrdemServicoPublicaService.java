@@ -6,8 +6,6 @@ import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class AcompanharOrdemServicoPublicaService {
@@ -16,7 +14,7 @@ public class AcompanharOrdemServicoPublicaService {
 
     public AcompanharOrdemServicoPublicaResponse acompanharPorCodigo(String codigo) {
         OrdemServico ordemServico = ordemServicoRepository.findByCodigo(codigo)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de serviço não encontrada"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de servico nao encontrada"));
 
         return toResponse(ordemServico);
     }
