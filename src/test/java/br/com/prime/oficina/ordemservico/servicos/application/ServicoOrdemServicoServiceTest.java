@@ -44,7 +44,7 @@ class ServicoOrdemServicoServiceTest {
     void testIniciarServico() {
         ServicoOrdemServico servicoOS = criarServicoOrdemServico();
         when(ordemServicoRepository.findById(anyLong())).thenReturn(Optional.of(criarOrdemServico()));
-        when(repository.findByOrdemServicoIdAndServicoId(anyLong(), anyLong())).thenReturn(servicoOS);
+        when(repository.findByOrdemServicoIdAndServicoId(anyLong(), anyLong())).thenReturn(Optional.of(servicoOS));
         when(repository.save(any(ServicoOrdemServico.class))).thenReturn(servicoOS);
 
         var out = service.iniciarServico(1L, 2L);
@@ -68,7 +68,7 @@ class ServicoOrdemServicoServiceTest {
         servicoOS.setStatus(StatusServico.INICIADO);
         ServicoOrdemServicoResponse response = criarServicoOrdemServicoResponseFinalizado();
         when(ordemServicoRepository.findById(anyLong())).thenReturn(Optional.of(criarOrdemServico()));
-        when(repository.findByOrdemServicoIdAndServicoId(anyLong(), anyLong())).thenReturn(servicoOS);
+        when(repository.findByOrdemServicoIdAndServicoId(anyLong(), anyLong())).thenReturn(Optional.of(servicoOS));
         when(repository.save(any(ServicoOrdemServico.class))).thenReturn(servicoOS);
 
         var out = service.finalizarServico(1L, 2L);
