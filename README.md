@@ -355,6 +355,14 @@ target/site/jacoco/index.html
 
 Estado atual da suite: 143 testes passando.
 
+## Relatorios de qualidade e seguranca
+
+Os relatorios gerados para avaliacao do projeto estao disponiveis em `docs/relatorios`:
+
+- [Relatorio JaCoCo](docs/relatorios/jacoco-relatorio.png): evidencia da cobertura de testes.
+- [Relatorio Sonar](docs/relatorios/relatoriosonar.pdf): analise estatica de qualidade do codigo.
+- [Relatorio OWASP ZAP](<docs/relatorios/ZAP Scanning Report.pdf>): analise dinamica de seguranca da API.
+
 ## Decisoes tecnicas
 
 - Organizacao por modulos de dominio, como `cliente`, `veiculo`, `ordemservico`, `estoque` e `auth`.
