@@ -83,12 +83,12 @@ public class OrdemServicoService {
     @Transactional
     public OrdemServicoResponse criar(OrdemServicoRequest request) {
         Cliente cliente = buscarClientePorId(request.clienteId());
-		if (!cliente.getAtivo()) {
+		if (cliente.getAtivo() == Boolean.FALSE) {
 			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 
         Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
-		if (!veiculo.getAtivo()) {
+		if (veiculo.getAtivo() == Boolean.FALSE) {
 			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
 		}
 
@@ -118,12 +118,12 @@ public class OrdemServicoService {
     public OrdemServicoResponse atualizar(Long id, OrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
         Cliente cliente = buscarClientePorId(request.clienteId());
-		if (!cliente.getAtivo()) {
+		if (cliente.getAtivo() == Boolean.FALSE) {
 			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 
         Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
-		if (!veiculo.getAtivo()) {
+		if (veiculo.getAtivo() == Boolean.FALSE) {
 			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
 		}
 

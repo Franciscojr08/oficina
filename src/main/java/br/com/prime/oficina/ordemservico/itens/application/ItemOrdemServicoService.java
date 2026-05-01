@@ -56,7 +56,7 @@ public class ItemOrdemServicoService {
 		Item item = buscarItemPorId(request.itemId());
 		Estoque estoque = item.getEstoque();
 
-		if (!item.getAtivo()) {
+		if (item.getAtivo() == Boolean.FALSE) {
 			throw new RegraNegocioException(NOT_ACTIVE_ITEM);
 		}
 
