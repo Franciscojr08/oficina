@@ -346,7 +346,6 @@ class OrdemServicoServiceTest {
     }
 
     @Test
-    @Disabled
     void naoDeveAprovarOrdemServicoQuandoEstoqueForInsuficiente() {
         OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.AGUARDANDO_APROVACAO);
         Item item = criarItem(20L, true, BigDecimal.valueOf(50));
@@ -361,6 +360,7 @@ class OrdemServicoServiceTest {
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(itemOrdemServicoRepository.findByOrdemServicoId(100L)).thenReturn(List.of(itemOs));
         when(estoqueRepository.baixarEstoque(1L, 3)).thenReturn(0);
+        when(estoqueRepository.temEstoqueCompletoParaOrdem(anyLong())).thenReturn(true);
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
@@ -372,7 +372,7 @@ class OrdemServicoServiceTest {
         verify(estoqueRepository).baixarEstoque(1L, 3);
         verify(movimentoEstoqueRepository, never()).save(any());
         verify(repository, never()).save(any());
-        verify(historicoOrdemServicoRepository, never()).save(any());
+        verify(historicoOrdemServicoRepository, times(1)).save(any());
     }
 
     @Test
