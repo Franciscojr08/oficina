@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -104,6 +105,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
 
         mockMvc.perform(post("/ordens")
                         .header("Authorization", bearerTokenAdmin(jwtService))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -118,6 +120,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
                 .thenReturn(criarOrdemServico());
 
         mockMvc.perform(put("/ordens/{id}", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -133,6 +136,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
                 .thenReturn(criarListaItensOrdemServicoResponse());
 
         mockMvc.perform(post("/ordens/{id}/itens", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -159,6 +163,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
                 .thenReturn(criarListaServicosOrdemServicoResponse());
 
         mockMvc.perform(post("/ordens/{id}/servicos", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -182,6 +187,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
         when(ordemServicoService.aprovarOrdemServico(1L)).thenReturn(criarOrdemServico());
 
         mockMvc.perform(patch("/ordens/{id}/aprovar", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -192,6 +198,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
         when(ordemServicoService.reprovarOrdemServico(1L)).thenReturn(criarOrdemServico());
 
         mockMvc.perform(patch("/ordens/{id}/reprovar", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -202,6 +209,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
         when(ordemServicoService.iniciarDiagnostico(1L)).thenReturn(criarOrdemServico());
 
         mockMvc.perform(patch("/ordens/{id}/iniciar-diagnostico", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -212,6 +220,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
         when(ordemServicoService.solicitarAprovacao(1L)).thenReturn(criarOrdemServico());
 
         mockMvc.perform(patch("/ordens/{id}/solicitar-aprovacao", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -223,6 +232,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
                 .thenReturn(criarServicoOrdemServicoResponse());
 
         mockMvc.perform(patch("/ordens/{id}/servicos/{servicoId}/iniciar", 1L, 2L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -234,6 +244,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
                 .thenReturn(criarServicoOrdemServicoResponse());
 
         mockMvc.perform(patch("/ordens/{id}/servicos/{servicoId}/finalizar", 1L, 2L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -244,6 +255,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
         when(ordemServicoService.entregarOrdemServico(1L)).thenReturn(criarOrdemServico());
 
         mockMvc.perform(patch("/ordens/{id}/entregar", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isOk());

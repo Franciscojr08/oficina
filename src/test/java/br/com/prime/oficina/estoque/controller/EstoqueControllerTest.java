@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -63,6 +64,7 @@ class EstoqueControllerTest extends ControllerIntegrationTestSupport {
         when(service.atualizarPorItem(1L, request)).thenReturn(criarEstoque());
 
         mockMvc.perform(put("/estoques/item/{itemId}", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

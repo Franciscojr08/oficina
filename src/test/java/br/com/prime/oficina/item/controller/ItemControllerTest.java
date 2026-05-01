@@ -23,6 +23,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -51,6 +52,7 @@ class ItemControllerTest extends ControllerIntegrationTestSupport {
         when(service.criar(request)).thenReturn(criarItem());
 
         mockMvc.perform(post("/itens")
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -95,6 +97,7 @@ class ItemControllerTest extends ControllerIntegrationTestSupport {
         when(service.atualizar(1L, request)).thenReturn(criarItem());
 
         mockMvc.perform(put("/itens/{id}", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -107,6 +110,7 @@ class ItemControllerTest extends ControllerIntegrationTestSupport {
         doNothing().when(service).inativar(1L);
 
         mockMvc.perform(delete("/itens/{id}", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
