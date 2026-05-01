@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
@@ -83,12 +84,12 @@ public class OrdemServicoService {
     @Transactional
     public OrdemServicoResponse criar(OrdemServicoRequest request) {
         Cliente cliente = buscarClientePorId(request.clienteId());
-		if (cliente.getAtivo() == Boolean.FALSE) {
+		if (Boolean.FALSE.equals(cliente.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 
         Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
-		if (veiculo.getAtivo() == Boolean.FALSE) {
+		if (Boolean.FALSE.equals(veiculo.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
 		}
 
@@ -110,7 +111,7 @@ public class OrdemServicoService {
 		HistoricoOrdemServico historicoOrdemServico = new HistoricoOrdemServico();
 		historicoOrdemServico.setOrdemServico(ordemServico);
 		historicoOrdemServico.setStatus(status);
-		historicoOrdemServico.setObservacao("OS cadastrada");
+		historicoOrdemServico.setObservacao(status.getDescricao());
 		historicoOrdemServicoRepository.save(historicoOrdemServico);
 	}
 
@@ -118,12 +119,12 @@ public class OrdemServicoService {
     public OrdemServicoResponse atualizar(Long id, OrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
         Cliente cliente = buscarClientePorId(request.clienteId());
-		if (cliente.getAtivo() == Boolean.FALSE) {
+		if (Boolean.FALSE.equals(cliente.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 
         Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
-		if (veiculo.getAtivo() == Boolean.FALSE) {
+		if (Boolean.FALSE.equals(veiculo.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
 		}
 
@@ -134,41 +135,78 @@ public class OrdemServicoService {
     }
 
 	@Transactional
-    public OrdemServicoResponse aprovarOrdemServico(Long id) {
-        OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+	public OrdemServicoResponse aprovarOrdemServico(Long id) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_APROVACAO, "aprovar a ordem de serviço");
+		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_APROVACAO,
+				"aprovar a ordem de serviço");
 
-		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoRepository.findByOrdemServicoId(id);
+		atualizarStatus(ordemServico, StatusOrdemServico.APROVADA);
 
-		for (ItemOrdemServico itemOrdemServico : itemOrdemServicoList) {
+		return processarOrdemParaExecucao(id);
+	}
+
+	@Transactional
+	public OrdemServicoResponse iniciarExecucao(Long id) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS,
+				"iniciar execução");
+
+		return processarOrdemParaExecucao(id);
+	}
+
+	private OrdemServicoResponse processarOrdemParaExecucao(Long id) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		List<ItemOrdemServico> itens = itemOrdemServicoRepository.findByOrdemServicoId(id);
+
+		boolean temEstoqueCompleto = estoqueRepository.temEstoqueCompletoParaOrdem(id);
+
+		if (!temEstoqueCompleto) {
+			atualizarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS);
+			return toResponse(ordemServico);
+		}
+
+		processarBaixasDeEstoque(itens, ordemServico);
+		atualizarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO);
+
+		return toResponse(ordemServico);
+	}
+
+	private void processarBaixasDeEstoque(List<ItemOrdemServico> itens, OrdemServico ordemServico) {
+		List<MovimentoEstoque> movimentos = new ArrayList<>(itens.size());
+
+		for (ItemOrdemServico itemOrdemServico : itens) {
 			Item item = itemOrdemServico.getItem();
+			Long estoqueId = item.getEstoque().getId();
+			int quantidade = itemOrdemServico.getQuantidade();
 
-			int atualizado = estoqueRepository.baixarEstoque(
-				item.getEstoque().getId(),
-				itemOrdemServico.getQuantidade()
-			);
+			int atualizado = estoqueRepository.baixarEstoque(estoqueId, quantidade);
 
 			if (atualizado == 0) {
 				throw new RegraNegocioException(NOT_ENOUGH_STOCK_ITEM + item.getNome());
 			}
 
-			MovimentoEstoque movimento = new MovimentoEstoque();
-			movimento.setItem(item);
-			movimento.setTipo(TipoMovimentoEstoque.SAIDA);
-			movimento.setQuantidade(itemOrdemServico.getQuantidade());
-			movimento.setOrdemServicoId(ordemServico.getId());
-			movimento.setObservacao(SAIDA_DEFAULT_ITEM);
-
-			movimentoEstoqueRepository.save(movimento);
+			MovimentoEstoque movimento = criarMovimentoEstoque(item, quantidade, ordemServico.getId());
+			movimentos.add(movimento);
 		}
 
-		atualizarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO);
+		movimentoEstoqueRepository.saveAll(movimentos);
+	}
 
-        return toResponse(ordemServico);
-    }
+	private MovimentoEstoque criarMovimentoEstoque(Item item, int quantidade, Long ordemServicoId) {
+		MovimentoEstoque movimento = new MovimentoEstoque();
+		movimento.setItem(item);
+		movimento.setTipo(TipoMovimentoEstoque.SAIDA);
+		movimento.setQuantidade(quantidade);
+		movimento.setOrdemServicoId(ordemServicoId);
+		movimento.setObservacao(SAIDA_DEFAULT_ITEM);
+		movimento.setDataMovimentacao(LocalDateTime.now());
+		return movimento;
+	}
 
-    @Transactional
+	@Transactional
     public OrdemServicoResponse reprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
@@ -253,6 +291,13 @@ public class OrdemServicoService {
 	}
 
 	public OrdemServicoResponse solicitarAprovacao(Long id) {
+		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoRepository.findByOrdemServicoId(id);
+		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
+
+		if (itemOrdemServicoList.isEmpty() || servicoOrdemServicoList.isEmpty()) {
+			throw new RegraNegocioException("A OS deve possuir ao menos uma peça e um serviço para solicitar aprovação");
+		}
+
 		return alterarStatus(
 			id,
 			StatusOrdemServico.EM_DIAGNOSTICO,
@@ -286,22 +331,24 @@ public class OrdemServicoService {
 
 	public void atualizarStatus(OrdemServico os, StatusOrdemServico status) {
 		os.setStatus(status);
-		aplicarRegrasDeStatus(os, status);
 
-		ordemServicoRepository.save(os);
+		if (status.deveAtualizarDatas()) {
+			aplicarRegrasDeStatus(os, status);
+		}
+
+		ordemServicoRepository.saveAndFlush(os);
 		salvarHistorico(os, status);
 	}
 
 	private void aplicarRegrasDeStatus(OrdemServico os, StatusOrdemServico status) {
 		switch (status) {
 			case AGUARDANDO_APROVACAO -> os.setDataEnvioAprovacao(LocalDateTime.now());
-			case EM_EXECUCAO -> {
-				os.setDataAprovacao(LocalDateTime.now());
-				os.setDataInicioExecucao(LocalDateTime.now());
-			}
+			case APROVADA -> os.setDataAprovacao(LocalDateTime.now());
+			case EM_EXECUCAO -> os.setDataInicioExecucao(LocalDateTime.now());
 			case FINALIZADA -> os.setDataFimExecucao(LocalDateTime.now());
 			case ENTREGUE -> os.setDataEntregue(LocalDateTime.now());
 			case CANCELADA -> os.setDataCancelada(LocalDateTime.now());
+			default -> throw new RegraNegocioException(INVALID_STATUS_FOR_MODIFICATION);
 		}
 	}
 }

@@ -19,4 +19,14 @@ public interface EstoqueRepository extends JpaRepository<Estoque, Long> {
         WHERE e.id = :id AND e.quantidade >= :qtd
     """)
 	int baixarEstoque(@Param("id") Long id, @Param("qtd") int qtd);
+
+	@Query("""
+        SELECT CASE WHEN COUNT(ios) = 0 THEN true ELSE false END
+        FROM ItemOrdemServico ios
+        JOIN ios.item i
+        JOIN i.estoque e
+        WHERE ios.ordemServico.id = :ordemServicoId
+        AND e.quantidade < ios.quantidade
+    """)
+	boolean temEstoqueCompletoParaOrdem(@Param("ordemServicoId") Long ordemServicoId);
 }
