@@ -61,7 +61,7 @@ public class RelatorioService {
 			partes.add(anos + (anos == 1 ? " ano" : " anos"));
 		}
 		if (meses > 0) {
-			partes.add(meses + (meses == 1 ? " mês" : " meses"));
+			partes.add(meses + (meses == 1 ? " mes" : " meses"));
 		}
 		if (dias > 0) {
 			partes.add(dias + (dias == 1 ? " dia" : " dias"));
