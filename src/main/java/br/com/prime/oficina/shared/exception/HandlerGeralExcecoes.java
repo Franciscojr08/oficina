@@ -7,19 +7,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class HandlerException {
+public class HandlerGeralExcecoes {
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ProblemDetail handleRecursoNaoEncontrado(RecursoNaoEncontradoException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-        problemDetail.setTitle("Recurso não encontrado");
+        problemDetail.setTitle("Recurso nao encontrado");
         return problemDetail;
     }
 
     @ExceptionHandler(RegraNegocioException.class)
     public ProblemDetail handleRegraNegocio(RegraNegocioException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
-        problemDetail.setTitle("Regra de negócio violada");
+        problemDetail.setTitle("Regra de negocio violada");
         return problemDetail;
     }
 
@@ -30,10 +30,10 @@ public class HandlerException {
                 .stream()
                 .findFirst()
                 .map(erro -> erro.getField() + ": " + erro.getDefaultMessage())
-                .orElse("Dados inválidos");
+                .orElse("Dados invalidos");
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, mensagem);
-        problemDetail.setTitle("Erro de validação");
+        problemDetail.setTitle("Erro de validacao");
         return problemDetail;
     }
 }
