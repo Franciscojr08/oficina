@@ -15,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.EXISTING_SERVICE;
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.SERVICE_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class ServicoService {
@@ -52,7 +55,7 @@ public class ServicoService {
 
         if (!servico.getNome().equalsIgnoreCase(request.nome())
                 && servicoRepository.existsByNomeIgnoreCase(request.nome())) {
-            throw new RegraNegocioException("Já existe serviço cadastrado com este nome");
+            throw new RegraNegocioException(EXISTING_SERVICE);
         }
 
         preencherServico(servico, request);
@@ -92,13 +95,13 @@ public class ServicoService {
 
     private void validarNomeDuplicado(String nome) {
         if (servicoRepository.existsByNomeIgnoreCase(nome)) {
-            throw new RegraNegocioException("Já existe serviço cadastrado com este nome");
+            throw new RegraNegocioException(EXISTING_SERVICE);
         }
     }
 
     private Servico buscarServicoPorId(Long id) {
         return servicoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_NOT_FOUND));
     }
 
     private void preencherServico(Servico servico, ServicoRequest request) {
