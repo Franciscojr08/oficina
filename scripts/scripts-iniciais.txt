@@ -1,0 +1,50 @@
+INSERT INTO cliente (nome, cpf_cnpj, telefone, email, cep, logradouro, bairro, cidade, uf, data_nascimento, ativo, data_criacao)
+VALUES
+    ('Mariana Oliveira Silva','12345678901','79999881122','mariana.silva@outlook.com','49032490','Avenida Beira Mar','13 de Julho','Aracaju','SE','1988-03-15',true,current_timestamp),
+    ('Carlos Eduardo Pontes','98765432100','11987654321','cadu.pontes@gmail.com','01310100','Avenida Paulista','Bela Vista','São Paulo','SP','1995-07-22',true,current_timestamp);
+
+INSERT INTO veiculo (cliente_id, placa, marca, modelo, ano, cor, observacao, ativo, data_criacao)
+VALUES
+    ( 1, 'NTA2L19', 'Honda', 'Civic', 2026, 'Cinza', 'Veículo de fábrica', true, current_timestamp),
+    ( 1, 'QPT1Y98', 'Fiat', 'Pálio', 2025, 'Branco', 'Veículo semi-novo', true, current_timestamp),
+    ( 2, 'PKG3A48', 'Volkswagen', 'Nivus', 2026, 'Azul', 'Veículo de fábrica', true, current_timestamp),
+    ( 2, 'HGT9I16', 'Chevrolet', 'Onix', 2025, 'Preto', 'Veículo semi-novo', true, current_timestamp);
+
+INSERT INTO servico (nome, descricao, valor)
+VALUES
+    ('Troca de óleo', 'Troca completa de óleo do motor', 120.00),
+    ('Alinhamento', 'Alinhamento de direção', 80.00),
+    ('Balanceamento', 'Balanceamento das rodas', 60.00),
+    ('Revisão de freios', 'Verificação e ajuste do sistema de freios', 150.00),
+    ('Troca de filtro de óleo', 'Substituição do filtro de óleo', 40.00),
+    ('Diagnóstico elétrico', 'Análise de falhas no sistema elétrico', 200.00);
+
+INSERT INTO item (nome, descricao, tipo, valor_unitario, unidade_medida, ativo, data_criacao, data_atualizacao)
+VALUES
+    ('Corra Dentada', 'Correa do alternador do motor', 'PECA', 59.90, 'un', true, '2026-04-21 20:32:57.799514', null),
+    ('Bucha de Freio', 'Bucha do freio motor', 'PECA', 19.90, 'un', true, '2026-04-21 20:33:37.061859', null),
+    ('ESTOPA', 'Estopas para limpeza', 'INSUMO', 4.90, 'PCT', true, '2026-04-21 20:35:31.871534', null),
+    ('Graxa', 'Lubrificação de peças', 'INSUMO', 19.90, 'un', true, '2026-04-21 21:37:44.292924', null);
+
+INSERT INTO estoque (quantidade, estoque_minimo, data_criacao, data_atualizacao, item_id)
+VALUES
+    ( 20, 5, '2026-04-21 20:32:57.804852', null, 1),
+    ( 15, 5, '2026-04-21 20:33:37.064419', null, 2),
+    ( 15, 5, '2026-04-21 20:35:31.873272', null, 3),
+    (15, 5, '2026-04-21 21:37:44.295176', null, 4);
+
+INSERT INTO public.movimentacao_estoque (tipo, quantidade, observacao, data_movimentacao, item_id, ordem_servico_id)
+VALUES
+    ('ENTRADA', 20, 'Cadastro inicial do item', '2026-04-21 20:32:57.809484', 1, null),
+    ('ENTRADA', 15, 'Cadastro inicial do item', '2026-04-21 20:33:37.067614', 2, null),
+    ('ENTRADA', 15, 'Cadastro inicial do item', '2026-04-21 20:35:31.874642', 3, null),
+    ('ENTRADA', 15, 'Cadastro inicial do item', '2026-04-21 21:37:44.296735', 4, null);
+
+INSERT INTO usuario (nome, email, senha, role, ativo)
+VALUES (
+           'Administrador',
+           'admin@oficina.com',
+           '$2a$12$AhsRJmiIJ3pjmnixSVyT4.BuBxZJZSZq4hdS5W9PVqaoa5DK27ggS',
+           'ADMIN',
+           TRUE
+       );

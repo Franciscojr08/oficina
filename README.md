@@ -53,6 +53,8 @@ O projeto usa Docker Compose para subir o banco e a aplicacao em ambiente local.
 |-- mvnw
 |-- mvnw.cmd
 |-- pom.xml
+|-- scripts/
+|   `-- scripts-iniciais.txt
 `-- README.md
 ```
 
@@ -73,8 +75,8 @@ Authorization: Bearer <token>
 
 Rotas publicas ficam em `/oficina/v1/public/**` e nao exigem token.
 
-> Estado atual: a migration cria a tabela de usuarios, mas nao cria um usuario administrador automaticamente.
-> Para um banco novo, crie um usuario inicial manualmente no banco ou adicione uma migration de seed antes de usar as rotas administrativas.
+O usuario administrador inicial e criado pelo script de carga inicial do banco.
+Execute `scripts/scripts-iniciais.txt` antes de usar a aplicacao em um banco novo.
 
 ### Login
 
@@ -198,12 +200,65 @@ SECURITY_JWT_SECRET=jwt-docker-secret-123456789012345678901234567890
 SECURITY_JWT_EXPIRATION=7200000
 ```
 
+## Carga inicial do banco
+
+Antes de usar a aplicacao em um banco novo, execute o arquivo:
+
+```text
+scripts/scripts-iniciais.txt
+```
+
+Esse script insere dados base para demonstracao e uso inicial da API:
+
+- clientes;
+- veiculos;
+- servicos;
+- itens;
+- estoque inicial;
+- movimentacoes iniciais de estoque;
+- usuario administrador.
+
+Credenciais do usuario administrador criado pelo script:
+
+```text
+Email: admin@oficina.com
+Senha: admin
+```
+
+### Executando no banco Docker
+
+Suba os containers para que o PostgreSQL esteja disponivel:
+
+```bash
+docker-compose up --build -d
+```
+
+Depois execute o script no container do PostgreSQL:
+
+```bash
+docker exec -i postgres_oficina psql -U postgres -d oficina < scripts/scripts-iniciais.txt
+```
+
+No Windows PowerShell, se o redirecionamento acima nao funcionar corretamente, use:
+
+```powershell
+Get-Content scripts\scripts-iniciais.txt | docker exec -i postgres_oficina psql -U postgres -d oficina
+```
+
+Execute essa carga apenas uma vez por banco novo. Rodar o script mais de uma vez pode gerar erros de duplicidade em registros que possuem restricoes unicas.
+
 ## Como rodar com Docker
 
 Suba banco e aplicacao:
 
 ```bash
 docker-compose up --build -d
+```
+
+Em um banco novo, execute a carga inicial:
+
+```powershell
+Get-Content scripts\scripts-iniciais.txt | docker exec -i postgres_oficina psql -U postgres -d oficina
 ```
 
 Verifique os containers:
@@ -300,6 +355,14 @@ target/site/jacoco/index.html
 
 Estado atual da suite: 143 testes passando.
 
+## Relatorios de qualidade e seguranca
+
+Os relatorios gerados para avaliacao do projeto estao disponiveis em `docs/relatorios`:
+
+- [Relatorio JaCoCo](docs/relatorios/jacoco-relatorio.png): evidencia da cobertura de testes.
+- [Relatorio Sonar](docs/relatorios/relatoriosonar.pdf): analise estatica de qualidade do codigo.
+- [Relatorio OWASP ZAP](<docs/relatorios/ZAP Scanning Report.pdf>): analise dinamica de seguranca da API.
+
 ## Decisoes tecnicas
 
 - Organizacao por modulos de dominio, como `cliente`, `veiculo`, `ordemservico`, `estoque` e `auth`.
@@ -309,6 +372,11 @@ Estado atual da suite: 143 testes passando.
 - JWT para autenticacao das rotas administrativas.
 - Springdoc OpenAPI para documentacao interativa.
 - Testes unitarios e testes de controller com Spring.
+
+## Documentacao DDD
+
+- [Linguagem Ubiqua](docs/ddd/linguagem-ubiqua.md)
+- Event Storming de pecas, servicos e ordem de servico: https://miro.com/app/board/uXjVGgeRsuQ=/?share_link_id=397857444241
 
 ## Solucao de problemas
 
@@ -326,7 +394,7 @@ Confirme se o arquivo `.env` esta na raiz do projeto e se os nomes das variaveis
 
 ### Erro de autenticacao em banco novo
 
-O projeto ainda nao cria um usuario administrador automaticamente. Crie um usuario inicial no banco ou adicione uma migration de seed.
+Execute `scripts/scripts-iniciais.txt` para inserir o usuario administrador inicial.
 
 ### Testes falham por conexao com banco
 
