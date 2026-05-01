@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,6 +52,7 @@ class ClienteControllerTest extends ControllerIntegrationTestSupport {
         when(service.criar(request)).thenReturn(criarCliente());
 
         mockMvc.perform(post("/clientes")
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -85,6 +87,7 @@ class ClienteControllerTest extends ControllerIntegrationTestSupport {
         when(service.atualizar(1L, request)).thenReturn(criarCliente());
 
         mockMvc.perform(put("/clientes/{id}", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -107,6 +110,7 @@ class ClienteControllerTest extends ControllerIntegrationTestSupport {
         doNothing().when(service).inativar(1L);
 
         mockMvc.perform(delete("/clientes/{id}", 1L)
+                        .with(csrf())
                         .header("Authorization", bearerTokenAdmin(jwtService)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
