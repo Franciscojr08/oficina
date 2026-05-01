@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.NOT_ACTIVE_CUSTOMER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -143,7 +144,7 @@ class VeiculoServiceTest {
                 () -> veiculoService.criar(request)
         );
 
-        assertEquals("O cliente informado não está ativo", exception.getMessage());
+        assertEquals(NOT_ACTIVE_CUSTOMER, exception.getMessage());
 
         verify(veiculoRepository).existsByPlaca("ABC1234");
         verify(clienteRepository).findById(1L);
@@ -353,7 +354,7 @@ class VeiculoServiceTest {
                 () -> veiculoService.atualizar(10L, request)
         );
 
-        assertEquals("O cliente informado não está ativo", exception.getMessage());
+        assertEquals(NOT_ACTIVE_CUSTOMER, exception.getMessage());
 
         verify(veiculoRepository).findById(10L);
         verify(clienteRepository).findById(1L);

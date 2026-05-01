@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
+
 @Service
 @RequiredArgsConstructor
 public class VeiculoService {
@@ -41,7 +43,7 @@ public class VeiculoService {
 
 	private static void validarCliente(Cliente cliente) {
 		if (!cliente.getAtivo()) {
-			throw new RegraNegocioException("O cliente informado não está ativo");
+			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 	}
 
@@ -75,7 +77,7 @@ public class VeiculoService {
 
         if (!veiculo.getPlaca().equals(request.placa())
                 && veiculoRepository.existsByPlaca(request.placa())) {
-            throw new RecursoDuplicadoException("Já existe veículo cadastrado com esta placa");
+            throw new RecursoDuplicadoException(DUPLICATED_VEHICLE);
         }
 
         preencherVeiculo(veiculo, request, cliente);
@@ -104,7 +106,7 @@ public class VeiculoService {
     @Transactional(readOnly = true)
     public VeiculoResponse buscarPorPlaca(String placa) {
         Veiculo veiculo = veiculoRepository.findByPlaca(placa)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Veículo não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
 
         return toResponse(veiculo);
     }
@@ -113,7 +115,7 @@ public class VeiculoService {
 		validarPlaca(placa);
 
         if (veiculoRepository.existsByPlaca(placa)) {
-            throw new RegraNegocioException("Já existe veículo cadastrado com esta placa");
+            throw new RegraNegocioException(DUPLICATED_VEHICLE);
         }
     }
 
@@ -121,18 +123,18 @@ public class VeiculoService {
 		boolean placaValida = ValidadorPlaca.isValida(placa);
 
 		if (!placaValida) {
-			throw new RegraNegocioException("Placa inválida, não segue o padrão.");
+			throw new RegraNegocioException(INVALID_VEHICLE_PLATE);
 		}
 	}
 
     private Cliente buscarClientePorId(Long clienteId) {
         return clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
     }
 
     private Veiculo buscarVeiculoPorId(Long id) {
         return veiculoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Veículo não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
     }
 
     private VeiculoResponse toResponse(Veiculo veiculo) {

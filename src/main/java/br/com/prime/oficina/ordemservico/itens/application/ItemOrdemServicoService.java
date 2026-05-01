@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
+
 @Service
 @RequiredArgsConstructor
 public class ItemOrdemServicoService {
@@ -55,14 +57,14 @@ public class ItemOrdemServicoService {
 		Estoque estoque = item.getEstoque();
 
 		if (!item.getAtivo()) {
-			throw new RegraNegocioException("O Item informado não está ativo");
+			throw new RegraNegocioException(NOT_ACTIVE_ITEM);
 		}
 
 		int quantidadeAtual = itemOrdemServicoRepository.sumQuantidadeByOrdemServicoIdAndItemId(id, item.getId());
 		int totalSolicitado = quantidadeAtual + request.quantidade();
 
 		if (estoque.getQuantidade() < totalSolicitado) {
-			throw new RegraNegocioException("Estoque insuficiente para o item: " + item.getNome());
+			throw new RegraNegocioException(NOT_ENOUGH_STOCK_ITEM + item.getNome());
 		}
 
 		ItemOrdemServico itemOrdemServico = new ItemOrdemServico();
@@ -80,12 +82,12 @@ public class ItemOrdemServicoService {
 
 	private Item buscarItemPorId(Long id) {
 		return itemRepository.findById(id)
-				.orElseThrow(() -> new RecursoNaoEncontradoException("Item não encontrado"));
+				.orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_NOT_FOUND));
 	}
 
 	private OrdemServico buscarOrdemServicoPorId(Long id) {
 		return ordemServicoRepository.findById(id)
-				.orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de Serviço não encontrada"));
+				.orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_ORDER_NOT_FOUND));
 	}
 
 	private BigDecimal getValorTotalItens(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico) {

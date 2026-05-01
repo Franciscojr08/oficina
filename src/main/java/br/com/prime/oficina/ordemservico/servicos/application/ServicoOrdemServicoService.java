@@ -18,6 +18,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
+
 @Service
 @RequiredArgsConstructor
 public class ServicoOrdemServicoService {
@@ -56,7 +58,7 @@ public class ServicoOrdemServicoService {
 
 		Servico servico = buscarServicoPorId(request.servicoId());
 		if (!servico.getAtivo()) {
-			throw new RegraNegocioException("O Serviço informado não está ativo");
+			throw new RegraNegocioException(NOT_ACTIVE_SERVICE);
 		}
 
 		ServicoOrdemServico servicoOrdemServico = new ServicoOrdemServico();
@@ -79,12 +81,12 @@ public class ServicoOrdemServicoService {
 
 	private OrdemServico buscarOrdemServicoPorId(Long id) {
 		return ordemServicoRepository.findById(id)
-				.orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de Serviço não encontrada"));
+				.orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_ORDER_NOT_FOUND));
 	}
 
 	private Servico buscarServicoPorId(Long id) {
 		return servicoRepository.findById(id)
-				.orElseThrow(() -> new RecursoNaoEncontradoException("Servico não encontrado"));
+				.orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_NOT_FOUND));
 	}
 
 	public ServicoOrdemServicoResponse iniciarServico(Long id, Long servicoId) {
@@ -95,7 +97,7 @@ public class ServicoOrdemServicoService {
 		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository.findByOrdemServicoIdAndServicoId(id, servicoId);
 
 		if (servicoOS.getStatus() != StatusServico.PENDENTE) {
-			throw new RegraNegocioException("Serviço já iniciado ou finalizado");
+			throw new RegraNegocioException(STARTED_OR_FINISHED_SERVICE);
 		}
 
 		servicoOS.setStatus(StatusServico.INICIADO);
@@ -114,7 +116,7 @@ public class ServicoOrdemServicoService {
 		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository.findByOrdemServicoIdAndServicoId(id, servicoId);
 
 		if (servicoOS.getStatus() != StatusServico.INICIADO) {
-			throw new RegraNegocioException("Serviço finalizado ou cancelado");
+			throw new RegraNegocioException(FINISHED_OR_CANCELED_SERVICE);
 		}
 
 		servicoOS.setStatus(StatusServico.FINALIZADO);

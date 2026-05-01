@@ -1,7 +1,7 @@
 package br.com.prime.oficina.auth;
 
-import br.com.prime.oficina.auth.gestaoUsuarios.domain.Usuario;
-import br.com.prime.oficina.auth.gestaoUsuarios.infrastructure.UsuarioRepository;
+import br.com.prime.oficina.auth.gestaousuarios.domain.Usuario;
+import br.com.prime.oficina.auth.gestaousuarios.infrastructure.UsuarioRepository;
 import br.com.prime.oficina.security.JwtService;
 import br.com.prime.oficina.security.domain.SecurityUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
