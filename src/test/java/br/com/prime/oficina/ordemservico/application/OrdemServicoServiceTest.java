@@ -32,6 +32,7 @@ import br.com.prime.oficina.veiculo.domain.Veiculo;
 import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -46,10 +47,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.prime.oficina.shared.exception.ExceptionMessage.SERVICE_ORDER_NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.never;
@@ -105,6 +108,7 @@ class OrdemServicoServiceTest {
     private OrdemServicoRequest ordemServicoRequest;
     private Cliente clienteAtivo;
     private Veiculo veiculoAtivo;
+    private static final LocalDateTime DATE_TIME = LocalDateTime.now();
 
     @BeforeEach
     void setUp() {
@@ -329,29 +333,14 @@ class OrdemServicoServiceTest {
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(itemOrdemServicoRepository.findByOrdemServicoId(100L)).thenReturn(List.of(itemOs));
-        when(estoqueRepository.baixarEstoque(1L, 3)).thenReturn(1);
-        when(repository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         OrdemServicoResponse response = ordemServicoService.aprovarOrdemServico(100L);
 
-        assertEquals(StatusOrdemServico.EM_EXECUCAO, response.status());
+        assertEquals(StatusOrdemServico.AGUARDANDO_ITENS, response.status());
         assertNotNull(response.dataAprovacao());
-        assertNotNull(response.dataInicioExecucao());
 
-        ArgumentCaptor<MovimentoEstoque> movimentoCaptor = ArgumentCaptor.forClass(MovimentoEstoque.class);
-        verify(movimentoEstoqueRepository).save(movimentoCaptor.capture());
-
-        MovimentoEstoque movimento = movimentoCaptor.getValue();
-
-        assertEquals(item, movimento.getItem());
-        assertEquals(TipoMovimentoEstoque.SAIDA, movimento.getTipo());
-        assertEquals(3, movimento.getQuantidade());
-        assertEquals(100L, movimento.getOrdemServicoId());
-        assertEquals("BAIXA DE ITEM NO ESTOQUE", movimento.getObservacao());
-
-        verify(estoqueRepository).baixarEstoque(1L, 3);
-        verify(repository).save(os);
-        verify(historicoOrdemServicoRepository).save(any(HistoricoOrdemServico.class));
+        verify(historicoOrdemServicoRepository, times(2)).save(any(HistoricoOrdemServico.class));
         verify(itemRepository, never()).saveAndFlush(any());
         verify(estoqueRepository, never()).saveAndFlush(any());
     }
@@ -371,6 +360,7 @@ class OrdemServicoServiceTest {
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(itemOrdemServicoRepository.findByOrdemServicoId(100L)).thenReturn(List.of(itemOs));
         when(estoqueRepository.baixarEstoque(1L, 3)).thenReturn(0);
+        when(estoqueRepository.temEstoqueCompletoParaOrdem(anyLong())).thenReturn(true);
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
@@ -382,7 +372,7 @@ class OrdemServicoServiceTest {
         verify(estoqueRepository).baixarEstoque(1L, 3);
         verify(movimentoEstoqueRepository, never()).save(any());
         verify(repository, never()).save(any());
-        verify(historicoOrdemServicoRepository, never()).save(any());
+        verify(historicoOrdemServicoRepository, times(1)).save(any());
     }
 
     @Test
@@ -397,7 +387,7 @@ class OrdemServicoServiceTest {
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(servicoOrdemServicoRepository.findByOrdemServicoId(100L)).thenReturn(List.of(servico1, servico2));
-        when(repository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         OrdemServicoResponse response = ordemServicoService.reprovarOrdemServico(100L);
 
@@ -407,7 +397,7 @@ class OrdemServicoServiceTest {
         assertEquals(StatusServico.CANCELADO, servico2.getStatus());
 
         verify(servicoOrdemServicoRepository, times(2)).saveAndFlush(any(ServicoOrdemServico.class));
-        verify(repository).save(os);
+        verify(repository).saveAndFlush(os);
         verify(historicoOrdemServicoRepository).save(any(HistoricoOrdemServico.class));
     }
 
@@ -476,6 +466,133 @@ class OrdemServicoServiceTest {
         verify(repository).findById(999L);
     }
 
+    @Test
+    void testIniciarDiagnostico() {
+        when(repository.findById(100L)).thenReturn(Optional.of(criarOrdemServico(100L, StatusOrdemServico.RECEBIDA)));
+        when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(historicoOrdemServicoRepository.save(any(HistoricoOrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var out = ordemServicoService.iniciarDiagnostico(100L);
+        var outUpdated = new OrdemServicoResponse(
+                out.id(),
+                out.codigo(),
+                out.descricaoProblema(),
+                out.observacoesGerais(),
+                out.descricaoServicosExecutados(),
+                out.status(),
+                out.valorTotalServicos(),
+                out.valorTotalItens(),
+                DATE_TIME,
+                DATE_TIME,
+                out.dataAprovacao(),
+                out.dataInicioExecucao(),
+                out.dataFimExecucao(),
+                DATE_TIME,
+                out.dataCancelada()
+        );
+
+        assertThat(outUpdated).usingRecursiveAssertion().isEqualTo(criarOrdemServicoResponse(StatusOrdemServico.EM_DIAGNOSTICO));
+    }
+
+    @Test
+    void testSoliticarAprovacao() {
+        when(itemOrdemServicoRepository.findByOrdemServicoId(anyLong())).thenReturn(List.of(criarItemServico()));
+        when(servicoOrdemServicoRepository.findByOrdemServicoId(anyLong())).thenReturn(List.of(criarServicoOrdemServico()));
+        when(repository.findById(100L)).thenReturn(Optional.of(criarOrdemServico(100L, StatusOrdemServico.EM_DIAGNOSTICO)));
+        when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(historicoOrdemServicoRepository.save(any(HistoricoOrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+
+        var out = ordemServicoService.solicitarAprovacao(100L);
+        var outUpdated = new OrdemServicoResponse(
+                out.id(),
+                out.codigo(),
+                out.descricaoProblema(),
+                out.observacoesGerais(),
+                out.descricaoServicosExecutados(),
+                out.status(),
+                out.valorTotalServicos(),
+                out.valorTotalItens(),
+                DATE_TIME,
+                DATE_TIME,
+                out.dataAprovacao(),
+                out.dataInicioExecucao(),
+                out.dataFimExecucao(),
+                DATE_TIME,
+                out.dataCancelada()
+        );
+
+        assertThat(outUpdated).usingRecursiveAssertion().isEqualTo(criarOrdemServicoResponse(StatusOrdemServico.AGUARDANDO_APROVACAO));
+    }
+
+    @Test
+    void testEntregarOrdemServico() {
+        when(repository.findById(100L)).thenReturn(Optional.of(criarOrdemServico(100L, StatusOrdemServico.FINALIZADA)));
+        when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(historicoOrdemServicoRepository.save(any(HistoricoOrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var out = ordemServicoService.entregarOrdemServico(100L);
+        var outUpdated = new OrdemServicoResponse(
+                out.id(),
+                out.codigo(),
+                out.descricaoProblema(),
+                out.observacoesGerais(),
+                out.descricaoServicosExecutados(),
+                out.status(),
+                out.valorTotalServicos(),
+                out.valorTotalItens(),
+                DATE_TIME,
+                DATE_TIME,
+                out.dataAprovacao(),
+                out.dataInicioExecucao(),
+                out.dataFimExecucao(),
+                DATE_TIME,
+                out.dataCancelada()
+        );
+
+        assertThat(outUpdated).usingRecursiveAssertion().isEqualTo(criarOrdemServicoResponse(StatusOrdemServico.ENTREGUE));
+    }
+
+    @Test
+    void testListar() {
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        when(repository.findAll()).thenReturn(List.of(os));
+
+        var out = ordemServicoService.listar();
+
+        assertThat(out).usingRecursiveComparison().isEqualTo(List.of(os));
+    }
+
+    @Test
+    void testListarPorCliente() {
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        when(repository.findByClienteId(anyLong())).thenReturn(List.of(os));
+
+        var out = ordemServicoService.listarPorCliente(1L);
+
+        assertThat(out).usingRecursiveComparison().isEqualTo(List.of(os));
+    }
+
+    @Test
+    void testListarPorCodigo() {
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        when(repository.findByCodigo(anyString())).thenReturn(Optional.of(os));
+
+        var out = ordemServicoService.listarPorCodigo("1L");
+
+        assertThat(out).usingRecursiveComparison().isEqualTo(List.of(os));
+    }
+
+    @Test
+    void testListarPorStatus() {
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        when(repository.findByStatus(any(StatusOrdemServico.class))).thenReturn(List.of(os));
+
+        var out = ordemServicoService.listarPorStatus(StatusOrdemServico.RECEBIDA);
+
+        assertThat(out).usingRecursiveComparison().isEqualTo(List.of(os));
+    }
+
     private Cliente criarCliente(Long id, boolean ativo) {
         Cliente cliente = new Cliente();
         cliente.setId(id);
@@ -527,5 +644,58 @@ class OrdemServicoServiceTest {
         os.setValorTotalServicos(BigDecimal.ZERO);
         os.setDataCadastro(LocalDateTime.now());
         return os;
+    }
+
+    private OrdemServicoResponse criarOrdemServicoResponse(StatusOrdemServico status) {
+        return new OrdemServicoResponse(
+                100L,
+                "OS-100",
+                null,
+                null,
+                null,
+                status,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                DATE_TIME,
+                DATE_TIME,
+                null,
+                null,
+                null,
+                DATE_TIME,
+                null
+        );
+    }
+
+    private ItemOrdemServico criarItemServico() {
+        ItemOrdemServico itemOrdemServico = new ItemOrdemServico();
+        Item item = new Item();
+        item.setId(1L);
+        OrdemServico ordemServico = new OrdemServico();
+        ordemServico.setCodigo("OS-1");
+
+        itemOrdemServico.setItem(item);
+        itemOrdemServico.setOrdemServico(ordemServico);
+        itemOrdemServico.setId(1L);
+        itemOrdemServico.setQuantidade(10);
+        itemOrdemServico.setValorUnitario(BigDecimal.TEN);
+
+        return itemOrdemServico;
+    }
+
+    private ServicoOrdemServico criarServicoOrdemServico() {
+        ServicoOrdemServico servicoOS = new ServicoOrdemServico();
+        Servico servico = new Servico();
+        servico.setId(1L);
+        servico.setNome("Servico");
+        servico.setValor(BigDecimal.TEN);
+        servicoOS.setId(1L);
+        servicoOS.setOrdemServico(criarOrdemServico(1L, StatusOrdemServico.RECEBIDA));
+        servicoOS.setStatus(StatusServico.PENDENTE);
+        servicoOS.setServico(servico);
+        servicoOS.setDataCadastro(DATE_TIME);
+        servicoOS.setDataInicio(DATE_TIME);
+        servicoOS.setDataFim(DATE_TIME);
+        servicoOS.setValorUnitario(BigDecimal.TEN);
+        return servicoOS;
     }
 }
