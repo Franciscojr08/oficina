@@ -2,16 +2,11 @@ package br.com.prime.oficina.apipublica.controller;
 
 import br.com.prime.oficina.apipublica.AcompanharOrdemServicoPublicaResponse;
 import br.com.prime.oficina.apipublica.AcompanharOrdemServicoPublicaService;
-import br.com.prime.oficina.cliente.application.ClienteRequest;
 import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.security.JwtService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
