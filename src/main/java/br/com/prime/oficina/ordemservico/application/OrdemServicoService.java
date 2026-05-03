@@ -164,7 +164,10 @@ public class OrdemServicoService {
 		boolean temEstoqueCompleto = estoqueRepository.temEstoqueCompletoParaOrdem(id);
 
 		if (!temEstoqueCompleto) {
-			atualizarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS);
+			if (ordemServico.getStatus() != StatusOrdemServico.AGUARDANDO_ITENS) {
+				atualizarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS);
+			}
+
 			return toResponse(ordemServico);
 		}
 
