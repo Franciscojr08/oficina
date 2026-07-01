@@ -45,13 +45,13 @@ public class ServicoOrdemServicoService {
 	}
 
 	@Transactional
-	public ListaServicosOrdemServicoResponse adicionarServico(Long id, ServicoOrdemServicoRequest request) {
+	public void adicionarServico(Long id, ServicoOrdemServicoRequest request) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		if (ordemServico.getStatus().estaEmEdicao()) {
+		if (!ordemServico.getStatus().estaEmDiagnostico()) {
 			String mensagem = String.format(
-					"Não é possível adicionar o serviço, pois a ordem de serviço está %s",
-					ordemServico.getStatus().getDescricao()
+				"Não é possível adicionar o serviço, pois a ordem de serviço não está %s",
+				StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
 			);
 			throw new RegraNegocioException(mensagem);
 		}
@@ -70,8 +70,6 @@ public class ServicoOrdemServicoService {
 		ordemServico.setValorTotalServicos(novoTotal);
 
 		ordemServicoRepository.saveAndFlush(ordemServico);
-
-		return listarServicosPorOrdemServico(id);
 	}
 
 	private BigDecimal getValorTotalServicos(OrdemServico ordemServico, ServicoOrdemServico servicoOrdemServico) {

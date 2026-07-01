@@ -22,8 +22,8 @@ public enum StatusOrdemServico {
 		this.descricao = descricao;
 	}
 
-	public boolean estaEmEdicao() {
-		return this != RECEBIDA && this != EM_DIAGNOSTICO;
+	public boolean estaEmDiagnostico() {
+		return this == EM_DIAGNOSTICO;
 	}
 
 	public static List<StatusOrdemServico> statusAtivos() {

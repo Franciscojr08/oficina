@@ -111,12 +111,23 @@ class OrdemServicoServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(ordemServicoService, "entityManager", entityManager);
 
+		List<ServicoOrdemServicoRequest> servicos = List.of(
+				new ServicoOrdemServicoRequest(1L),
+				new ServicoOrdemServicoRequest(2L)
+		);
+		List<ItemOrdemServicoRequest> itens = List.of(
+				new ItemOrdemServicoRequest(10L, 2),
+				new ItemOrdemServicoRequest(20L, 1)
+		);
+
         ordemServicoRequest = new OrdemServicoRequest(
                 "Barulho no motor",
                 "Cliente relata ruído ao ligar",
                 "Diagnóstico inicial",
                 1L,
-                10L
+                10L,
+				servicos,
+				itens
         );
 
         clienteAtivo = criarCliente(1L, true);
@@ -231,7 +242,8 @@ class OrdemServicoServiceTest {
             return ordemServico;
         });
 
-        ListaItensOrdemServicoResponse response = itemOrdemServicoService.adicionarItem(100L, request);
+		itemOrdemServicoService.adicionarItem(100L, request);
+		ListaItensOrdemServicoResponse response = itemOrdemServicoService.listarItensPorOrdemServico(100L);
 
         assertEquals(BigDecimal.valueOf(0), response.valorTotalItens());
 
@@ -283,8 +295,8 @@ class OrdemServicoServiceTest {
         when(repository.saveAndFlush(any(OrdemServico.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        ListaServicosOrdemServicoResponse response =
-                servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L));
+		servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L));
+		ListaServicosOrdemServicoResponse response = servicoOrdemServicoService.listarServicosPorOrdemServico(100L);
 
         assertEquals(BigDecimal.valueOf(0), response.valorTotalServicos());
 

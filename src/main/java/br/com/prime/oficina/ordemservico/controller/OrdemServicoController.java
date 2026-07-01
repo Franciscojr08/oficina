@@ -1,6 +1,8 @@
 package br.com.prime.oficina.ordemservico.controller;
 
 import br.com.prime.oficina.ordemservico.application.*;
+import br.com.prime.oficina.ordemservico.domain.OrdemServico;
+import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
 import br.com.prime.oficina.ordemservico.itens.application.ListaItensOrdemServicoResponse;
@@ -27,7 +29,7 @@ public class OrdemServicoController {
 	private final ItemOrdemServicoService itemOrdemServicoService;
 	private final ServicoOrdemServicoService servicoOrdemServicoService;
 
-    @GetMapping
+	@GetMapping
     public ResponseEntity<List<OrdemServicoResponse>> listar() {
         return ResponseEntity.ok(ordemServicoService.listar());
     }
@@ -65,8 +67,11 @@ public class OrdemServicoController {
 
     @PostMapping("/{id}/itens")
     public ResponseEntity<ListaItensOrdemServicoResponse> adicionarItem(@PathVariable Long id, @RequestBody ItemOrdemServicoRequest request) {
-        return ResponseEntity.ok(itemOrdemServicoService.adicionarItem(id, request));
-    }
+		itemOrdemServicoService.adicionarItem(id, request);
+		ListaItensOrdemServicoResponse response = itemOrdemServicoService.listarItensPorOrdemServico(id);
+
+		return ResponseEntity.ok(response);
+	}
 
 	@GetMapping("/{id}/itens")
 	public ResponseEntity<ListaItensOrdemServicoResponse> listarItensPorOrdemServico(@PathVariable Long id) {
@@ -75,8 +80,11 @@ public class OrdemServicoController {
 
     @PostMapping("/{id}/servicos")
     public ResponseEntity<ListaServicosOrdemServicoResponse> adicionarServico(@PathVariable Long id, @RequestBody ServicoOrdemServicoRequest request) {
-        return ResponseEntity.ok(servicoOrdemServicoService.adicionarServico(id, request));
-    }
+		servicoOrdemServicoService.adicionarServico(id, request);
+		ListaServicosOrdemServicoResponse response = servicoOrdemServicoService.listarServicosPorOrdemServico(id);
+
+		return ResponseEntity.ok(response);
+	}
 
 	@GetMapping("/{id}/servicos")
 	public ResponseEntity<ListaServicosOrdemServicoResponse> listarServicosPorOrdemServico(@PathVariable Long id) {

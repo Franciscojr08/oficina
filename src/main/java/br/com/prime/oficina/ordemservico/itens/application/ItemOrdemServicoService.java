@@ -3,6 +3,7 @@ package br.com.prime.oficina.ordemservico.itens.application;
 import br.com.prime.oficina.estoque.domain.Estoque;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
@@ -42,13 +43,13 @@ public class ItemOrdemServicoService {
 	}
 
 	@Transactional
-	public ListaItensOrdemServicoResponse adicionarItem(Long id, ItemOrdemServicoRequest request) {
+	public void adicionarItem(Long id, ItemOrdemServicoRequest request) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		if (ordemServico.getStatus().estaEmEdicao()) {
+		if (!ordemServico.getStatus().estaEmDiagnostico()) {
 			String mensagem = String.format(
-				"Não é possível adicionar o item, pois a ordem de serviço está %s",
-				ordemServico.getStatus().getDescricao()
+				"Não é possível adicionar o serviço, pois a ordem de serviço não está %s",
+				StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
 			);
 			throw new RegraNegocioException(mensagem);
 		}
@@ -76,8 +77,6 @@ public class ItemOrdemServicoService {
 		ordemServico.setValorTotalItens(novoTotal);
 
 		ordemServicoRepository.saveAndFlush(ordemServico);
-
-		return listarItensPorOrdemServico(id);
 	}
 
 	private Item buscarItemPorId(Long id) {

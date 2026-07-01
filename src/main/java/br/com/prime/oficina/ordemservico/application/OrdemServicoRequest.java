@@ -1,8 +1,12 @@
 package br.com.prime.oficina.ordemservico.application;
 
+import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoRequest;
+import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.util.List;
 
 public record OrdemServicoRequest(
         @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
@@ -19,6 +23,9 @@ public record OrdemServicoRequest(
         Long clienteId,
 
         @NotNull(message = "Id do veiculo é obrigatório")
-        Long veiculoId
+        Long veiculoId,
+        @NotNull(message = "É necessário informar pelo menos um serviço")
+        List<ServicoOrdemServicoRequest> servicos,
+        List<ItemOrdemServicoRequest> itens
 ) {
 }

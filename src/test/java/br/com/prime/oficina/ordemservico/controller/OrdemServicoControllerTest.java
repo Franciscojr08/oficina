@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -132,8 +133,11 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
     void testAdicionarItem() throws Exception {
         ItemOrdemServicoRequest request = criarItemOrdemServicoRequest();
 
-        when(itemOrdemServicoService.adicionarItem(1L, request))
-                .thenReturn(criarListaItensOrdemServicoResponse());
+		doNothing().when(itemOrdemServicoService)
+				.adicionarItem(1L, request);
+
+		when(itemOrdemServicoService.listarItensPorOrdemServico(1L))
+				.thenReturn(criarListaItensOrdemServicoResponse());
 
         mockMvc.perform(post("/ordens/{id}/itens", 1L)
                         .with(csrf())
@@ -159,8 +163,11 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
     void testAdicionarServico() throws Exception {
         ServicoOrdemServicoRequest request = criarServicoOrdemServicoRequest();
 
-        when(servicoOrdemServicoService.adicionarServico(1L, request))
-                .thenReturn(criarListaServicosOrdemServicoResponse());
+		doNothing().when(servicoOrdemServicoService)
+				.adicionarServico(1L, request);
+
+		when(servicoOrdemServicoService.listarServicosPorOrdemServico(1L))
+				.thenReturn(criarListaServicosOrdemServicoResponse());
 
         mockMvc.perform(post("/ordens/{id}/servicos", 1L)
                         .with(csrf())
@@ -282,12 +289,23 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
     }
 
     private OrdemServicoRequest criarOrdemServicoRequest() {
+		List<ServicoOrdemServicoRequest> servicos = List.of(
+				new ServicoOrdemServicoRequest(1L),
+				new ServicoOrdemServicoRequest(2L)
+		);
+		List<ItemOrdemServicoRequest> itens = List.of(
+				new ItemOrdemServicoRequest(10L, 2),
+				new ItemOrdemServicoRequest(20L, 1)
+		);
+
         return new OrdemServicoRequest(
                 "Descricao",
                 "Observacoes",
                 "Descricao",
                 1L,
-                2L
+                2L,
+				servicos,
+				itens
         );
     }
 
