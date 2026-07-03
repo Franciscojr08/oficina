@@ -31,6 +31,8 @@ public enum StatusOrdemServico {
 			RECEBIDA,
 			EM_DIAGNOSTICO,
 			AGUARDANDO_APROVACAO,
+			APROVADA,
+			AGUARDANDO_ITENS,
 			EM_EXECUCAO,
 			FINALIZADA
 		);

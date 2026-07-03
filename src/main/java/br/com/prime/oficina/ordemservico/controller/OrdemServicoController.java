@@ -1,8 +1,6 @@
 package br.com.prime.oficina.ordemservico.controller;
 
 import br.com.prime.oficina.ordemservico.application.*;
-import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
 import br.com.prime.oficina.ordemservico.itens.application.ListaItensOrdemServicoResponse;
@@ -132,5 +130,10 @@ public class OrdemServicoController {
 	@PatchMapping("/{id}/entregar")
 	public ResponseEntity<OrdemServicoResponse> entregarOrdemServico(@PathVariable Long id) {
 		return ResponseEntity.ok(ordemServicoService.entregarOrdemServico(id));
+	}
+
+	@GetMapping("/{id}/status")
+	public ResponseEntity<StatusOrdemServicoResponse> status(@PathVariable Long id) {
+		return ResponseEntity.ok(ordemServicoService.consultarStatus(id));
 	}
 }

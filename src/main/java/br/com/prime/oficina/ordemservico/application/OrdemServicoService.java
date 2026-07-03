@@ -51,7 +51,7 @@ public class OrdemServicoService {
 
     @Transactional(readOnly = true)
     public List<OrdemServicoResponse> listar() {
-        return ordemServicoRepository.findAll()
+        return ordemServicoRepository.listagemOrdensServico()
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -353,5 +353,11 @@ public class OrdemServicoService {
 			case CANCELADA -> os.setDataCancelada(LocalDateTime.now());
 			default -> throw new RegraNegocioException(INVALID_STATUS_FOR_MODIFICATION);
 		}
+	}
+
+	public StatusOrdemServicoResponse consultarStatus(Long id) {
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		return new StatusOrdemServicoResponse(ordemServico.getCodigo(),ordemServico.getStatus());
 	}
 }
