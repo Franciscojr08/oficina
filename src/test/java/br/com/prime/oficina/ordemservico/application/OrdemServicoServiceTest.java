@@ -33,7 +33,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -93,13 +92,10 @@ class OrdemServicoServiceTest {
     @Mock
     private EntityManager entityManager;
 
-    @InjectMocks
     private OrdemServicoService ordemServicoService;
 
-    @InjectMocks
     private ItemOrdemServicoService itemOrdemServicoService;
 
-    @InjectMocks
     private ServicoOrdemServicoService servicoOrdemServicoService;
 
     private OrdemServicoRequest ordemServicoRequest;
@@ -109,6 +105,38 @@ class OrdemServicoServiceTest {
 
     @BeforeEach
     void setUp() {
+		HistoricoOrdemServicoService historicoOrdemServicoService =
+				new HistoricoOrdemServicoService(historicoOrdemServicoRepository);
+		OrdemServicoStatusService ordemServicoStatusService =
+				new OrdemServicoStatusService(repository, historicoOrdemServicoService);
+		OrdemServicoEstoqueService ordemServicoEstoqueService =
+				new OrdemServicoEstoqueService(itemOrdemServicoRepository, estoqueRepository, movimentoEstoqueRepository);
+		OrdemServicoMapper ordemServicoMapper = new OrdemServicoMapper();
+
+		itemOrdemServicoService = new ItemOrdemServicoService(
+				repository,
+				itemRepository,
+				itemOrdemServicoRepository
+		);
+		servicoOrdemServicoService = new ServicoOrdemServicoService(
+				repository,
+				servicoRepository,
+				servicoOrdemServicoRepository,
+				ordemServicoStatusService
+		);
+		ordemServicoService = new OrdemServicoService(
+				repository,
+				clienteRepository,
+				veiculoRepository,
+				itemOrdemServicoRepository,
+				servicoOrdemServicoRepository,
+				itemOrdemServicoService,
+				servicoOrdemServicoService,
+				historicoOrdemServicoService,
+				ordemServicoStatusService,
+				ordemServicoEstoqueService,
+				ordemServicoMapper
+		);
         ReflectionTestUtils.setField(ordemServicoService, "entityManager", entityManager);
 
 		List<Long> servicos = List.of();
@@ -335,7 +363,6 @@ class OrdemServicoServiceTest {
         itemOs.setValorUnitario(BigDecimal.valueOf(50));
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
-        when(itemOrdemServicoRepository.findByOrdemServicoId(100L)).thenReturn(List.of(itemOs));
         when(repository.saveAndFlush(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         OrdemServicoResponse response = ordemServicoService.aprovarOrdemServico(100L);

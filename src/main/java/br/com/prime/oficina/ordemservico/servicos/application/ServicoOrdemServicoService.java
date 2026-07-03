@@ -1,9 +1,8 @@
 package br.com.prime.oficina.ordemservico.servicos.application;
 
+import br.com.prime.oficina.ordemservico.application.OrdemServicoStatusService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.domain.HistoricoOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.HistoricoOrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
@@ -28,7 +27,7 @@ public class ServicoOrdemServicoService {
 	private final OrdemServicoRepository ordemServicoRepository;
 	private final ServicoRepository servicoRepository;
 	private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
-	private final HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
+	private final OrdemServicoStatusService ordemServicoStatusService;
 
 	public ListaServicosOrdemServicoResponse listarServicosPorOrdemServico(Long id) {
 		List<ServicoOrdemServico> lista = servicoOrdemServicoRepository.findByOrdemServicoId(id);
@@ -157,15 +156,7 @@ public class ServicoOrdemServicoService {
 	}
 
 	private void finalizarOrdemServico(OrdemServico ordemServico) {
-		ordemServico.setStatus(StatusOrdemServico.FINALIZADA);
-		ordemServico.setDataFimExecucao(LocalDateTime.now());
-		ordemServicoRepository.saveAndFlush(ordemServico);
-
-		HistoricoOrdemServico historicoOrdemServico = new HistoricoOrdemServico();
-		historicoOrdemServico.setOrdemServico(ordemServico);
-		historicoOrdemServico.setStatus(StatusOrdemServico.FINALIZADA);
-		historicoOrdemServico.setObservacao(StatusOrdemServico.FINALIZADA.getDescricao());
-		historicoOrdemServicoRepository.save(historicoOrdemServico);
+		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.FINALIZADA);
 	}
 
 	private void preencherServicoOrdemServico(

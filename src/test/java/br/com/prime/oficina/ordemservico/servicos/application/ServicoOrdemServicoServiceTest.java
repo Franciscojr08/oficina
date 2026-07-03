@@ -1,12 +1,13 @@
 package br.com.prime.oficina.ordemservico.servicos.application;
 
+import br.com.prime.oficina.ordemservico.application.OrdemServicoStatusService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.HistoricoOrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
+import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +34,10 @@ class ServicoOrdemServicoServiceTest {
     private OrdemServicoRepository ordemServicoRepository;
 
     @Mock
-    private HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
+    private ServicoRepository servicoRepository;
+
+    @Mock
+    private OrdemServicoStatusService ordemServicoStatusService;
 
     @InjectMocks
     private ServicoOrdemServicoService service;
@@ -84,6 +89,7 @@ class ServicoOrdemServicoServiceTest {
         );
 
         assertThat(outUpdated).usingRecursiveAssertion().isEqualTo(response);
+        verify(ordemServicoStatusService).atualizarStatus(any(OrdemServico.class), any(StatusOrdemServico.class));
     }
 
     private OrdemServico criarOrdemServico() {

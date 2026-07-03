@@ -2,18 +2,11 @@ package br.com.prime.oficina.ordemservico.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
-import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
-import br.com.prime.oficina.item.domain.Item;
-import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
-import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
-import br.com.prime.oficina.ordemservico.domain.HistoricoOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoService;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.HistoricoOrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
@@ -27,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
@@ -42,22 +33,21 @@ public class OrdemServicoService {
     private final VeiculoRepository veiculoRepository;
     private final ItemOrdemServicoRepository itemOrdemServicoRepository;
     private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
-    private final EstoqueRepository estoqueRepository;
-    private final MovimentoEstoqueRepository movimentoEstoqueRepository;
-    private final HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
 	private final ItemOrdemServicoService itemOrdemServicoService;
 	private final ServicoOrdemServicoService servicoOrdemServicoService;
+	private final HistoricoOrdemServicoService historicoOrdemServicoService;
+	private final OrdemServicoStatusService ordemServicoStatusService;
+	private final OrdemServicoEstoqueService ordemServicoEstoqueService;
+	private final OrdemServicoMapper ordemServicoMapper;
 
     @jakarta.persistence.PersistenceContext
     private jakarta.persistence.EntityManager entityManager;
-
-    private static final String SAIDA_DEFAULT_ITEM = "BAIXA DE ITEM NO ESTOQUE";
 
     @Transactional(readOnly = true)
     public List<OrdemServicoResponse> listar() {
         return ordemServicoRepository.listagemOrdensServico()
                 .stream()
-                .map(this::toResponse)
+                .map(ordemServicoMapper::toResponse)
                 .toList();
     }
 
@@ -65,7 +55,7 @@ public class OrdemServicoService {
     public List<OrdemServicoResponse> listarPorCliente(Long clienteId) {
         return ordemServicoRepository.findByClienteId(clienteId)
                 .stream()
-                .map(this::toResponse)
+                .map(ordemServicoMapper::toResponse)
                 .toList();
     }
 
@@ -73,7 +63,7 @@ public class OrdemServicoService {
     public List<OrdemServicoResponse> listarPorCodigo(String codigo) {
         return ordemServicoRepository.findByCodigo(codigo)
                 .stream()
-                .map(this::toResponse)
+                .map(ordemServicoMapper::toResponse)
                 .toList();
     }
 
@@ -81,7 +71,7 @@ public class OrdemServicoService {
     public List<OrdemServicoResponse> listarPorStatus(StatusOrdemServico status) {
         return ordemServicoRepository.findByStatus(status)
                 .stream()
-                .map(this::toResponse)
+                .map(ordemServicoMapper::toResponse)
                 .toList();
     }
 
@@ -107,11 +97,11 @@ public class OrdemServicoService {
 		ordemServicoRepository.saveAndFlush(ordemServico);
 		entityManager.refresh(ordemServico);
 
-		salvarHistorico(ordemServico,StatusOrdemServico.RECEBIDA);
+		historicoOrdemServicoService.registrar(ordemServico, StatusOrdemServico.RECEBIDA);
 		adicionarServicosDaRequest(ordemServico, request);
 		adicionarItensDaRequest(ordemServico, request);
 
-        return toResponse(ordemServico);
+        return ordemServicoMapper.toResponse(ordemServico);
     }
 
 	private void adicionarServicosDaRequest(OrdemServico ordemServico, OrdemServicoRequest request) {
@@ -134,14 +124,6 @@ public class OrdemServicoService {
 		);
 	}
 
-	private void salvarHistorico(OrdemServico ordemServico, StatusOrdemServico status) {
-		HistoricoOrdemServico historicoOrdemServico = new HistoricoOrdemServico();
-		historicoOrdemServico.setOrdemServico(ordemServico);
-		historicoOrdemServico.setStatus(status);
-		historicoOrdemServico.setObservacao(status.getDescricao());
-		historicoOrdemServicoRepository.save(historicoOrdemServico);
-	}
-
 	@Transactional
     public OrdemServicoResponse atualizar(Long id, OrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
@@ -158,7 +140,7 @@ public class OrdemServicoService {
 		);
 		ordemServicoRepository.saveAndFlush(ordemServico);
 
-		return toResponse(ordemServico);
+		return ordemServicoMapper.toResponse(ordemServico);
 	}
 
 	private void validarVeiculoPertenceAoCliente(Veiculo veiculo, Cliente cliente) {
@@ -171,10 +153,13 @@ public class OrdemServicoService {
 	public OrdemServicoResponse aprovarOrdemServico(Long id) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_APROVACAO,
-				"aprovar a ordem de serviço");
+		ordemServicoStatusService.validarStatus(
+			ordemServico,
+			StatusOrdemServico.AGUARDANDO_APROVACAO,
+			"aprovar a ordem de serviço"
+		);
 
-		atualizarStatus(ordemServico, StatusOrdemServico.APROVADA);
+		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.APROVADA);
 
 		return processarOrdemParaExecucao(id);
 	}
@@ -183,8 +168,11 @@ public class OrdemServicoService {
 	public OrdemServicoResponse iniciarExecucao(Long id) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS,
-				"iniciar execução");
+		ordemServicoStatusService.validarStatus(
+			ordemServico,
+			StatusOrdemServico.AGUARDANDO_ITENS,
+			"iniciar execução"
+		);
 
 		return processarOrdemParaExecucao(id);
 	}
@@ -192,61 +180,31 @@ public class OrdemServicoService {
 	private OrdemServicoResponse processarOrdemParaExecucao(Long id) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		List<ItemOrdemServico> itens = itemOrdemServicoRepository.findByOrdemServicoId(id);
-
-		boolean temEstoqueCompleto = estoqueRepository.temEstoqueCompletoParaOrdem(id);
+		boolean temEstoqueCompleto = ordemServicoEstoqueService.temEstoqueCompletoParaOrdem(id);
 
 		if (!temEstoqueCompleto) {
 			if (ordemServico.getStatus() != StatusOrdemServico.AGUARDANDO_ITENS) {
-				atualizarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS);
+				ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS);
 			}
 
-			return toResponse(ordemServico);
+			return ordemServicoMapper.toResponse(ordemServico);
 		}
 
-		processarBaixasDeEstoque(itens, ordemServico);
-		atualizarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO);
+		ordemServicoEstoqueService.baixarEstoqueDaOrdem(ordemServico);
+		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO);
 
-		return toResponse(ordemServico);
-	}
-
-	private void processarBaixasDeEstoque(List<ItemOrdemServico> itens, OrdemServico ordemServico) {
-		List<MovimentoEstoque> movimentos = new ArrayList<>(itens.size());
-
-		for (ItemOrdemServico itemOrdemServico : itens) {
-			Item item = itemOrdemServico.getItem();
-			Long estoqueId = item.getEstoque().getId();
-			int quantidade = itemOrdemServico.getQuantidade();
-
-			int atualizado = estoqueRepository.baixarEstoque(estoqueId, quantidade);
-
-			if (atualizado == 0) {
-				throw new RegraNegocioException(NOT_ENOUGH_STOCK_ITEM + item.getNome());
-			}
-
-			MovimentoEstoque movimento = criarMovimentoEstoque(item, quantidade, ordemServico.getId());
-			movimentos.add(movimento);
-		}
-
-		movimentoEstoqueRepository.saveAll(movimentos);
-	}
-
-	private MovimentoEstoque criarMovimentoEstoque(Item item, int quantidade, Long ordemServicoId) {
-		MovimentoEstoque movimento = new MovimentoEstoque();
-		movimento.setItem(item);
-		movimento.setTipo(TipoMovimentoEstoque.SAIDA);
-		movimento.setQuantidade(quantidade);
-		movimento.setOrdemServicoId(ordemServicoId);
-		movimento.setObservacao(SAIDA_DEFAULT_ITEM);
-		movimento.setDataMovimentacao(LocalDateTime.now());
-		return movimento;
+		return ordemServicoMapper.toResponse(ordemServico);
 	}
 
 	@Transactional
     public OrdemServicoResponse reprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_APROVACAO, "reprovar a ordem de serviço");
+		ordemServicoStatusService.validarStatus(
+			ordemServico,
+			StatusOrdemServico.AGUARDANDO_APROVACAO,
+			"reprovar a ordem de serviço"
+		);
 
 		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
 
@@ -255,38 +213,9 @@ public class OrdemServicoService {
 			servicoOrdemServicoRepository.saveAndFlush(servico);
 		}
 
-		atualizarStatus(ordemServico, StatusOrdemServico.CANCELADA);
+		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.CANCELADA);
 
-		return toResponse(ordemServico);
-    }
-
-	public void validarStatus(OrdemServico os, StatusOrdemServico statusEsperado, String acao) {
-		if (os.getStatus() != statusEsperado) {
-			throw new RegraNegocioException(
-					"Não é possível %s, pois a ordem de serviço está %s"
-							.formatted(acao, os.getStatus().getDescricao())
-			);
-		}
-	}
-
-    private OrdemServicoResponse toResponse(OrdemServico ordemServico) {
-        return new OrdemServicoResponse(
-                ordemServico.getId(),
-                ordemServico.getCodigo(),
-                ordemServico.getDescricaoProblema(),
-                ordemServico.getObservacoesGerais(),
-                ordemServico.getDescricaoServicosExecutados(),
-                ordemServico.getStatus(),
-                ordemServico.getValorTotalServicos(),
-                ordemServico.getValorTotalItens(),
-                ordemServico.getDataCadastro(),
-                ordemServico.getDataEnvioAprovacao(),
-                ordemServico.getDataAprovacao(),
-                ordemServico.getDataInicioExecucao(),
-                ordemServico.getDataFimExecucao(),
-                ordemServico.getDataEntregue(),
-                ordemServico.getDataCancelada()
-        );
+		return ordemServicoMapper.toResponse(ordemServico);
     }
 
     private Cliente buscarClientePorId(Long clienteId) {
@@ -357,10 +286,10 @@ public class OrdemServicoService {
 	public OrdemServicoResponse entregarOrdemServico(Long id) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		validarStatus(ordemServico, StatusOrdemServico.FINALIZADA, "entregar");
-		atualizarStatus(ordemServico, StatusOrdemServico.ENTREGUE);
+		ordemServicoStatusService.validarStatus(ordemServico, StatusOrdemServico.FINALIZADA, "entregar");
+		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.ENTREGUE);
 
-		return toResponse(ordemServico);
+		return ordemServicoMapper.toResponse(ordemServico);
 	}
 
 	private OrdemServicoResponse alterarStatus(
@@ -371,33 +300,10 @@ public class OrdemServicoService {
 	) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		validarStatus(ordemServico, statusAtualPermitido, acao);
-		atualizarStatus(ordemServico, novoStatus);
+		ordemServicoStatusService.validarStatus(ordemServico, statusAtualPermitido, acao);
+		ordemServicoStatusService.atualizarStatus(ordemServico, novoStatus);
 
-		return toResponse(ordemServico);
-	}
-
-	public void atualizarStatus(OrdemServico os, StatusOrdemServico status) {
-		os.setStatus(status);
-
-		if (status.deveAtualizarDatas()) {
-			aplicarRegrasDeStatus(os, status);
-		}
-
-		ordemServicoRepository.saveAndFlush(os);
-		salvarHistorico(os, status);
-	}
-
-	private void aplicarRegrasDeStatus(OrdemServico os, StatusOrdemServico status) {
-		switch (status) {
-			case AGUARDANDO_APROVACAO -> os.setDataEnvioAprovacao(LocalDateTime.now());
-			case APROVADA -> os.setDataAprovacao(LocalDateTime.now());
-			case EM_EXECUCAO -> os.setDataInicioExecucao(LocalDateTime.now());
-			case FINALIZADA -> os.setDataFimExecucao(LocalDateTime.now());
-			case ENTREGUE -> os.setDataEntregue(LocalDateTime.now());
-			case CANCELADA -> os.setDataCancelada(LocalDateTime.now());
-			default -> throw new RegraNegocioException(INVALID_STATUS_FOR_MODIFICATION);
-		}
+		return ordemServicoMapper.toResponse(ordemServico);
 	}
 
 	public StatusOrdemServicoResponse consultarStatus(Long id) {
