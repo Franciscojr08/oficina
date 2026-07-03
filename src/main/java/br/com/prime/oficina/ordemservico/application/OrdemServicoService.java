@@ -9,7 +9,9 @@ import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
 import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.ordemservico.domain.HistoricoOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
+import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
+import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoService;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.infrastructure.HistoricoOrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
@@ -43,6 +45,8 @@ public class OrdemServicoService {
     private final EstoqueRepository estoqueRepository;
     private final MovimentoEstoqueRepository movimentoEstoqueRepository;
     private final HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
+	private final ItemOrdemServicoService itemOrdemServicoService;
+	private final ServicoOrdemServicoService servicoOrdemServicoService;
 
     @jakarta.persistence.PersistenceContext
     private jakarta.persistence.EntityManager entityManager;
@@ -81,31 +85,54 @@ public class OrdemServicoService {
                 .toList();
     }
 
-    @Transactional
-    public OrdemServicoResponse criar(OrdemServicoRequest request) {
-        Cliente cliente = buscarClientePorId(request.clienteId());
-		if (Boolean.FALSE.equals(cliente.getAtivo())) {
-			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
-		}
+	@Transactional
+	public OrdemServicoResponse criar(OrdemServicoRequest request) {
+		Cliente cliente = buscarClientePorId(request.clienteId());
+		Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
 
-        Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
-		if (Boolean.FALSE.equals(veiculo.getAtivo())) {
-			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
-		}
+		validarVeiculoPertenceAoCliente(veiculo, cliente);
 
         OrdemServico ordemServico = new OrdemServico();
 		ordemServico.setStatus(StatusOrdemServico.RECEBIDA);
 		ordemServico.setValorTotalServicos(BigDecimal.ZERO);
 		ordemServico.setValorTotalItens(BigDecimal.ZERO);
-        preencherOrdemServico(ordemServico, request, veiculo, cliente);
+
+		preencherOrdemServico(
+			ordemServico,
+			request,
+			veiculo,
+			cliente
+		);
 
 		ordemServicoRepository.saveAndFlush(ordemServico);
 		entityManager.refresh(ordemServico);
 
 		salvarHistorico(ordemServico,StatusOrdemServico.RECEBIDA);
+		adicionarServicosDaRequest(ordemServico, request);
+		adicionarItensDaRequest(ordemServico, request);
 
         return toResponse(ordemServico);
     }
+
+	private void adicionarServicosDaRequest(OrdemServico ordemServico, OrdemServicoRequest request) {
+		if (request.servicos() == null) {
+			return;
+		}
+
+		request.servicos().forEach(servicoId ->
+				servicoOrdemServicoService.adicionarServicoNaOrdem(ordemServico, servicoId)
+		);
+	}
+
+	private void adicionarItensDaRequest(OrdemServico ordemServico, OrdemServicoRequest request) {
+		if (request.itens() == null) {
+			return;
+		}
+
+		request.itens().forEach(item ->
+				itemOrdemServicoService.adicionarItemNaOrdem(ordemServico, item)
+		);
+	}
 
 	private void salvarHistorico(OrdemServico ordemServico, StatusOrdemServico status) {
 		HistoricoOrdemServico historicoOrdemServico = new HistoricoOrdemServico();
@@ -118,21 +145,27 @@ public class OrdemServicoService {
 	@Transactional
     public OrdemServicoResponse atualizar(Long id, OrdemServicoRequest request) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-        Cliente cliente = buscarClientePorId(request.clienteId());
-		if (Boolean.FALSE.equals(cliente.getAtivo())) {
-			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
-		}
+		Cliente cliente = buscarClientePorId(request.clienteId());
+		Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
 
-        Veiculo veiculo = buscarVeiculoPorId(request.veiculoId());
-		if (Boolean.FALSE.equals(veiculo.getAtivo())) {
-			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
-		}
+		validarVeiculoPertenceAoCliente(veiculo, cliente);
 
-        preencherOrdemServico(ordemServico, request, veiculo, cliente);
+		preencherOrdemServico(
+			ordemServico,
+			request,
+			veiculo,
+			cliente
+		);
 		ordemServicoRepository.saveAndFlush(ordemServico);
 
 		return toResponse(ordemServico);
-    }
+	}
+
+	private void validarVeiculoPertenceAoCliente(Veiculo veiculo, Cliente cliente) {
+		if (!veiculo.getCliente().getId().equals(cliente.getId())) {
+			throw new RegraNegocioException(VEHICLE_DOES_NOT_BELONG_TO_CUSTOMER);
+		}
+	}
 
 	@Transactional
 	public OrdemServicoResponse aprovarOrdemServico(Long id) {
@@ -257,13 +290,25 @@ public class OrdemServicoService {
     }
 
     private Cliente buscarClientePorId(Long clienteId) {
-        return clienteRepository.findById(clienteId)
+        Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
+
+		if (Boolean.FALSE.equals(cliente.getAtivo())) {
+			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
+		}
+
+		return cliente;
     }
 
     private Veiculo buscarVeiculoPorId(Long id) {
-        return veiculoRepository.findById(id)
+        Veiculo veiculo = veiculoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
+
+		if (Boolean.FALSE.equals(veiculo.getAtivo())) {
+			throw new RegraNegocioException(NOT_ACTIVE_VEHICLE);
+		}
+
+		return veiculo;
     }
 
     private OrdemServico buscarOrdemServicoPorId(Long id) {

@@ -111,14 +111,8 @@ class OrdemServicoServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(ordemServicoService, "entityManager", entityManager);
 
-		List<ServicoOrdemServicoRequest> servicos = List.of(
-				new ServicoOrdemServicoRequest(1L),
-				new ServicoOrdemServicoRequest(2L)
-		);
-		List<ItemOrdemServicoRequest> itens = List.of(
-				new ItemOrdemServicoRequest(10L, 2),
-				new ItemOrdemServicoRequest(20L, 1)
-		);
+		List<Long> servicos = List.of();
+		List<ItemOrdemServicoRequest> itens = List.of();
 
         ordemServicoRequest = new OrdemServicoRequest(
                 "Barulho no motor",
@@ -202,7 +196,7 @@ class OrdemServicoServiceTest {
 
     @Test
     void deveAtualizarOrdemServicoComSucesso() {
-        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.EM_DIAGNOSTICO);
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteAtivo));
@@ -223,7 +217,7 @@ class OrdemServicoServiceTest {
 
     @Test
     void deveAdicionarItemESomarValorTotalItens() {
-        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.EM_DIAGNOSTICO);
 
         Item item = criarItem(20L, true, BigDecimal.valueOf(50));
         Estoque estoque = criarEstoque(1L, item, 10, 2);
@@ -258,7 +252,7 @@ class OrdemServicoServiceTest {
 
     @Test
     void naoDeveAdicionarItemQuandoItemEstiverInativo() {
-        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.EM_DIAGNOSTICO);
         Item item = criarItem(20L, false, BigDecimal.valueOf(50));
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
@@ -277,7 +271,7 @@ class OrdemServicoServiceTest {
 
     @Test
     void deveAdicionarServicoESomarValorTotalServicos() {
-        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.EM_DIAGNOSTICO);
         Servico servico = criarServico(30L, true, BigDecimal.valueOf(120));
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
@@ -311,7 +305,7 @@ class OrdemServicoServiceTest {
 
     @Test
     void naoDeveAdicionarServicoQuandoServicoEstiverInativo() {
-        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
+        OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.EM_DIAGNOSTICO);
         Servico servico = criarServico(30L, false, BigDecimal.valueOf(120));
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
@@ -422,7 +416,7 @@ class OrdemServicoServiceTest {
         );
 
         assertEquals(
-                "Não é possível adicionar o item, pois a ordem de serviço está Em execução",
+                "Não é possível adicionar o item, pois a ordem de serviço não está Em diagnóstico",
                 exAdicionarItem.getMessage()
         );
 
@@ -446,7 +440,7 @@ class OrdemServicoServiceTest {
         );
 
         assertEquals(
-                "Não é possível adicionar o serviço, pois a ordem de serviço está Cancelada",
+                "Não é possível adicionar o serviço, pois a ordem de serviço não está Em diagnóstico",
                 exAdicionarServico.getMessage()
         );
 
@@ -565,11 +559,13 @@ class OrdemServicoServiceTest {
     @Test
     void testListar() {
         OrdemServico os = criarOrdemServico(100L, StatusOrdemServico.RECEBIDA);
-        when(repository.findAll()).thenReturn(List.of(os));
+        when(repository.listagemOrdensServico()).thenReturn(List.of(os));
 
         var out = ordemServicoService.listar();
 
-        assertThat(out).usingRecursiveComparison().isEqualTo(List.of(os));
+        assertEquals(1, out.size());
+        assertEquals(100L, out.get(0).id());
+        assertEquals(StatusOrdemServico.RECEBIDA, out.get(0).status());
     }
 
     @Test

@@ -48,12 +48,17 @@ public class ItemOrdemServicoService {
 
 		if (!ordemServico.getStatus().estaEmDiagnostico()) {
 			String mensagem = String.format(
-				"Não é possível adicionar o serviço, pois a ordem de serviço não está %s",
+				CANNOT_ADD_ITEM_WITH_ORDER_OUTSIDE_DIAGNOSIS,
 				StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
 			);
 			throw new RegraNegocioException(mensagem);
 		}
 
+		adicionarItemNaOrdem(ordemServico, request);
+	}
+
+	@Transactional
+	public void adicionarItemNaOrdem(OrdemServico ordemServico, ItemOrdemServicoRequest request) {
 		Item item = buscarItemPorId(request.itemId());
 		Estoque estoque = item.getEstoque();
 
@@ -61,7 +66,10 @@ public class ItemOrdemServicoService {
 			throw new RegraNegocioException(NOT_ACTIVE_ITEM);
 		}
 
-		int quantidadeAtual = itemOrdemServicoRepository.sumQuantidadeByOrdemServicoIdAndItemId(id, item.getId());
+		int quantidadeAtual = itemOrdemServicoRepository.sumQuantidadeByOrdemServicoIdAndItemId(
+				ordemServico.getId(),
+				item.getId()
+		);
 		int totalSolicitado = quantidadeAtual + request.quantidade();
 
 		if (estoque.getQuantidade() < totalSolicitado) {

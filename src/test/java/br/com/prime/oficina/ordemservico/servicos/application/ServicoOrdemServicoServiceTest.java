@@ -1,8 +1,8 @@
 package br.com.prime.oficina.ordemservico.servicos.application;
 
-import br.com.prime.oficina.ordemservico.application.OrdemServicoService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
+import br.com.prime.oficina.ordemservico.infrastructure.HistoricoOrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
@@ -29,10 +29,10 @@ class ServicoOrdemServicoServiceTest {
     private ServicoOrdemServicoRepository repository;
 
     @Mock
-    private OrdemServicoService ordemServicoService;
+    private OrdemServicoRepository ordemServicoRepository;
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
 
     @InjectMocks
     private ServicoOrdemServicoService service;
@@ -90,7 +90,7 @@ class ServicoOrdemServicoServiceTest {
         OrdemServico os = new OrdemServico();
         os.setId(1L);
         os.setCodigo("OS-" + (Long) 1L);
-        os.setStatus(StatusOrdemServico.RECEBIDA);
+        os.setStatus(StatusOrdemServico.EM_EXECUCAO);
         os.setValorTotalItens(BigDecimal.ZERO);
         os.setValorTotalServicos(BigDecimal.ZERO);
         os.setDataCadastro(DATA_ATUAL);
@@ -140,5 +140,3 @@ class ServicoOrdemServicoServiceTest {
         );
     }
 }
-
-

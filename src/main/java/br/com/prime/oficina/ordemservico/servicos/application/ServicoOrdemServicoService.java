@@ -1,8 +1,9 @@
 package br.com.prime.oficina.ordemservico.servicos.application;
 
-import br.com.prime.oficina.ordemservico.application.OrdemServicoService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.domain.HistoricoOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
+import br.com.prime.oficina.ordemservico.infrastructure.HistoricoOrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
@@ -24,11 +25,10 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 @RequiredArgsConstructor
 public class ServicoOrdemServicoService {
 
-	private final OrdemServicoService ordemServicoService;
-
 	private final OrdemServicoRepository ordemServicoRepository;
 	private final ServicoRepository servicoRepository;
 	private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+	private final HistoricoOrdemServicoRepository historicoOrdemServicoRepository;
 
 	public ListaServicosOrdemServicoResponse listarServicosPorOrdemServico(Long id) {
 		List<ServicoOrdemServico> lista = servicoOrdemServicoRepository.findByOrdemServicoId(id);
@@ -50,13 +50,18 @@ public class ServicoOrdemServicoService {
 
 		if (!ordemServico.getStatus().estaEmDiagnostico()) {
 			String mensagem = String.format(
-				"Não é possível adicionar o serviço, pois a ordem de serviço não está %s",
+				CANNOT_ADD_SERVICE_WITH_ORDER_OUTSIDE_DIAGNOSIS,
 				StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
 			);
 			throw new RegraNegocioException(mensagem);
 		}
 
-		Servico servico = buscarServicoPorId(request.servicoId());
+		adicionarServicoNaOrdem(ordemServico, request.servicoId());
+	}
+
+	@Transactional
+	public void adicionarServicoNaOrdem(OrdemServico ordemServico, Long servicoId) {
+		Servico servico = buscarServicoPorId(servicoId);
 		if (Boolean.FALSE.equals(servico.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_SERVICE);
 		}
@@ -90,7 +95,7 @@ public class ServicoOrdemServicoService {
 	public ServicoOrdemServicoResponse iniciarServico(Long id, Long servicoId) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		ordemServicoService.validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "iniciar o serviço");
+		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "iniciar o serviço");
 
 		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository
 				.findByOrdemServicoIdAndServicoId(id, servicoId)
@@ -111,7 +116,7 @@ public class ServicoOrdemServicoService {
 	public ServicoOrdemServicoResponse finalizarServico(Long id, Long servicoId) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		ordemServicoService.validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "iniciar o serviço");
+		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "finalizar o serviço");
 
 		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository
 				.findByOrdemServicoIdAndServicoId(id, servicoId)
@@ -131,6 +136,15 @@ public class ServicoOrdemServicoService {
 		return toServicoResponse(servicoOS);
 	}
 
+	private void validarStatus(OrdemServico os, StatusOrdemServico statusEsperado, String acao) {
+		if (os.getStatus() != statusEsperado) {
+			throw new RegraNegocioException(
+					INVALID_ORDER_STATUS_FOR_ACTION
+							.formatted(acao, os.getStatus().getDescricao())
+			);
+		}
+	}
+
 	private void checarServicosOrdemServico(OrdemServico ordemServico) {
 		boolean existeNaoFinalizado = servicoOrdemServicoRepository.existsByOrdemServicoIdAndStatusNot(
 				ordemServico.getId(),
@@ -138,8 +152,20 @@ public class ServicoOrdemServicoService {
 		);
 
 		if (!existeNaoFinalizado) {
-			ordemServicoService.atualizarStatus(ordemServico, StatusOrdemServico.FINALIZADA);
+			finalizarOrdemServico(ordemServico);
 		}
+	}
+
+	private void finalizarOrdemServico(OrdemServico ordemServico) {
+		ordemServico.setStatus(StatusOrdemServico.FINALIZADA);
+		ordemServico.setDataFimExecucao(LocalDateTime.now());
+		ordemServicoRepository.saveAndFlush(ordemServico);
+
+		HistoricoOrdemServico historicoOrdemServico = new HistoricoOrdemServico();
+		historicoOrdemServico.setOrdemServico(ordemServico);
+		historicoOrdemServico.setStatus(StatusOrdemServico.FINALIZADA);
+		historicoOrdemServico.setObservacao(StatusOrdemServico.FINALIZADA.getDescricao());
+		historicoOrdemServicoRepository.save(historicoOrdemServico);
 	}
 
 	private void preencherServicoOrdemServico(

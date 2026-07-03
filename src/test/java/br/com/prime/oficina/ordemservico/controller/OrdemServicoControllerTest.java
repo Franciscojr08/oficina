@@ -289,10 +289,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
     }
 
     private OrdemServicoRequest criarOrdemServicoRequest() {
-		List<ServicoOrdemServicoRequest> servicos = List.of(
-				new ServicoOrdemServicoRequest(1L),
-				new ServicoOrdemServicoRequest(2L)
-		);
+		List<Long> servicos = List.of(1L, 2L);
 		List<ItemOrdemServicoRequest> itens = List.of(
 				new ItemOrdemServicoRequest(10L, 2),
 				new ItemOrdemServicoRequest(20L, 1)

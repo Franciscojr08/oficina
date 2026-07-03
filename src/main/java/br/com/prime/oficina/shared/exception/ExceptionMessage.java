@@ -28,4 +28,8 @@ public class ExceptionMessage {
     public static final String INVALID_VEHICLE_PLATE = "Placa inválida, não segue o padrão.";
 	public static final String INVALID_STATUS_FOR_MODIFICATION = "Status inválido para alteração";
 	public static final String SERVICE_NOT_FOUNT_FOR_ORDER = "Serviço não encontrado para essa ordem de serviço";
+	public static final String VEHICLE_DOES_NOT_BELONG_TO_CUSTOMER = "O veículo informado não pertence ao cliente informado.";
+	public static final String CANNOT_ADD_ITEM_WITH_ORDER_OUTSIDE_DIAGNOSIS = "Não é possível adicionar o item, pois a ordem de serviço não está %s";
+	public static final String CANNOT_ADD_SERVICE_WITH_ORDER_OUTSIDE_DIAGNOSIS = "Não é possível adicionar o serviço, pois a ordem de serviço não está %s";
+	public static final String INVALID_ORDER_STATUS_FOR_ACTION = "Não é possível %s, pois a ordem de serviço está %s";
 }
