@@ -1,8 +1,6 @@
 package br.com.prime.oficina.servico.application;
 
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 
@@ -79,18 +76,6 @@ public class ServicoService {
 		}
 
         servico.setAtivo(false);
-
-        Optional<ServicoOrdemServico> servicoOrdemServico = servicoOrdemServicoRepository.findByServicoId(servico.getId());
-
-		if (servicoOrdemServico.isPresent()) {
-            ServicoOrdemServico servicoOrdemServicoAtualizado = servicoOrdemServico.get();
-            OrdemServico ordemServico = servicoOrdemServicoAtualizado.getOrdemServico();
-
-            if (StatusOrdemServico.EM_EXECUCAO.equals(ordemServico.getStatus())) {
-				throw new RegraNegocioException(SERVICE_IN_EXECUTION_IN_SERVICE_ORDER);
-            }
-        }
-
         servicoRepository.save(servico);
     }
 

@@ -37,5 +37,4 @@ public class ExceptionMessage {
 	public static final String CANNOT_INACTIVATE_VEHICLE_WITH_ACTIVE_SERVICE_ORDERS = "Não é possível inativar o veículo, pois ele possui ordens de serviço ativas.";
 	public static final String CANNOT_INACTIVATE_SERVICE_WITH_ACTIVE_SERVICE_ORDERS = "Não é possível inativar o serviço, pois ele possui ordens de serviço ativas.";
 	public static final String CANNOT_INACTIVATE_ITEM_WITH_ACTIVE_SERVICE_ORDERS = "Não é possível inativar o item, pois ele possui ordens de serviço ativas.";
-	public static final String SERVICE_IN_EXECUTION_IN_SERVICE_ORDER = "Serviço em execução em ordem de serviço";
 }

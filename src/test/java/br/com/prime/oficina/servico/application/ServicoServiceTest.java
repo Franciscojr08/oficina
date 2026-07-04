@@ -1,8 +1,5 @@
 package br.com.prime.oficina.servico.application;
 
-import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
@@ -228,7 +225,6 @@ class ServicoServiceTest {
         Servico servico = criarServico(1L, "Troca de óleo", BigDecimal.valueOf(120.00));
 
         when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico));
-        when(servicoOrdemServicoRepository.findByServicoId(1L)).thenReturn(Optional.empty());
 
         servicoService.inativar(1L);
 
@@ -239,58 +235,7 @@ class ServicoServiceTest {
         assertFalse(servicoSalvo.getAtivo());
 
         verify(servicoRepository).findById(1L);
-        verify(servicoOrdemServicoRepository).findByServicoId(1L);
-    }
-
-    @Test
-    void naoDeveInativarServicoQuandoEstiverEmExecucaoEmOrdemServico() {
-        Servico servico = criarServico(1L, "Troca de óleo", BigDecimal.valueOf(120.00));
-
-        OrdemServico ordemServico = new OrdemServico();
-        ordemServico.setStatus(StatusOrdemServico.EM_EXECUCAO);
-
-        ServicoOrdemServico servicoOrdemServico = new ServicoOrdemServico();
-        servicoOrdemServico.setServico(servico);
-        servicoOrdemServico.setOrdemServico(ordemServico);
-
-        when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico));
-        when(servicoOrdemServicoRepository.findByServicoId(1L)).thenReturn(Optional.of(servicoOrdemServico));
-
-        RegraNegocioException exception = assertThrows(
-                RegraNegocioException.class,
-                () -> servicoService.inativar(1L)
-        );
-
-        assertEquals("Serviço em execução em ordem de serviço", exception.getMessage());
-
-        verify(servicoRepository).findById(1L);
-        verify(servicoOrdemServicoRepository).findByServicoId(1L);
-        verify(servicoRepository, never()).save(any());
-    }
-
-    @Test
-    void deveInativarServicoQuandoVinculadoMasNaoEstiverEmExecucao() {
-        Servico servico = criarServico(1L, "Troca de óleo", BigDecimal.valueOf(120.00));
-
-        OrdemServico ordemServico = new OrdemServico();
-        ordemServico.setStatus(StatusOrdemServico.RECEBIDA);
-
-        ServicoOrdemServico servicoOrdemServico = new ServicoOrdemServico();
-        servicoOrdemServico.setServico(servico);
-        servicoOrdemServico.setOrdemServico(ordemServico);
-
-        when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico));
-        when(servicoOrdemServicoRepository.findByServicoId(1L)).thenReturn(Optional.of(servicoOrdemServico));
-
-        servicoService.inativar(1L);
-
-        ArgumentCaptor<Servico> captor = ArgumentCaptor.forClass(Servico.class);
-        verify(servicoRepository).save(captor.capture());
-
-        assertFalse(captor.getValue().getAtivo());
-
-        verify(servicoRepository).findById(1L);
-        verify(servicoOrdemServicoRepository).findByServicoId(1L);
+        verify(servicoOrdemServicoRepository, never()).findByServicoId(anyLong());
     }
 
     @Test

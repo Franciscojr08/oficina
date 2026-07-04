@@ -61,6 +61,15 @@ public class ServicoOrdemServicoService {
 		adicionarServicoNaOrdem(ordemServico, servicoId);
 	}
 
+	public void cancelarServicosDaOrdem(Long ordemServicoId) {
+		List<ServicoOrdemServico> servicos = servicoOrdemServicoRepository.findByOrdemServicoId(ordemServicoId);
+
+		for (ServicoOrdemServico servico : servicos) {
+			servico.setStatus(StatusServico.CANCELADO);
+			servicoOrdemServicoRepository.saveAndFlush(servico);
+		}
+	}
+
 	private void adicionarServicoNaOrdem(OrdemServico ordemServico, Long servicoId) {
 		Servico servico = buscarServicoPorId(servicoId);
 		if (Boolean.FALSE.equals(servico.getAtivo())) {

@@ -10,7 +10,6 @@ import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
-import br.com.prime.oficina.ordemservico.servicos.application.StatusServico;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
@@ -190,13 +189,7 @@ public class OrdemServicoService {
 
 		ordemServicoStatusService.validarPodeReprovar(ordemServico);
 
-		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
-
-		for (ServicoOrdemServico servico : servicoOrdemServicoList) {
-			servico.setStatus(StatusServico.CANCELADO);
-			servicoOrdemServicoRepository.saveAndFlush(servico);
-		}
-
+		servicoOrdemServicoService.cancelarServicosDaOrdem(id);
 		ordemServicoStatusService.cancelarPorReprovacao(ordemServico);
 
 		return ordemServicoMapper.toResponse(ordemServico);
