@@ -64,7 +64,10 @@ public class OrdemServicoController {
     }
 
     @PostMapping("/{id}/itens")
-    public ResponseEntity<ListaItensOrdemServicoResponse> adicionarItem(@PathVariable Long id, @RequestBody ItemOrdemServicoRequest request) {
+    public ResponseEntity<ListaItensOrdemServicoResponse> adicionarItem(
+			@PathVariable Long id,
+			@RequestBody @Valid ItemOrdemServicoRequest request
+	) {
 		itemOrdemServicoService.adicionarItem(id, request);
 		ListaItensOrdemServicoResponse response = itemOrdemServicoService.listarItensPorOrdemServico(id);
 
@@ -77,7 +80,10 @@ public class OrdemServicoController {
 	}
 
     @PostMapping("/{id}/servicos")
-    public ResponseEntity<ListaServicosOrdemServicoResponse> adicionarServico(@PathVariable Long id, @RequestBody ServicoOrdemServicoRequest request) {
+    public ResponseEntity<ListaServicosOrdemServicoResponse> adicionarServico(
+			@PathVariable Long id,
+			@RequestBody @Valid ServicoOrdemServicoRequest request
+	) {
 		servicoOrdemServicoService.adicionarServico(id, request);
 		ListaServicosOrdemServicoResponse response = servicoOrdemServicoService.listarServicosPorOrdemServico(id);
 

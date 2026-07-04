@@ -57,7 +57,11 @@ public class ServicoOrdemServicoService {
 	}
 
 	@Transactional
-	public void adicionarServicoNaOrdem(OrdemServico ordemServico, Long servicoId) {
+	public void adicionarServicoDuranteCadastro(OrdemServico ordemServico, Long servicoId) {
+		adicionarServicoNaOrdem(ordemServico, servicoId);
+	}
+
+	private void adicionarServicoNaOrdem(OrdemServico ordemServico, Long servicoId) {
 		Servico servico = buscarServicoPorId(servicoId);
 		if (Boolean.FALSE.equals(servico.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_SERVICE);

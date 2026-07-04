@@ -58,7 +58,11 @@ public class ItemOrdemServicoService {
 	}
 
 	@Transactional
-	public void adicionarItemNaOrdem(OrdemServico ordemServico, ItemOrdemServicoRequest request) {
+	public void adicionarItemDuranteCadastro(OrdemServico ordemServico, ItemOrdemServicoRequest request) {
+		adicionarItemNaOrdem(ordemServico, request);
+	}
+
+	private void adicionarItemNaOrdem(OrdemServico ordemServico, ItemOrdemServicoRequest request) {
 		Item item = buscarItemPorId(request.itemId());
 		Estoque estoque = item.getEstoque();
 

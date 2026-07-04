@@ -98,29 +98,29 @@ public class OrdemServicoService {
 		entityManager.refresh(ordemServico);
 
 		historicoOrdemServicoService.registrar(ordemServico, StatusOrdemServico.RECEBIDA);
-		adicionarServicosDaRequest(ordemServico, request);
-		adicionarItensDaRequest(ordemServico, request);
+		adicionarServicosDoCadastro(ordemServico, request);
+		adicionarItensDoCadastro(ordemServico, request);
 
         return ordemServicoMapper.toResponse(ordemServico);
     }
 
-	private void adicionarServicosDaRequest(OrdemServico ordemServico, OrdemServicoRequest request) {
+	private void adicionarServicosDoCadastro(OrdemServico ordemServico, OrdemServicoRequest request) {
 		if (request.servicos() == null) {
 			return;
 		}
 
 		request.servicos().forEach(servicoId ->
-				servicoOrdemServicoService.adicionarServicoNaOrdem(ordemServico, servicoId)
+				servicoOrdemServicoService.adicionarServicoDuranteCadastro(ordemServico, servicoId)
 		);
 	}
 
-	private void adicionarItensDaRequest(OrdemServico ordemServico, OrdemServicoRequest request) {
+	private void adicionarItensDoCadastro(OrdemServico ordemServico, OrdemServicoRequest request) {
 		if (request.itens() == null) {
 			return;
 		}
 
 		request.itens().forEach(item ->
-				itemOrdemServicoService.adicionarItemNaOrdem(ordemServico, item)
+				itemOrdemServicoService.adicionarItemDuranteCadastro(ordemServico, item)
 		);
 	}
 
