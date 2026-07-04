@@ -66,7 +66,7 @@ public class ItemOrdemServicoService {
 		Item item = buscarItemPorId(request.itemId());
 		Estoque estoque = item.getEstoque();
 
-		if (item.getAtivo() == Boolean.FALSE) {
+		if (Boolean.FALSE.equals(item.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_ITEM);
 		}
 
@@ -85,7 +85,7 @@ public class ItemOrdemServicoService {
 
 		itemOrdemServicoRepository.save(itemOrdemServico);
 
-		BigDecimal novoTotal = getValorTotalItens(itemOrdemServico, ordemServico);
+		BigDecimal novoTotal = calcularNovoValorTotalItens(itemOrdemServico, ordemServico);
 		ordemServico.setValorTotalItens(novoTotal);
 
 		ordemServicoRepository.saveAndFlush(ordemServico);
@@ -101,7 +101,7 @@ public class ItemOrdemServicoService {
 				.orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_ORDER_NOT_FOUND));
 	}
 
-	private BigDecimal getValorTotalItens(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico) {
+	private BigDecimal calcularNovoValorTotalItens(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico) {
 		BigDecimal valorItem = itemOrdemServico.getValorUnitario()
 				.multiply(BigDecimal.valueOf(itemOrdemServico.getQuantidade()));
 		return ordemServico.getValorTotalItens().add(valorItem);

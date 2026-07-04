@@ -31,7 +31,7 @@ public class ClienteService {
 		validarCpfCnpj(request.cpfCnpj());
 
 		Cliente cliente = new Cliente();
-		setDadosCliente(request, cliente);
+		preencherCliente(request, cliente);
 
 		Cliente salvo = clienteRepository.save(cliente);
 		return toResponse(salvo);
@@ -64,13 +64,13 @@ public class ClienteService {
 			throw new RegraNegocioException(EXISTING_CUSTOMER);
 		}
 
-		setDadosCliente(request,cliente);
+		preencherCliente(request, cliente);
 
 		Cliente atualizado = clienteRepository.save(cliente);
 		return toResponse(atualizado);
 	}
 
-	private void setDadosCliente(ClienteRequest request, Cliente cliente) {
+	private void preencherCliente(ClienteRequest request, Cliente cliente) {
 		cliente.setNome(request.nome());
 		cliente.setCpfCnpj(request.cpfCnpj());
 		cliente.setTelefone(request.telefone());

@@ -81,13 +81,13 @@ public class ServicoOrdemServicoService {
 
 		servicoOrdemServicoRepository.save(servicoOrdemServico);
 
-		BigDecimal novoTotal = getValorTotalServicos(ordemServico, servicoOrdemServico);
+		BigDecimal novoTotal = calcularNovoValorTotalServicos(ordemServico, servicoOrdemServico);
 		ordemServico.setValorTotalServicos(novoTotal);
 
 		ordemServicoRepository.saveAndFlush(ordemServico);
 	}
 
-	private BigDecimal getValorTotalServicos(OrdemServico ordemServico, ServicoOrdemServico servicoOrdemServico) {
+	private BigDecimal calcularNovoValorTotalServicos(OrdemServico ordemServico, ServicoOrdemServico servicoOrdemServico) {
 		BigDecimal valorServico = servicoOrdemServico.getValorUnitario();
 		return ordemServico.getValorTotalServicos().add(valorServico);
 	}
