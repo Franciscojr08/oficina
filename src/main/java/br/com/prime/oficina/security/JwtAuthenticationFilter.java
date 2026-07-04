@@ -28,17 +28,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        //validar presença e formato do header(Authorization: Bearer <token>)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        //Bearer puro = 7 caracteres sem o prefixo
         String token = authHeader.substring(7);
         String username;
 
-        // obter usuário do token
         try {
             username = jwtService.extrairUsername(token);
         } catch (Exception e) {
@@ -46,17 +43,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        //verificar se tem usuário e se ninguém autenticou essa requisição
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            //Busca usuário real do banco, evita situação de mudar perfil, desativar, deletar, depois de emitir token
+            // Recarrega o usuário do banco para refletir mudanças feitas depois da emissão do token.
             SecurityUserDetails userDetails =
                     (SecurityUserDetails) customUserDetailsService.loadUserByUsername(username);
 
-            //validar claims do token e expiração
             if (jwtService.tokenEhValido(token, userDetails)) {
 
-                //objeto de autenticação do spring
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
@@ -64,17 +58,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 userDetails.getAuthorities()
                         );
 
-                //detalhes da requisição , ip origem, sessão, request
                 authentication.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
 
-                // adicionar no contexto a autenticação
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
 
-        //seguir fluxo da requisição
         filterChain.doFilter(request, response);
     }
 }
