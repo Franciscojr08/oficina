@@ -24,6 +24,7 @@ public class VeiculoService {
     private final VeiculoRepository veiculoRepository;
     private final ClienteRepository clienteRepository;
 	private final OrdemServicoRepository ordemServicoRepository;
+	private final VeiculoMapper veiculoMapper;
 
     @Transactional
     public VeiculoResponse criar(VeiculoRequest request) {
@@ -37,7 +38,7 @@ public class VeiculoService {
 		preencherVeiculo(veiculo, request, cliente);
 
         Veiculo salvo = veiculoRepository.save(veiculo);
-        return toResponse(salvo);
+        return veiculoMapper.toResponse(salvo);
     }
 
 	private static void validarCliente(Cliente cliente) {
@@ -49,19 +50,19 @@ public class VeiculoService {
     public List<VeiculoResponse> listar() {
         return veiculoRepository.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(veiculoMapper::toResponse)
                 .toList();
     }
 
     public VeiculoResponse buscarPorId(Long id) {
         Veiculo veiculo = buscarVeiculoPorId(id);
-        return toResponse(veiculo);
+        return veiculoMapper.toResponse(veiculo);
     }
 
     public List<VeiculoResponse> listarPorCliente(Long clienteId) {
         return veiculoRepository.findByClienteId(clienteId)
                 .stream()
-                .map(this::toResponse)
+                .map(veiculoMapper::toResponse)
                 .toList();
     }
 
@@ -83,7 +84,7 @@ public class VeiculoService {
         preencherVeiculo(veiculo, request, cliente);
         Veiculo atualizado = veiculoRepository.save(veiculo);
 
-        return toResponse(atualizado);
+        return veiculoMapper.toResponse(atualizado);
     }
 
     @Transactional
@@ -106,7 +107,7 @@ public class VeiculoService {
         Veiculo veiculo = veiculoRepository.findByPlaca(placa)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
 
-        return toResponse(veiculo);
+        return veiculoMapper.toResponse(veiculo);
     }
 
     private void validarPlacaDuplicada(String placa) {
@@ -133,22 +134,6 @@ public class VeiculoService {
     private Veiculo buscarVeiculoPorId(Long id) {
         return veiculoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
-    }
-
-    private VeiculoResponse toResponse(Veiculo veiculo) {
-        return new VeiculoResponse(
-                veiculo.getId(),
-                veiculo.getCliente().getId(),
-                veiculo.getPlaca(),
-                veiculo.getMarca(),
-                veiculo.getModelo(),
-                veiculo.getAno(),
-                veiculo.getCor(),
-                veiculo.getObservacao(),
-                veiculo.getAtivo(),
-                veiculo.getDataCriacao(),
-                veiculo.getDataAtualizacao()
-        );
     }
 
     private void preencherVeiculo(Veiculo veiculo, VeiculoRequest request, Cliente cliente) {

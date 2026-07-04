@@ -20,6 +20,7 @@ public class ServicoService {
 
     private final ServicoRepository servicoRepository;
     private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+	private final ServicoMapper servicoMapper;
 
     @Transactional
     public ServicoResponse criar(ServicoRequest request) {
@@ -30,19 +31,19 @@ public class ServicoService {
 
 		servicoRepository.save(servico);
 
-		return toResponse(servico);
+		return servicoMapper.toResponse(servico);
     }
 
     public List<ServicoResponse> listar() {
         return servicoRepository.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(servicoMapper::toResponse)
                 .toList();
     }
 
     public ServicoResponse buscarPorId(Long id) {
         Servico servico = buscarServicoPorId(id);
-        return toResponse(servico);
+        return servicoMapper.toResponse(servico);
     }
 
     @Transactional
@@ -58,7 +59,7 @@ public class ServicoService {
 
 		servicoRepository.saveAndFlush(servico);
 
-		return toResponse(servico);
+		return servicoMapper.toResponse(servico);
     }
 
     @Transactional
@@ -96,15 +97,4 @@ public class ServicoService {
 		servico.setValor(request.valor());
     }
 
-    private ServicoResponse toResponse(Servico servico) {
-        return new ServicoResponse(
-                servico.getId(),
-                servico.getNome(),
-                servico.getDescricao(),
-				servico.getValor(),
-                servico.getAtivo(),
-                servico.getDataCriacao(),
-                servico.getDataAtualizacao()
-        );
-    }
 }

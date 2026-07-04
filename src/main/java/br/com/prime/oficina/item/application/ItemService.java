@@ -30,6 +30,7 @@ public class ItemService {
     private final EstoqueRepository estoqueRepository;
     private final MovimentoEstoqueRepository movimentoEstoqueRepository;
     private final ItemOrdemServicoRepository itemOrdemServicoRepository;
+	private final ItemMapper itemMapper;
 
     @Transactional
     public ItemResponse criar(ItemRequest request) {
@@ -62,27 +63,27 @@ public class ItemService {
             movimentoEstoqueRepository.save(movimento);
         }
 
-		return toResponse(item, estoque);
+		return itemMapper.toResponse(item, estoque);
     }
 
     public List<ItemResponse> listar() {
         return itemRepository.findAll()
                 .stream()
-                .map(item -> toResponse(item, buscarEstoquePorItemId(item.getId())))
+                .map(item -> itemMapper.toResponse(item, buscarEstoquePorItemId(item.getId())))
                 .toList();
     }
 
     public List<ItemResponse> listarPorTipo(TipoItem tipo) {
         return itemRepository.findByTipo(tipo)
                 .stream()
-                .map(item -> toResponse(item, buscarEstoquePorItemId(item.getId())))
+                .map(item -> itemMapper.toResponse(item, buscarEstoquePorItemId(item.getId())))
                 .toList();
     }
 
     public ItemResponse buscarPorId(Long id) {
         Item item = buscarItemPorId(id);
         Estoque estoque = buscarEstoquePorItemId(id);
-        return toResponse(item, estoque);
+        return itemMapper.toResponse(item, estoque);
     }
 
     @Transactional
@@ -107,7 +108,7 @@ public class ItemService {
 
 		Estoque estoque = buscarEstoquePorItemId(id);
 
-		return toResponse(item, estoque);
+		return itemMapper.toResponse(item, estoque);
     }
 
     @Transactional
@@ -144,19 +145,4 @@ public class ItemService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_STOCK_ERROR));
     }
 
-    private ItemResponse toResponse(Item item, Estoque estoque) {
-        return new ItemResponse(
-                item.getId(),
-                item.getNome(),
-                item.getDescricao(),
-                item.getTipo(),
-                item.getValorUnitario(),
-                item.getUnidadeMedida(),
-                item.getAtivo(),
-                estoque.getQuantidade(),
-                estoque.getEstoqueMinimo(),
-                item.getDataCriacao(),
-                item.getDataAtualizacao()
-        );
-    }
 }

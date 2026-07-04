@@ -24,6 +24,7 @@ public class ClienteService {
 
 	private final ClienteRepository clienteRepository;
 	private final OrdemServicoRepository ordemServicoRepository;
+	private final ClienteMapper clienteMapper;
 
 	@Transactional
 	public ClienteResponse criar(ClienteRequest request) {
@@ -34,14 +35,14 @@ public class ClienteService {
 		preencherCliente(request, cliente);
 
 		Cliente salvo = clienteRepository.save(cliente);
-		return toResponse(salvo);
+		return clienteMapper.toResponse(salvo);
 	}
 
 	@Transactional(readOnly = true)
 	public List<ClienteResponse> listar() {
 		return clienteRepository.findAll()
 				.stream()
-				.map(this::toResponse)
+				.map(clienteMapper::toResponse)
 				.toList();
 	}
 
@@ -49,7 +50,7 @@ public class ClienteService {
 	public ClienteResponse buscarPorId(Long id) {
 		Cliente cliente = clienteRepository.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
-		return toResponse(cliente);
+		return clienteMapper.toResponse(cliente);
 	}
 
 	@Transactional
@@ -67,7 +68,7 @@ public class ClienteService {
 		preencherCliente(request, cliente);
 
 		Cliente atualizado = clienteRepository.save(cliente);
-		return toResponse(atualizado);
+		return clienteMapper.toResponse(atualizado);
 	}
 
 	private void preencherCliente(ClienteRequest request, Cliente cliente) {
@@ -109,7 +110,7 @@ public class ClienteService {
 		Cliente cliente = clienteRepository.findByCpfCnpj(cpfCnpj)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 
-		return toResponse(cliente);
+		return clienteMapper.toResponse(cliente);
 	}
 
 	private void validarCpfCnpjDuplicado(String cpfCnpj) {
@@ -136,22 +137,4 @@ public class ClienteService {
 		}
 	}
 
-	private ClienteResponse toResponse(Cliente cliente) {
-		return new ClienteResponse(
-				cliente.getId(),
-				cliente.getNome(),
-				cliente.getCpfCnpj(),
-				cliente.getTelefone(),
-				cliente.getEmail(),
-				cliente.getCep(),
-				cliente.getLogradouro(),
-				cliente.getBairro(),
-				cliente.getCidade(),
-				cliente.getUf(),
-				cliente.getDataNascimento(),
-				cliente.getAtivo(),
-				cliente.getDataCriacao(),
-				cliente.getDataAtualizacao()
-		);
-	}
 }
