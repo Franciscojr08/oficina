@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -41,6 +42,9 @@ class ItemServiceTest {
 
     @Mock
     private ItemOrdemServicoRepository itemOrdemServicoRepository;
+
+    @Spy
+    private ItemMapper itemMapper;
 
     @InjectMocks
     private ItemService itemService;

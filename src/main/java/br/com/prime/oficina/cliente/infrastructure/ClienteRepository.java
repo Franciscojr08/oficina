@@ -1,4 +1,4 @@
-package br.com.prime.oficina.cliente.infraestructure;
+package br.com.prime.oficina.cliente.infrastructure;
 
 import java.util.Optional;
 

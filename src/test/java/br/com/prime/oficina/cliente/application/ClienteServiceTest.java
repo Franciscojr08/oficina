@@ -1,7 +1,7 @@
 package br.com.prime.oficina.cliente.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.cliente.infrastructure.ClienteRepository;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -35,6 +36,9 @@ class ClienteServiceTest {
 
     @Mock
     private OrdemServicoRepository ordemServicoRepository;
+
+    @Spy
+    private ClienteMapper clienteMapper;
 
     @InjectMocks
     private ClienteService clienteService;

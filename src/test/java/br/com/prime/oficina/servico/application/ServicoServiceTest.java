@@ -2,7 +2,7 @@ package br.com.prime.oficina.servico.application;
 
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
-import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
+import br.com.prime.oficina.servico.infrastructure.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -30,6 +31,9 @@ class ServicoServiceTest {
 
     @Mock
     private ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+
+    @Spy
+    private ServicoMapper servicoMapper;
 
     @InjectMocks
     private ServicoService servicoService;

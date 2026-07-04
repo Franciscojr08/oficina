@@ -1,7 +1,7 @@
 package br.com.prime.oficina.ordemservico.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.cliente.infrastructure.ClienteRepository;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;

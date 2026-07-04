@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.cliente.infrastructure.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 
 import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;

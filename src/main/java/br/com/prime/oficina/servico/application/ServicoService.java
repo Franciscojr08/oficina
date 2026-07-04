@@ -3,7 +3,7 @@ package br.com.prime.oficina.servico.application;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
-import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
+import br.com.prime.oficina.servico.infrastructure.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;

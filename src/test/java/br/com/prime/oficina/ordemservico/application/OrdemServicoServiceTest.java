@@ -1,7 +1,7 @@
 package br.com.prime.oficina.ordemservico.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
+import br.com.prime.oficina.cliente.infrastructure.ClienteRepository;
 import br.com.prime.oficina.estoque.domain.Estoque;
 import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
 import br.com.prime.oficina.item.domain.Item;
@@ -23,7 +23,7 @@ import br.com.prime.oficina.ordemservico.servicos.application.StatusServico;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
 import br.com.prime.oficina.servico.domain.Servico;
-import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
+import br.com.prime.oficina.servico.infrastructure.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;

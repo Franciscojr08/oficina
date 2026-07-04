@@ -1,4 +1,4 @@
-package br.com.prime.oficina.servico.infrasctucture;
+package br.com.prime.oficina.servico.infrastructure;
 
 import br.com.prime.oficina.servico.domain.Servico;
 import org.springframework.data.jpa.repository.JpaRepository;
