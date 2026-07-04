@@ -3,7 +3,6 @@ package br.com.prime.oficina.veiculo.application;
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
@@ -293,8 +292,8 @@ class VeiculoServiceTest {
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteAtivo));
         when(veiculoRepository.existsByPlaca("XYZ9999")).thenReturn(true);
 
-        RecursoDuplicadoException exception = assertThrows(
-                RecursoDuplicadoException.class,
+        RegraNegocioException exception = assertThrows(
+                RegraNegocioException.class,
                 () -> veiculoService.atualizar(10L, requestAtualizacao)
         );
 

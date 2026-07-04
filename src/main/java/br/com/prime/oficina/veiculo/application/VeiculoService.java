@@ -4,7 +4,6 @@ import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.shared.validator.ValidadorPlaca;
@@ -75,9 +74,10 @@ public class VeiculoService {
         Cliente cliente = buscarClientePorId(request.clienteId());
 		validarCliente(cliente);
 
-        if (!veiculo.getPlaca().equals(request.placa())
-                && veiculoRepository.existsByPlaca(request.placa())) {
-            throw new RecursoDuplicadoException(DUPLICATED_VEHICLE);
+        if (!veiculo.getPlaca().equals(request.placa()) &&
+			veiculoRepository.existsByPlaca(request.placa())
+        ) {
+            throw new RegraNegocioException(DUPLICATED_VEHICLE);
         }
 
         preencherVeiculo(veiculo, request, cliente);
