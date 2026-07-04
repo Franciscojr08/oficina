@@ -3,6 +3,7 @@ package br.com.prime.oficina.ordemservico.itens.application;
 import br.com.prime.oficina.estoque.domain.Estoque;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.ordemservico.application.OrdemServicoStatusService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
@@ -26,6 +27,7 @@ public class ItemOrdemServicoService {
 	private final OrdemServicoRepository ordemServicoRepository;
 	private final ItemRepository itemRepository;
 	private final ItemOrdemServicoRepository itemOrdemServicoRepository;
+	private final OrdemServicoStatusService ordemServicoStatusService;
 
 	public ListaItensOrdemServicoResponse listarItensPorOrdemServico(Long id) {
 		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoRepository.findByOrdemServicoId(id);
@@ -46,13 +48,11 @@ public class ItemOrdemServicoService {
 	public void adicionarItem(Long id, ItemOrdemServicoRequest request) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		if (!ordemServico.getStatus().estaEmDiagnostico()) {
-			String mensagem = String.format(
-				CANNOT_ADD_ITEM_WITH_ORDER_OUTSIDE_DIAGNOSIS,
-				StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
-			);
-			throw new RegraNegocioException(mensagem);
-		}
+		String mensagem = String.format(
+			CANNOT_ADD_ITEM_WITH_ORDER_OUTSIDE_DIAGNOSIS,
+			StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
+		);
+		ordemServicoStatusService.validarEmDiagnostico(ordemServico, mensagem);
 
 		adicionarItemNaOrdem(ordemServico, request);
 	}

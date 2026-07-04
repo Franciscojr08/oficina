@@ -89,7 +89,7 @@ class ServicoOrdemServicoServiceTest {
         );
 
         assertThat(outUpdated).usingRecursiveAssertion().isEqualTo(response);
-        verify(ordemServicoStatusService).atualizarStatus(any(OrdemServico.class), any(StatusOrdemServico.class));
+        verify(ordemServicoStatusService).finalizar(any(OrdemServico.class));
     }
 
     private OrdemServico criarOrdemServico() {

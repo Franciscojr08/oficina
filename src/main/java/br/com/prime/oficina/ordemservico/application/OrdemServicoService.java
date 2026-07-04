@@ -83,7 +83,7 @@ public class OrdemServicoService {
 		validarVeiculoPertenceAoCliente(veiculo, cliente);
 
         OrdemServico ordemServico = new OrdemServico();
-		ordemServico.setStatus(StatusOrdemServico.RECEBIDA);
+		ordemServicoStatusService.definirStatusInicial(ordemServico);
 		ordemServico.setValorTotalServicos(BigDecimal.ZERO);
 		ordemServico.setValorTotalItens(BigDecimal.ZERO);
 
@@ -153,13 +153,7 @@ public class OrdemServicoService {
 	public OrdemServicoResponse aprovarOrdemServico(Long id) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		ordemServicoStatusService.validarStatus(
-			ordemServico,
-			StatusOrdemServico.AGUARDANDO_APROVACAO,
-			"aprovar a ordem de serviço"
-		);
-
-		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.APROVADA);
+		ordemServicoStatusService.aprovar(ordemServico);
 
 		return processarOrdemParaExecucao(id);
 	}
@@ -168,11 +162,7 @@ public class OrdemServicoService {
 	public OrdemServicoResponse iniciarExecucao(Long id) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		ordemServicoStatusService.validarStatus(
-			ordemServico,
-			StatusOrdemServico.AGUARDANDO_ITENS,
-			"iniciar execução"
-		);
+		ordemServicoStatusService.validarPodeIniciarExecucao(ordemServico);
 
 		return processarOrdemParaExecucao(id);
 	}
@@ -183,15 +173,13 @@ public class OrdemServicoService {
 		boolean temEstoqueCompleto = ordemServicoEstoqueService.temEstoqueCompletoParaOrdem(id);
 
 		if (!temEstoqueCompleto) {
-			if (ordemServico.getStatus() != StatusOrdemServico.AGUARDANDO_ITENS) {
-				ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS);
-			}
+			ordemServicoStatusService.aguardarItens(ordemServico);
 
 			return ordemServicoMapper.toResponse(ordemServico);
 		}
 
 		ordemServicoEstoqueService.baixarEstoqueDaOrdem(ordemServico);
-		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO);
+		ordemServicoStatusService.iniciarExecucao(ordemServico);
 
 		return ordemServicoMapper.toResponse(ordemServico);
 	}
@@ -200,11 +188,7 @@ public class OrdemServicoService {
     public OrdemServicoResponse reprovarOrdemServico(Long id) {
         OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		ordemServicoStatusService.validarStatus(
-			ordemServico,
-			StatusOrdemServico.AGUARDANDO_APROVACAO,
-			"reprovar a ordem de serviço"
-		);
+		ordemServicoStatusService.validarPodeReprovar(ordemServico);
 
 		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
 
@@ -213,7 +197,7 @@ public class OrdemServicoService {
 			servicoOrdemServicoRepository.saveAndFlush(servico);
 		}
 
-		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.CANCELADA);
+		ordemServicoStatusService.cancelarPorReprovacao(ordemServico);
 
 		return ordemServicoMapper.toResponse(ordemServico);
     }
@@ -259,12 +243,11 @@ public class OrdemServicoService {
     }
 
 	public OrdemServicoResponse iniciarDiagnostico(Long id) {
-		return alterarStatus(
-			id,
-			StatusOrdemServico.RECEBIDA,
-			StatusOrdemServico.EM_DIAGNOSTICO,
-			"iniciar diagnóstico"
-		);
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		ordemServicoStatusService.iniciarDiagnostico(ordemServico);
+
+		return ordemServicoMapper.toResponse(ordemServico);
 	}
 
 	public OrdemServicoResponse solicitarAprovacao(Long id) {
@@ -275,33 +258,17 @@ public class OrdemServicoService {
 			throw new RegraNegocioException("A OS deve possuir ao menos uma peça e um serviço para solicitar aprovação");
 		}
 
-		return alterarStatus(
-			id,
-			StatusOrdemServico.EM_DIAGNOSTICO,
-			StatusOrdemServico.AGUARDANDO_APROVACAO,
-			"solicitar aprovação"
-		);
+		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
+
+		ordemServicoStatusService.solicitarAprovacao(ordemServico);
+
+		return ordemServicoMapper.toResponse(ordemServico);
 	}
 
 	public OrdemServicoResponse entregarOrdemServico(Long id) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		ordemServicoStatusService.validarStatus(ordemServico, StatusOrdemServico.FINALIZADA, "entregar");
-		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.ENTREGUE);
-
-		return ordemServicoMapper.toResponse(ordemServico);
-	}
-
-	private OrdemServicoResponse alterarStatus(
-			Long id,
-			StatusOrdemServico statusAtualPermitido,
-			StatusOrdemServico novoStatus,
-			String acao
-	) {
-		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
-
-		ordemServicoStatusService.validarStatus(ordemServico, statusAtualPermitido, acao);
-		ordemServicoStatusService.atualizarStatus(ordemServico, novoStatus);
+		ordemServicoStatusService.entregar(ordemServico);
 
 		return ordemServicoMapper.toResponse(ordemServico);
 	}

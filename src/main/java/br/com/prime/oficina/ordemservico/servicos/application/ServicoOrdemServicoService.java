@@ -47,13 +47,11 @@ public class ServicoOrdemServicoService {
 	public void adicionarServico(Long id, ServicoOrdemServicoRequest request) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		if (!ordemServico.getStatus().estaEmDiagnostico()) {
-			String mensagem = String.format(
-				CANNOT_ADD_SERVICE_WITH_ORDER_OUTSIDE_DIAGNOSIS,
-				StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
-			);
-			throw new RegraNegocioException(mensagem);
-		}
+		String mensagem = String.format(
+			CANNOT_ADD_SERVICE_WITH_ORDER_OUTSIDE_DIAGNOSIS,
+			StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
+		);
+		ordemServicoStatusService.validarEmDiagnostico(ordemServico, mensagem);
 
 		adicionarServicoNaOrdem(ordemServico, request.servicoId());
 	}
@@ -94,7 +92,7 @@ public class ServicoOrdemServicoService {
 	public ServicoOrdemServicoResponse iniciarServico(Long id, Long servicoId) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "iniciar o serviço");
+		ordemServicoStatusService.validarPodeExecutarServico(ordemServico, "iniciar o serviço");
 
 		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository
 				.findByOrdemServicoIdAndServicoId(id, servicoId)
@@ -115,7 +113,7 @@ public class ServicoOrdemServicoService {
 	public ServicoOrdemServicoResponse finalizarServico(Long id, Long servicoId) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, "finalizar o serviço");
+		ordemServicoStatusService.validarPodeExecutarServico(ordemServico, "finalizar o serviço");
 
 		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository
 				.findByOrdemServicoIdAndServicoId(id, servicoId)
@@ -135,15 +133,6 @@ public class ServicoOrdemServicoService {
 		return toServicoResponse(servicoOS);
 	}
 
-	private void validarStatus(OrdemServico os, StatusOrdemServico statusEsperado, String acao) {
-		if (os.getStatus() != statusEsperado) {
-			throw new RegraNegocioException(
-					INVALID_ORDER_STATUS_FOR_ACTION
-							.formatted(acao, os.getStatus().getDescricao())
-			);
-		}
-	}
-
 	private void checarServicosOrdemServico(OrdemServico ordemServico) {
 		boolean existeNaoFinalizado = servicoOrdemServicoRepository.existsByOrdemServicoIdAndStatusNot(
 				ordemServico.getId(),
@@ -156,7 +145,7 @@ public class ServicoOrdemServicoService {
 	}
 
 	private void finalizarOrdemServico(OrdemServico ordemServico) {
-		ordemServicoStatusService.atualizarStatus(ordemServico, StatusOrdemServico.FINALIZADA);
+		ordemServicoStatusService.finalizar(ordemServico);
 	}
 
 	private void preencherServicoOrdemServico(

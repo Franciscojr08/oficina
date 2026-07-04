@@ -116,7 +116,8 @@ class OrdemServicoServiceTest {
 		itemOrdemServicoService = new ItemOrdemServicoService(
 				repository,
 				itemRepository,
-				itemOrdemServicoRepository
+				itemOrdemServicoRepository,
+				ordemServicoStatusService
 		);
 		servicoOrdemServicoService = new ServicoOrdemServicoService(
 				repository,

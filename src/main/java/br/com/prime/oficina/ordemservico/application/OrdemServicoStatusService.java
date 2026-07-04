@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.INVALID_ORDER_STATUS_FOR_ACTION;
 import static br.com.prime.oficina.shared.exception.ExceptionMessage.INVALID_STATUS_FOR_MODIFICATION;
 
 @Service
@@ -17,16 +19,108 @@ public class OrdemServicoStatusService {
 	private final OrdemServicoRepository ordemServicoRepository;
 	private final HistoricoOrdemServicoService historicoOrdemServicoService;
 
-	public void validarStatus(OrdemServico ordemServico, StatusOrdemServico statusEsperado, String acao) {
-		if (ordemServico.getStatus() != statusEsperado) {
+	public void definirStatusInicial(OrdemServico ordemServico) {
+		ordemServico.setStatus(StatusOrdemServico.RECEBIDA);
+	}
+
+	public void validarEmDiagnostico(OrdemServico ordemServico, String mensagem) {
+		if (!ordemServico.getStatus().estaEmDiagnostico()) {
+			throw new RegraNegocioException(mensagem);
+		}
+	}
+
+	public void iniciarDiagnostico(OrdemServico ordemServico) {
+		transicionar(ordemServico, StatusOrdemServico.RECEBIDA, StatusOrdemServico.EM_DIAGNOSTICO, "iniciar diagnóstico");
+	}
+
+	public void solicitarAprovacao(OrdemServico ordemServico) {
+		transicionar(
+				ordemServico,
+				StatusOrdemServico.EM_DIAGNOSTICO,
+				StatusOrdemServico.AGUARDANDO_APROVACAO,
+				"solicitar aprovação"
+		);
+	}
+
+	public void aprovar(OrdemServico ordemServico) {
+		transicionar(
+				ordemServico,
+				StatusOrdemServico.AGUARDANDO_APROVACAO,
+				StatusOrdemServico.APROVADA,
+				"aprovar a ordem de serviço"
+		);
+	}
+
+	public void validarPodeReprovar(OrdemServico ordemServico) {
+		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_APROVACAO, "reprovar a ordem de serviço");
+	}
+
+	public void validarPodeIniciarExecucao(OrdemServico ordemServico) {
+		validarStatus(ordemServico, StatusOrdemServico.AGUARDANDO_ITENS, "iniciar execução");
+	}
+
+	public void validarPodeExecutarServico(OrdemServico ordemServico, String acao) {
+		validarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO, acao);
+	}
+
+	public void aguardarItens(OrdemServico ordemServico) {
+		if (ordemServico.getStatus() == StatusOrdemServico.AGUARDANDO_ITENS) {
+			return;
+		}
+
+		transicionar(ordemServico, StatusOrdemServico.APROVADA, StatusOrdemServico.AGUARDANDO_ITENS, "aguardar itens");
+	}
+
+	public void iniciarExecucao(OrdemServico ordemServico) {
+		validarStatus(
+				ordemServico,
+				List.of(StatusOrdemServico.APROVADA, StatusOrdemServico.AGUARDANDO_ITENS),
+				"iniciar execução"
+		);
+		atualizarStatus(ordemServico, StatusOrdemServico.EM_EXECUCAO);
+	}
+
+	public void cancelarPorReprovacao(OrdemServico ordemServico) {
+		transicionar(
+				ordemServico,
+				StatusOrdemServico.AGUARDANDO_APROVACAO,
+				StatusOrdemServico.CANCELADA,
+				"reprovar a ordem de serviço"
+		);
+	}
+
+	public void finalizar(OrdemServico ordemServico) {
+		transicionar(ordemServico, StatusOrdemServico.EM_EXECUCAO, StatusOrdemServico.FINALIZADA, "finalizar a ordem de serviço");
+	}
+
+	public void entregar(OrdemServico ordemServico) {
+		transicionar(ordemServico, StatusOrdemServico.FINALIZADA, StatusOrdemServico.ENTREGUE, "entregar");
+	}
+
+	private void transicionar(
+			OrdemServico ordemServico,
+			StatusOrdemServico statusAtualPermitido,
+			StatusOrdemServico novoStatus,
+			String acao
+	) {
+		validarStatus(ordemServico, statusAtualPermitido, acao);
+		atualizarStatus(ordemServico, novoStatus);
+	}
+
+	private void validarStatus(OrdemServico ordemServico, StatusOrdemServico statusEsperado, String acao) {
+		validarStatus(ordemServico, List.of(statusEsperado), acao);
+	}
+
+	private void validarStatus(OrdemServico ordemServico, List<StatusOrdemServico> statusPermitidos, String acao) {
+		if (!statusPermitidos.contains(ordemServico.getStatus())) {
 			throw new RegraNegocioException(
-					"Não é possível %s, pois a ordem de serviço está %s"
+					INVALID_ORDER_STATUS_FOR_ACTION
 							.formatted(acao, ordemServico.getStatus().getDescricao())
 			);
 		}
 	}
 
-	public void atualizarStatus(OrdemServico ordemServico, StatusOrdemServico status) {
+	private void atualizarStatus(OrdemServico ordemServico, StatusOrdemServico status) {
 		ordemServico.setStatus(status);
 
 		if (status.deveAtualizarDatas()) {
