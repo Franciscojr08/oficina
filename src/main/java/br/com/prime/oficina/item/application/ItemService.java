@@ -121,9 +121,7 @@ public class ItemService {
 				);
 
 		if (estaEmOrdemAtiva) {
-			throw new RegraNegocioException(
-					"Não é possível inativar o item, pois ele possui ordens de serviço ativas."
-			);
+			throw new RegraNegocioException(CANNOT_INACTIVATE_ITEM_WITH_ACTIVE_SERVICE_ORDERS);
 		}
 
         item.setAtivo(false);

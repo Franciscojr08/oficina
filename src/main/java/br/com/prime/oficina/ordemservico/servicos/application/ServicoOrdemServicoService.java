@@ -100,7 +100,7 @@ public class ServicoOrdemServicoService {
 
 		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository
 				.findByOrdemServicoIdAndServicoId(id, servicoId)
-				.orElseThrow(() -> new RegraNegocioException(SERVICE_NOT_FOUNT_FOR_ORDER));
+				.orElseThrow(() -> new RegraNegocioException(SERVICE_NOT_FOUND_FOR_ORDER));
 
 		if (servicoOS.getStatus() != StatusServico.PENDENTE) {
 			throw new RegraNegocioException(STARTED_OR_FINISHED_SERVICE);
@@ -121,7 +121,7 @@ public class ServicoOrdemServicoService {
 
 		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository
 				.findByOrdemServicoIdAndServicoId(id, servicoId)
-				.orElseThrow(() -> new RegraNegocioException(SERVICE_NOT_FOUNT_FOR_ORDER));
+				.orElseThrow(() -> new RegraNegocioException(SERVICE_NOT_FOUND_FOR_ORDER));
 
 		if (servicoOS.getStatus() != StatusServico.INICIADO) {
 			throw new RegraNegocioException(FINISHED_OR_CANCELED_SERVICE);

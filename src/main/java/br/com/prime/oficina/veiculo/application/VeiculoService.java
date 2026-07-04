@@ -94,9 +94,7 @@ public class VeiculoService {
 				.existsByVeiculoIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
 
 		if (possuiOrdemAtiva) {
-			throw new RegraNegocioException(
-					"Não é possível inativar o veículo, pois ele possui ordens de serviço ativas."
-			);
+			throw new RegraNegocioException(CANNOT_INACTIVATE_VEHICLE_WITH_ACTIVE_SERVICE_ORDERS);
 		}
 
         veiculo.setAtivo(false);

@@ -261,7 +261,7 @@ class ServicoServiceTest {
                 () -> servicoService.inativar(1L)
         );
 
-        assertEquals("Servico em execução em ordem de serviço", exception.getMessage());
+        assertEquals("Serviço em execução em ordem de serviço", exception.getMessage());
 
         verify(servicoRepository).findById(1L);
         verify(servicoOrdemServicoRepository).findByServicoId(1L);

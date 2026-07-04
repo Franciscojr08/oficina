@@ -255,7 +255,7 @@ public class OrdemServicoService {
 		List<ServicoOrdemServico> servicoOrdemServicoList = servicoOrdemServicoRepository.findByOrdemServicoId(id);
 
 		if (itemOrdemServicoList.isEmpty() || servicoOrdemServicoList.isEmpty()) {
-			throw new RegraNegocioException("A OS deve possuir ao menos uma peça e um serviço para solicitar aprovação");
+			throw new RegraNegocioException(SERVICE_ORDER_MUST_HAVE_ITEM_AND_SERVICE_TO_REQUEST_APPROVAL);
 		}
 
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);

@@ -92,9 +92,7 @@ public class ClienteService {
 				.existsByClienteIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
 
 		if (possuiOrdemAtiva) {
-			throw new RegraNegocioException(
-				"Não é possível inativar o cliente, pois ele possui ordens de serviço ativas."
-			);
+			throw new RegraNegocioException(CANNOT_INACTIVATE_CUSTOMER_WITH_ACTIVE_SERVICE_ORDERS);
 		}
 
 		cliente.setAtivo(false);

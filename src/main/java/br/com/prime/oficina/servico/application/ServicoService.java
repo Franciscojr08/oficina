@@ -15,8 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.prime.oficina.shared.exception.ExceptionMessage.EXISTING_SERVICE;
-import static br.com.prime.oficina.shared.exception.ExceptionMessage.SERVICE_NOT_FOUND;
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 
 @Service
 @RequiredArgsConstructor
@@ -76,18 +75,20 @@ public class ServicoService {
 				);
 
 		if (estaEmOrdemAtiva) {
-			throw new RegraNegocioException(
-					"Não é possível inativar o serviço, pois ele possui ordens de serviço ativas."
-			);
+			throw new RegraNegocioException(CANNOT_INACTIVATE_SERVICE_WITH_ACTIVE_SERVICE_ORDERS);
 		}
 
         servico.setAtivo(false);
 
         Optional<ServicoOrdemServico> servicoOrdemServico = servicoOrdemServicoRepository.findByServicoId(servico.getId());
-        if(servicoOrdemServico.isPresent()) {
+
+		if (servicoOrdemServico.isPresent()) {
             ServicoOrdemServico servicoOrdemServicoAtualizado = servicoOrdemServico.get();
             OrdemServico ordemServico = servicoOrdemServicoAtualizado.getOrdemServico();
-            if(StatusOrdemServico.EM_EXECUCAO.equals(ordemServico.getStatus())) throw new RegraNegocioException("Servico em execução em ordem de serviço");
+
+            if (StatusOrdemServico.EM_EXECUCAO.equals(ordemServico.getStatus())) {
+				throw new RegraNegocioException(SERVICE_IN_EXECUTION_IN_SERVICE_ORDER);
+            }
         }
 
         servicoRepository.save(servico);
