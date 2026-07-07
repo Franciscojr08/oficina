@@ -1,5 +1,8 @@
-package br.com.prime.oficina.cliente.application;
+package br.com.prime.oficina.cliente.application.usecase;
 
+import br.com.prime.oficina.cliente.application.ClienteMapper;
+import br.com.prime.oficina.cliente.application.ClienteRequest;
+import br.com.prime.oficina.cliente.application.ClienteResponse;
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
 import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
@@ -25,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ClienteServiceTest {
+class ClienteUseCaseTest {
 
     private static final String CPF_VALIDO = "52998224725";
     private static final String OUTRO_CPF_VALIDO = "39053344705";
@@ -41,7 +44,7 @@ class ClienteServiceTest {
     private ClienteMapper clienteMapper;
 
     @InjectMocks
-    private ClienteService clienteService;
+    private ClienteUseCase clienteUseCase;
 
     private ClienteRequest request;
 
@@ -73,7 +76,7 @@ class ClienteServiceTest {
             return cliente;
         });
 
-        ClienteResponse response = clienteService.criar(request);
+        ClienteResponse response = clienteUseCase.criar(request);
 
         assertNotNull(response);
         assertEquals(1L, response.id());
@@ -98,7 +101,7 @@ class ClienteServiceTest {
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
-                () -> clienteService.criar(request)
+                () -> clienteUseCase.criar(request)
         );
 
         assertEquals("Já existe cliente cadastrado com este CPF/CNPJ", exception.getMessage());
@@ -114,7 +117,7 @@ class ClienteServiceTest {
 
         when(clienteRepository.findAll()).thenReturn(List.of(cliente1, cliente2));
 
-        List<ClienteResponse> responses = clienteService.listar();
+        List<ClienteResponse> responses = clienteUseCase.listar();
 
         assertEquals(2, responses.size());
         assertEquals("João da Silva", responses.get(0).nome());
@@ -129,7 +132,7 @@ class ClienteServiceTest {
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
 
-        ClienteResponse response = clienteService.buscarPorId(1L);
+        ClienteResponse response = clienteUseCase.buscarPorId(1L);
 
         assertEquals(1L, response.id());
         assertEquals("João da Silva", response.nome());
@@ -144,7 +147,7 @@ class ClienteServiceTest {
 
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> clienteService.buscarPorId(99L)
+                () -> clienteUseCase.buscarPorId(99L)
         );
 
         assertEquals("Cliente não encontrado", exception.getMessage());
@@ -172,7 +175,7 @@ class ClienteServiceTest {
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
         when(clienteRepository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ClienteResponse response = clienteService.atualizar(1L, requestAtualizacao);
+        ClienteResponse response = clienteUseCase.atualizar(1L, requestAtualizacao);
 
         assertEquals("João Atualizado", response.nome());
         assertEquals(CPF_VALIDO, response.cpfCnpj());
@@ -209,7 +212,7 @@ class ClienteServiceTest {
         when(clienteRepository.existsByCpfCnpj(OUTRO_CPF_VALIDO)).thenReturn(false);
         when(clienteRepository.save(any(Cliente.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ClienteResponse response = clienteService.atualizar(1L, requestAtualizacao);
+        ClienteResponse response = clienteUseCase.atualizar(1L, requestAtualizacao);
 
         assertEquals(OUTRO_CPF_VALIDO, response.cpfCnpj());
 
@@ -240,7 +243,7 @@ class ClienteServiceTest {
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
-                () -> clienteService.atualizar(1L, requestAtualizacao)
+                () -> clienteUseCase.atualizar(1L, requestAtualizacao)
         );
 
         assertEquals("Já existe cliente cadastrado com este CPF/CNPJ", exception.getMessage());
@@ -269,7 +272,7 @@ class ClienteServiceTest {
 
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> clienteService.atualizar(99L, requestValido)
+                () -> clienteUseCase.atualizar(99L, requestValido)
         );
 
         assertEquals("Cliente não encontrado", exception.getMessage());
@@ -294,7 +297,7 @@ class ClienteServiceTest {
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
         when(ordemServicoGateway.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(false);
 
-        clienteService.inativar(1L);
+        clienteUseCase.inativar(1L);
 
         ArgumentCaptor<Cliente> clienteCaptor = ArgumentCaptor.forClass(Cliente.class);
         verify(clienteRepository).save(clienteCaptor.capture());
@@ -318,7 +321,7 @@ class ClienteServiceTest {
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
-                () -> clienteService.inativar(1L)
+                () -> clienteUseCase.inativar(1L)
         );
 
         assertEquals(
@@ -337,7 +340,7 @@ class ClienteServiceTest {
 
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> clienteService.inativar(99L)
+                () -> clienteUseCase.inativar(99L)
         );
 
         assertEquals("Cliente não encontrado", exception.getMessage());
@@ -353,7 +356,7 @@ class ClienteServiceTest {
 
         when(clienteRepository.findByCpfCnpj(CPF_VALIDO)).thenReturn(Optional.of(cliente));
 
-        ClienteResponse response = clienteService.findByCpfCnpj(CPF_VALIDO);
+        ClienteResponse response = clienteUseCase.buscarPorDocumento(CPF_VALIDO);
 
         assertEquals(1L, response.id());
         assertEquals("João da Silva", response.nome());
@@ -368,7 +371,7 @@ class ClienteServiceTest {
 
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> clienteService.findByCpfCnpj(CPF_VALIDO_INEXISTENTE)
+                () -> clienteUseCase.buscarPorDocumento(CPF_VALIDO_INEXISTENTE)
         );
 
         assertEquals("Cliente não encontrado", exception.getMessage());

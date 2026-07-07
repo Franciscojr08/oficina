@@ -73,4 +73,12 @@ public class Cliente {
 	public void preUpdate() {
 		this.dataAtualizacao = LocalDateTime.now();
 	}
+
+	public void inativar() {
+		this.ativo = false;
+
+		for (Veiculo veiculo : veiculos) {
+			veiculo.setAtivo(false);
+		}
+	}
 }
