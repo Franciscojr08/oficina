@@ -378,6 +378,25 @@ Os relatorios gerados para avaliacao do projeto estao disponiveis em `docs/relat
 - [Linguagem Ubiqua](docs/ddd/linguagem-ubiqua.md)
 - Event Storming de pecas, servicos e ordem de servico: https://miro.com/app/board/uXjVGgeRsuQ=/?share_link_id=397857444241
 
+## CI/CD
+
+O workflow [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml) executa em pushes e pull requests direcionados a `main` ou `master`.
+
+A pipeline usa Java 17 e executa, em ordem:
+
+1. checkout do repositorio;
+2. testes Maven contra um PostgreSQL 16 temporario;
+3. empacotamento da aplicacao;
+4. instalacao das CLIs Terraform, kind e kubectl;
+5. `terraform init`, `validate`, `plan` e `apply` em `infra`, criando o cluster kind `techchallenge`;
+6. build local da imagem `oficina-api:local`, sem publicacao em registry, e carga direta no kind;
+7. aplicacao ordenada dos manifests de namespace, configuracao, PostgreSQL, API e HPA;
+8. validacao do PostgreSQL com `pg_isready`, do rollout da API, do PVC e do HPA;
+9. chamada de `/oficina/v1/api-docs` por um pod temporario dentro do cluster;
+10. coleta de diagnosticos em caso de falha e destruicao do cluster com Terraform em qualquer resultado.
+
+O HPA e criado e sua existencia e validada na pipeline. O metrics-server nao e instalado no GitHub Actions para evitar instabilidade; a coleta real de metricas e o teste visual de escalabilidade do HPA continuam sendo validacoes locais, conforme [documentacao de infraestrutura](infra/README.md). Esta etapa usa apenas Docker, Terraform, kind e Kubernetes locais ao runner: nao usa AWS, EKS, ECS, RDS, ECR ou publicacao da imagem no Docker Hub.
+
 ## Solucao de problemas
 
 ### Porta 5432 ja esta em uso

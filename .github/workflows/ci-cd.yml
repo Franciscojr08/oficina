@@ -1,0 +1,159 @@
+name: Tech Challenge CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-deploy-local-k8s:
+    name: Build, test and deploy to local kind
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: oficina
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d oficina"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x mvnw
+
+      - name: Run Maven tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/oficina
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: ./mvnw clean test
+
+      - name: Package application
+        run: ./mvnw clean package -DskipTests
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Installs only the kind CLI. Terraform remains responsible for cluster creation.
+      - name: Install kind CLI
+        uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      # Local state and kubeconfig committed by a developer cannot be reused in an ephemeral runner.
+      - name: Prepare ephemeral Terraform state
+        run: rm -f infra/terraform.tfstate infra/terraform.tfstate.backup infra/techchallenge-config
+
+      - name: Initialize Terraform
+        run: terraform -chdir=infra init
+
+      - name: Validate Terraform
+        run: terraform -chdir=infra validate
+
+      - name: Plan Terraform changes
+        run: terraform -chdir=infra plan
+
+      - name: Create kind cluster with Terraform
+        run: terraform -chdir=infra apply -auto-approve
+
+      - name: Validate cluster
+        run: |
+          kind get clusters
+          kubectl config use-context kind-techchallenge
+          kubectl get nodes
+
+      - name: Build local Docker image
+        run: docker build -t oficina-api:local .
+
+      - name: Load local image into kind
+        run: kind load docker-image oficina-api:local --name techchallenge
+
+      - name: Deploy PostgreSQL
+        run: |
+          kubectl apply -f k8s/00-namespace.yaml
+          kubectl apply -f k8s/01-configmap.yaml
+          kubectl apply -f k8s/02-secret.yaml
+          kubectl apply -f k8s/03-postgres-pvc.yaml
+          kubectl apply -f k8s/05-postgres-service.yaml
+          kubectl apply -f k8s/04-postgres-statefulset.yaml
+
+      - name: Wait for and validate PostgreSQL
+        run: |
+          kubectl wait --for=condition=ready pod/postgres-0 -n oficina --timeout=180s
+          kubectl exec -n oficina postgres-0 -- pg_isready -U postgres -d oficina
+
+      - name: Deploy API and HPA
+        run: |
+          kubectl apply -f k8s/06-app-deployment.yaml
+          kubectl apply -f k8s/07-app-service.yaml
+          kubectl apply -f k8s/08-hpa.yaml
+
+      - name: Wait for API rollout
+        run: kubectl rollout status deployment/oficina-api -n oficina --timeout=240s
+
+      - name: Validate Kubernetes resources
+        run: |
+          kubectl get all -n oficina
+          kubectl get pvc -n oficina
+          kubectl get hpa -n oficina
+
+      - name: Validate API from inside the cluster
+        run: |
+          kubectl run api-check \
+            --rm \
+            -i \
+            --restart=Never \
+            --image=curlimages/curl:latest \
+            --pod-running-timeout=120s \
+            -n oficina \
+            -- curl -f http://oficina-api:8080/oficina/v1/api-docs
+
+      # The HPA object is checked above. Live metrics and scaling are validated locally
+      # with metrics-server according to infra/README.md to avoid CI flakiness.
+      - name: Collect Kubernetes diagnostics
+        if: failure()
+        run: |
+          kubectl get all -n oficina || true
+          kubectl get events -n oficina --sort-by=.metadata.creationTimestamp || true
+          kubectl describe pod postgres-0 -n oficina || true
+          kubectl logs postgres-0 -n oficina || true
+          kubectl describe deployment oficina-api -n oficina || true
+          kubectl describe pod -n oficina -l app.kubernetes.io/name=oficina-api || true
+          kubectl logs deployment/oficina-api -n oficina --tail=200 || true
+
+      - name: Destroy ephemeral cluster
+        if: always()
+        continue-on-error: true
+        run: |
+          terraform -chdir=infra destroy -auto-approve || true
+          kind get clusters || true
