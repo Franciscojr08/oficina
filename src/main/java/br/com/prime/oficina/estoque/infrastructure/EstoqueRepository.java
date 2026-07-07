@@ -1,6 +1,5 @@
 package br.com.prime.oficina.estoque.infrastructure;
 
-import br.com.prime.oficina.estoque.application.gateway.EstoqueGateway;
 import br.com.prime.oficina.estoque.domain.Estoque;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface EstoqueRepository extends JpaRepository<Estoque, Long>, EstoqueGateway {
+public interface EstoqueRepository extends JpaRepository<Estoque, Long> {
 
     Optional<Estoque> findByItemId(Long itemId);
 

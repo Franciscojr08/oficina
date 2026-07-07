@@ -1,6 +1,5 @@
 package br.com.prime.oficina.item.infrastructure;
 
-import br.com.prime.oficina.item.application.gateway.ItemGateway;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.domain.TipoItem;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface ItemRepository extends JpaRepository<Item, Long>, ItemGateway {
+public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findByTipo(TipoItem tipo);
 
