@@ -1,7 +1,7 @@
 package br.com.prime.oficina.estoque.application.usecase;
 
-import br.com.prime.oficina.estoque.application.EstoqueRequest;
-import br.com.prime.oficina.estoque.application.EstoqueResponse;
+import br.com.prime.oficina.estoque.application.dto.EstoqueRequest;
+import br.com.prime.oficina.estoque.application.dto.EstoqueResponse;
 import br.com.prime.oficina.estoque.application.EstoqueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

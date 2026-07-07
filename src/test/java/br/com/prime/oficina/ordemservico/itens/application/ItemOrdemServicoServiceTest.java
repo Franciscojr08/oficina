@@ -1,5 +1,7 @@
 package br.com.prime.oficina.ordemservico.itens.application;
 
+import br.com.prime.oficina.ordemservico.itens.application.dto.*;
+
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;

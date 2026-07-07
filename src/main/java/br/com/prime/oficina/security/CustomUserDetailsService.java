@@ -1,7 +1,7 @@
 package br.com.prime.oficina.security;
 
 import br.com.prime.oficina.auth.gestaousuarios.domain.Usuario;
-import br.com.prime.oficina.auth.gestaousuarios.infrastructure.UsuarioRepository;
+import br.com.prime.oficina.auth.gestaousuarios.output.persistence.UsuarioRepository;
 import br.com.prime.oficina.security.domain.SecurityUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.*;

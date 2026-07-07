@@ -1,5 +1,7 @@
 package br.com.prime.oficina.relatorio.application;
 
+import br.com.prime.oficina.relatorio.application.dto.*;
+
 import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import lombok.RequiredArgsConstructor;

@@ -1,5 +1,7 @@
 package br.com.prime.oficina.ordemservico.application;
 
+import br.com.prime.oficina.ordemservico.application.dto.*;
+
 import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;

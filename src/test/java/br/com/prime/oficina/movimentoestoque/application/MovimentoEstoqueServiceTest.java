@@ -1,5 +1,7 @@
 package br.com.prime.oficina.movimentoestoque.application;
 
+import br.com.prime.oficina.movimentoestoque.application.dto.*;
+
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.application.gateway.ItemGateway;
 import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;

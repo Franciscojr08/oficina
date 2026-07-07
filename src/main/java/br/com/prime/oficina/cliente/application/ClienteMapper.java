@@ -1,5 +1,7 @@
 package br.com.prime.oficina.cliente.application;
 
+import br.com.prime.oficina.cliente.application.dto.*;
+
 import br.com.prime.oficina.cliente.domain.Cliente;
 import org.springframework.stereotype.Component;
 

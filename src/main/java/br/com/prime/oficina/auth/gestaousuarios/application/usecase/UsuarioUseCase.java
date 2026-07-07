@@ -1,7 +1,7 @@
 package br.com.prime.oficina.auth.gestaousuarios.application.usecase;
 
-import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioRequest;
-import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioResponse;
+import br.com.prime.oficina.auth.gestaousuarios.application.dto.UsuarioRequest;
+import br.com.prime.oficina.auth.gestaousuarios.application.dto.UsuarioResponse;
 import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

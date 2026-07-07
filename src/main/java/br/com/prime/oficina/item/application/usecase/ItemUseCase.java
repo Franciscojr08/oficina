@@ -1,8 +1,8 @@
 package br.com.prime.oficina.item.application.usecase;
 
-import br.com.prime.oficina.item.application.ItemAtualizacaoRequest;
-import br.com.prime.oficina.item.application.ItemRequest;
-import br.com.prime.oficina.item.application.ItemResponse;
+import br.com.prime.oficina.item.application.dto.ItemAtualizacaoRequest;
+import br.com.prime.oficina.item.application.dto.ItemRequest;
+import br.com.prime.oficina.item.application.dto.ItemResponse;
 import br.com.prime.oficina.item.application.ItemService;
 import br.com.prime.oficina.item.domain.TipoItem;
 import lombok.RequiredArgsConstructor;

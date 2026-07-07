@@ -1,5 +1,7 @@
 package br.com.prime.oficina.servico.application;
 
+import br.com.prime.oficina.servico.application.dto.*;
+
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import br.com.prime.oficina.servico.application.gateway.ServicoGateway;

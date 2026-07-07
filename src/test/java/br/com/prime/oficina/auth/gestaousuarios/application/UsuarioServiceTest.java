@@ -1,5 +1,7 @@
 package br.com.prime.oficina.auth.gestaousuarios.application;
 
+import br.com.prime.oficina.auth.gestaousuarios.application.dto.*;
+
 import br.com.prime.oficina.auth.gestaousuarios.domain.RoleUsuario;
 import br.com.prime.oficina.auth.gestaousuarios.domain.Usuario;
 import br.com.prime.oficina.auth.gestaousuarios.application.gateway.UsuarioGateway;

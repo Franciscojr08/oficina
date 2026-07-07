@@ -1,8 +1,8 @@
 package br.com.prime.oficina.cliente.application.usecase;
 
 import br.com.prime.oficina.cliente.application.ClienteMapper;
-import br.com.prime.oficina.cliente.application.ClienteRequest;
-import br.com.prime.oficina.cliente.application.ClienteResponse;
+import br.com.prime.oficina.cliente.application.dto.ClienteRequest;
+import br.com.prime.oficina.cliente.application.dto.ClienteResponse;
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
 import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;

@@ -1,5 +1,7 @@
 package br.com.prime.oficina.estoque.application;
 
+import br.com.prime.oficina.estoque.application.dto.*;
+
 import br.com.prime.oficina.estoque.domain.Estoque;
 import br.com.prime.oficina.estoque.application.gateway.EstoqueGateway;
 import br.com.prime.oficina.item.domain.Item;

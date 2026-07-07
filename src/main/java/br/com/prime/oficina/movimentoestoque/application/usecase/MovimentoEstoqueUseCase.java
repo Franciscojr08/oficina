@@ -1,6 +1,6 @@
 package br.com.prime.oficina.movimentoestoque.application.usecase;
 
-import br.com.prime.oficina.movimentoestoque.application.MovimentoEstoqueResponse;
+import br.com.prime.oficina.movimentoestoque.application.dto.MovimentoEstoqueResponse;
 import br.com.prime.oficina.movimentoestoque.application.MovimentoEstoqueService;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,8 @@
 package br.com.prime.oficina.ordemservico.itens.application.usecase;
 
-import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoRequest;
+import br.com.prime.oficina.ordemservico.itens.application.dto.ItemOrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
-import br.com.prime.oficina.ordemservico.itens.application.ListaItensOrdemServicoResponse;
+import br.com.prime.oficina.ordemservico.itens.application.dto.ListaItensOrdemServicoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

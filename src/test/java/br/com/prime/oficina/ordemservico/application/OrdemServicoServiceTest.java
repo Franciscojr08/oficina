@@ -1,5 +1,7 @@
 package br.com.prime.oficina.ordemservico.application;
 
+import br.com.prime.oficina.ordemservico.application.dto.*;
+
 import br.com.prime.oficina.cliente.domain.Cliente;
 import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
 import br.com.prime.oficina.estoque.domain.Estoque;
@@ -11,13 +13,13 @@ import br.com.prime.oficina.ordemservico.domain.HistoricoOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.application.gateway.HistoricoOrdemServicoGateway;
 import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
-import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoRequest;
+import br.com.prime.oficina.ordemservico.itens.application.dto.ItemOrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
-import br.com.prime.oficina.ordemservico.itens.application.ListaItensOrdemServicoResponse;
+import br.com.prime.oficina.ordemservico.itens.application.dto.ListaItensOrdemServicoResponse;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.application.gateway.ItemOrdemServicoGateway;
-import br.com.prime.oficina.ordemservico.servicos.application.ListaServicosOrdemServicoResponse;
-import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoRequest;
+import br.com.prime.oficina.ordemservico.servicos.application.dto.ListaServicosOrdemServicoResponse;
+import br.com.prime.oficina.ordemservico.servicos.application.dto.ServicoOrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoService;
 import br.com.prime.oficina.ordemservico.servicos.application.StatusServico;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;

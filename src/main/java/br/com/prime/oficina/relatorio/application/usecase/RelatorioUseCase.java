@@ -1,6 +1,6 @@
 package br.com.prime.oficina.relatorio.application.usecase;
 
-import br.com.prime.oficina.relatorio.application.RelatorioResponse;
+import br.com.prime.oficina.relatorio.application.dto.RelatorioResponse;
 import br.com.prime.oficina.relatorio.application.RelatorioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

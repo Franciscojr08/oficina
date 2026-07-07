@@ -1,7 +1,7 @@
 package br.com.prime.oficina.veiculo.application.usecase;
 
-import br.com.prime.oficina.veiculo.application.VeiculoRequest;
-import br.com.prime.oficina.veiculo.application.VeiculoResponse;
+import br.com.prime.oficina.veiculo.application.dto.VeiculoRequest;
+import br.com.prime.oficina.veiculo.application.dto.VeiculoResponse;
 import br.com.prime.oficina.veiculo.application.VeiculoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

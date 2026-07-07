@@ -1,5 +1,7 @@
 package br.com.prime.oficina.veiculo.application;
 
+import br.com.prime.oficina.veiculo.application.dto.*;
+
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import org.springframework.stereotype.Component;
 

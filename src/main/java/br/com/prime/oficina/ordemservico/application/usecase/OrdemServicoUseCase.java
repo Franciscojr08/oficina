@@ -1,10 +1,10 @@
 package br.com.prime.oficina.ordemservico.application.usecase;
 
-import br.com.prime.oficina.ordemservico.application.OrdemServicoRequest;
-import br.com.prime.oficina.ordemservico.application.OrdemServicoResponse;
+import br.com.prime.oficina.ordemservico.application.dto.OrdemServicoRequest;
+import br.com.prime.oficina.ordemservico.application.dto.OrdemServicoResponse;
 import br.com.prime.oficina.ordemservico.application.OrdemServicoService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.application.StatusOrdemServicoResponse;
+import br.com.prime.oficina.ordemservico.application.dto.StatusOrdemServicoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
