@@ -3,7 +3,7 @@ package br.com.prime.oficina.movimentoestoque.controller;
 import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.movimentoestoque.application.MovimentoEstoqueResponse;
-import br.com.prime.oficina.movimentoestoque.application.MovimentoEstoqueService;
+import br.com.prime.oficina.movimentoestoque.application.usecase.MovimentoEstoqueUseCase;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
 import br.com.prime.oficina.security.JwtService;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class MovimentoEstoqueControllerTest extends ControllerIntegrationTestSupport {
     private JwtService jwtService;
 
     @MockitoBean
-    private MovimentoEstoqueService service;
+    private MovimentoEstoqueUseCase service;
 
     @Test
     void testListarPorItem() throws Exception {

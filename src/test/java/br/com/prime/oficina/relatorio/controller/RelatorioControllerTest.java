@@ -3,7 +3,7 @@ package br.com.prime.oficina.relatorio.controller;
 import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.relatorio.application.RelatorioResponse;
-import br.com.prime.oficina.relatorio.application.RelatorioService;
+import br.com.prime.oficina.relatorio.application.usecase.RelatorioUseCase;
 import br.com.prime.oficina.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ class RelatorioControllerTest extends ControllerIntegrationTestSupport {
     private JwtService jwtService;
 
     @MockitoBean
-    private RelatorioService service;
+    private RelatorioUseCase service;
 
     @Test
     void testCalcularTempoMedioOS() throws Exception {

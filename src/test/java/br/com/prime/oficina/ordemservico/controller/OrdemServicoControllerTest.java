@@ -4,16 +4,16 @@ import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.ordemservico.application.OrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.application.OrdemServicoResponse;
-import br.com.prime.oficina.ordemservico.application.OrdemServicoService;
+import br.com.prime.oficina.ordemservico.application.usecase.OrdemServicoUseCase;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoResponse;
-import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
+import br.com.prime.oficina.ordemservico.itens.application.usecase.ItemOrdemServicoUseCase;
 import br.com.prime.oficina.ordemservico.itens.application.ListaItensOrdemServicoResponse;
 import br.com.prime.oficina.ordemservico.servicos.application.ListaServicosOrdemServicoResponse;
 import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoRequest;
 import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoResponse;
-import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoService;
+import br.com.prime.oficina.ordemservico.servicos.application.usecase.ServicoOrdemServicoUseCase;
 import br.com.prime.oficina.ordemservico.servicos.application.StatusServico;
 import br.com.prime.oficina.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,13 +52,13 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
-    private OrdemServicoService ordemServicoService;
+    private OrdemServicoUseCase ordemServicoService;
 
     @MockitoBean
-    private ItemOrdemServicoService itemOrdemServicoService;
+    private ItemOrdemServicoUseCase itemOrdemServicoService;
 
     @MockitoBean
-    private ServicoOrdemServicoService servicoOrdemServicoService;
+    private ServicoOrdemServicoUseCase servicoOrdemServicoService;
 
     @Test
     void deveListarOrdensServico() throws Exception {
@@ -172,10 +171,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
     void deveAdicionarItemNaOrdemServico() throws Exception {
         ItemOrdemServicoRequest request = criarItemOrdemServicoRequest();
 
-		doNothing().when(itemOrdemServicoService)
-				.adicionarItem(1L, request);
-
-		when(itemOrdemServicoService.listarItensPorOrdemServico(1L))
+		when(itemOrdemServicoService.adicionarItem(1L, request))
 				.thenReturn(criarListaItensOrdemServicoResponse());
 
         mockMvc.perform(post("/ordens/{id}/itens", 1L)
@@ -222,10 +218,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
     void deveAdicionarServicoNaOrdemServico() throws Exception {
         ServicoOrdemServicoRequest request = criarServicoOrdemServicoRequest();
 
-		doNothing().when(servicoOrdemServicoService)
-				.adicionarServico(1L, request);
-
-		when(servicoOrdemServicoService.listarServicosPorOrdemServico(1L))
+		when(servicoOrdemServicoService.adicionarServico(1L, request))
 				.thenReturn(criarListaServicosOrdemServicoResponse());
 
         mockMvc.perform(post("/ordens/{id}/servicos", 1L)
@@ -254,7 +247,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
 
     @Test
     void deveAprovarOrdemServico() throws Exception {
-        when(ordemServicoService.aprovarOrdemServico(1L)).thenReturn(criarOrdemServico());
+        when(ordemServicoService.aprovar(1L)).thenReturn(criarOrdemServico());
 
         mockMvc.perform(patch("/ordens/{id}/aprovar", 1L)
                         .with(csrf())
@@ -266,7 +259,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
 
     @Test
     void deveReprovarOrdemServico() throws Exception {
-        when(ordemServicoService.reprovarOrdemServico(1L)).thenReturn(criarOrdemServico());
+        when(ordemServicoService.reprovar(1L)).thenReturn(criarOrdemServico());
 
         mockMvc.perform(patch("/ordens/{id}/reprovar", 1L)
                         .with(csrf())
@@ -330,7 +323,7 @@ class OrdemServicoControllerTest extends ControllerIntegrationTestSupport {
 
     @Test
     void deveEntregarOrdemServico() throws Exception {
-        when(ordemServicoService.entregarOrdemServico(1L)).thenReturn(criarOrdemServico());
+        when(ordemServicoService.entregar(1L)).thenReturn(criarOrdemServico());
 
         mockMvc.perform(patch("/ordens/{id}/entregar", 1L)
                         .with(csrf())

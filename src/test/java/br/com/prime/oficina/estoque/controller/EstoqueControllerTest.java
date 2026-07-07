@@ -4,7 +4,7 @@ import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.estoque.application.EstoqueRequest;
 import br.com.prime.oficina.estoque.application.EstoqueResponse;
-import br.com.prime.oficina.estoque.application.EstoqueService;
+import br.com.prime.oficina.estoque.application.usecase.EstoqueUseCase;
 import br.com.prime.oficina.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ class EstoqueControllerTest extends ControllerIntegrationTestSupport {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
-    private EstoqueService service;
+    private EstoqueUseCase service;
 
     @Test
     void testListarTodos() throws Exception {

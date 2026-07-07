@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import br.com.prime.oficina.cliente.application.ClienteRequest;
 import br.com.prime.oficina.cliente.application.ClienteResponse;
-import br.com.prime.oficina.cliente.application.ClienteService;
+import br.com.prime.oficina.cliente.application.usecase.ClienteUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -19,37 +19,37 @@ import lombok.RequiredArgsConstructor;
 @Validated
 public class ClienteController {
 
-	private final ClienteService clienteService;
+	private final ClienteUseCase clienteUseCase;
 
 	@PostMapping
 	public ResponseEntity<ClienteResponse> criar(@RequestBody @Valid ClienteRequest request) {
-		ClienteResponse response = clienteService.criar(request);
+		ClienteResponse response = clienteUseCase.criar(request);
 		return ResponseEntity.created(URI.create("/clientes/" + response.id())).body(response);
 	}
 
 	@GetMapping
 	public ResponseEntity<List<ClienteResponse>> listar() {
-		return ResponseEntity.ok(clienteService.listar());
+		return ResponseEntity.ok(clienteUseCase.listar());
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ClienteResponse> buscarPorId(@PathVariable Long id) {
-		return ResponseEntity.ok(clienteService.buscarPorId(id));
+		return ResponseEntity.ok(clienteUseCase.buscarPorId(id));
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<ClienteResponse> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequest request) {
-		return ResponseEntity.ok(clienteService.atualizar(id, request));
+		return ResponseEntity.ok(clienteUseCase.atualizar(id, request));
 	}
 
 	@GetMapping("/documento/{documento}")
 	public ResponseEntity<ClienteResponse> buscarPorDocumento(@PathVariable String documento) {
-		return ResponseEntity.ok(clienteService.findByCpfCnpj(documento));
+		return ResponseEntity.ok(clienteUseCase.buscarPorDocumento(documento));
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> inativar(@PathVariable Long id) {
-		clienteService.inativar(id);
+		clienteUseCase.inativar(id);
 		return ResponseEntity.noContent().build();
 	}
 }

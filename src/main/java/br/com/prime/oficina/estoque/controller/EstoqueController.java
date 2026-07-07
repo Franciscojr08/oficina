@@ -2,7 +2,7 @@ package br.com.prime.oficina.estoque.controller;
 
 import br.com.prime.oficina.estoque.application.EstoqueRequest;
 import br.com.prime.oficina.estoque.application.EstoqueResponse;
-import br.com.prime.oficina.estoque.application.EstoqueService;
+import br.com.prime.oficina.estoque.application.usecase.EstoqueUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +17,16 @@ import java.util.List;
 @Validated
 public class EstoqueController {
 
-    private final EstoqueService estoqueService;
+	private final EstoqueUseCase estoqueUseCase;
 
     @GetMapping
     public ResponseEntity<List<EstoqueResponse>> listarTodos() {
-        return ResponseEntity.ok(estoqueService.listarTodos());
+	    return ResponseEntity.ok(estoqueUseCase.listarTodos());
     }
 
     @GetMapping("/item/{itemId}")
     public ResponseEntity<EstoqueResponse> buscarPorItem(@PathVariable Long itemId) {
-        return ResponseEntity.ok(estoqueService.buscarPorItem(itemId));
+	    return ResponseEntity.ok(estoqueUseCase.buscarPorItem(itemId));
     }
 
     @PutMapping("/item/{itemId}")
@@ -34,6 +34,6 @@ public class EstoqueController {
             @PathVariable Long itemId,
             @RequestBody @Valid EstoqueRequest request
     ) {
-        return ResponseEntity.ok(estoqueService.atualizarPorItem(itemId, request));
+	    return ResponseEntity.ok(estoqueUseCase.atualizarPorItem(itemId, request));
     }
 }

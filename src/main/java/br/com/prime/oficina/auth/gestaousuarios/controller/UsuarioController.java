@@ -2,7 +2,7 @@ package br.com.prime.oficina.auth.gestaousuarios.controller;
 
 import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioRequest;
 import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioResponse;
-import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioService;
+import br.com.prime.oficina.auth.gestaousuarios.application.usecase.UsuarioUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UsuarioController {
 
-    private final UsuarioService usuarioService;
+	private final UsuarioUseCase usuarioUseCase;
 
     @PostMapping
     public ResponseEntity<UsuarioResponse> criar(@RequestBody @Valid UsuarioRequest request) {
-        UsuarioResponse response = usuarioService.criar(request);
+	    UsuarioResponse response = usuarioUseCase.criar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

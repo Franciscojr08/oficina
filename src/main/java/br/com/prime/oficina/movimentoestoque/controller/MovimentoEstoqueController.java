@@ -1,7 +1,7 @@
 package br.com.prime.oficina.movimentoestoque.controller;
 
 import br.com.prime.oficina.movimentoestoque.application.MovimentoEstoqueResponse;
-import br.com.prime.oficina.movimentoestoque.application.MovimentoEstoqueService;
+import br.com.prime.oficina.movimentoestoque.application.usecase.MovimentoEstoqueUseCase;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +19,11 @@ import java.util.List;
 @Validated
 public class MovimentoEstoqueController {
 
-    private final MovimentoEstoqueService movimentoEstoqueService;
+	private final MovimentoEstoqueUseCase movimentoEstoqueUseCase;
 
     @GetMapping("/item/{itemId}")
     public ResponseEntity<List<MovimentoEstoqueResponse>> listarPorItem(@PathVariable Long itemId) {
-        return ResponseEntity.ok(movimentoEstoqueService.listarPorItem(itemId));
+        return ResponseEntity.ok(movimentoEstoqueUseCase.listarPorItem(itemId));
     }
 
     @GetMapping("/item/{itemId}/tipo/{tipo}")
@@ -31,12 +31,12 @@ public class MovimentoEstoqueController {
             @PathVariable Long itemId,
             @PathVariable TipoMovimentoEstoque tipo
     ) {
-        return ResponseEntity.ok(movimentoEstoqueService.listarPorItemETipo(itemId, tipo));
+        return ResponseEntity.ok(movimentoEstoqueUseCase.listarPorItemETipo(itemId, tipo));
     }
 
     @GetMapping
     public ResponseEntity<List<MovimentoEstoqueResponse>> listarTodos() {
-        return ResponseEntity.ok(movimentoEstoqueService.listarTodos());
+        return ResponseEntity.ok(movimentoEstoqueUseCase.listarTodos());
     }
 
 }

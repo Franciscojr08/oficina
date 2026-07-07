@@ -2,7 +2,7 @@ package br.com.prime.oficina.cliente.controller;
 
 import br.com.prime.oficina.cliente.application.ClienteRequest;
 import br.com.prime.oficina.cliente.application.ClienteResponse;
-import br.com.prime.oficina.cliente.application.ClienteService;
+import br.com.prime.oficina.cliente.application.usecase.ClienteUseCase;
 import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.security.JwtService;
@@ -43,7 +43,7 @@ class ClienteControllerTest extends ControllerIntegrationTestSupport {
             .registerModule(new JavaTimeModule());
 
     @MockitoBean
-    private ClienteService service;
+    private ClienteUseCase service;
 
     @Test
     void testCriar() throws Exception {
@@ -97,7 +97,7 @@ class ClienteControllerTest extends ControllerIntegrationTestSupport {
 
     @Test
     void testBuscarPorDocumento() throws Exception {
-        when(service.findByCpfCnpj("12345678901")).thenReturn(criarCliente());
+        when(service.buscarPorDocumento("12345678901")).thenReturn(criarCliente());
 
         mockMvc.perform(get("/clientes/documento/{documento}", "12345678901")
                         .header("Authorization", bearerTokenAdmin(jwtService)))

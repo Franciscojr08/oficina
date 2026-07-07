@@ -1,7 +1,7 @@
 package br.com.prime.oficina.apipublica.controller;
 
 import br.com.prime.oficina.apipublica.AcompanharOrdemServicoPublicaResponse;
-import br.com.prime.oficina.apipublica.AcompanharOrdemServicoPublicaService;
+import br.com.prime.oficina.apipublica.usecase.AcompanharOrdemServicoPublicaUseCase;
 import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
@@ -25,7 +25,7 @@ class AcompanharOrdemServicoControllerTest extends ControllerIntegrationTestSupp
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AcompanharOrdemServicoPublicaService service;
+    private AcompanharOrdemServicoPublicaUseCase service;
 
     @Test
     void testAcompanharPorCodigo() throws Exception {

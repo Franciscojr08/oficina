@@ -5,7 +5,7 @@ import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.security.JwtService;
 import br.com.prime.oficina.veiculo.application.VeiculoRequest;
 import br.com.prime.oficina.veiculo.application.VeiculoResponse;
-import br.com.prime.oficina.veiculo.application.VeiculoService;
+import br.com.prime.oficina.veiculo.application.usecase.VeiculoUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ class VeiculoControllerTest extends ControllerIntegrationTestSupport {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
-    private VeiculoService service;
+    private VeiculoUseCase service;
 
     @Test
     void testCriar() throws Exception {

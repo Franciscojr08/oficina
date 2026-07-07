@@ -3,7 +3,7 @@ package br.com.prime.oficina.item.controller;
 import br.com.prime.oficina.item.application.ItemAtualizacaoRequest;
 import br.com.prime.oficina.item.application.ItemRequest;
 import br.com.prime.oficina.item.application.ItemResponse;
-import br.com.prime.oficina.item.application.ItemService;
+import br.com.prime.oficina.item.application.usecase.ItemUseCase;
 import br.com.prime.oficina.item.domain.TipoItem;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,27 +27,27 @@ import java.util.List;
 @Validated
 public class ItemController {
 
-    private final ItemService itemService;
+    private final ItemUseCase itemUseCase;
 
     @PostMapping
     public ResponseEntity<ItemResponse> criar(@RequestBody @Valid ItemRequest request) {
-        ItemResponse response = itemService.criar(request);
+        ItemResponse response = itemUseCase.criar(request);
         return ResponseEntity.created(URI.create("/itens/" + response.id())).body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<ItemResponse>> listar() {
-        return ResponseEntity.ok(itemService.listar());
+        return ResponseEntity.ok(itemUseCase.listar());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ItemResponse> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(itemService.buscarPorId(id));
+        return ResponseEntity.ok(itemUseCase.buscarPorId(id));
     }
 
     @GetMapping("/tipo/{tipo}")
     public ResponseEntity<List<ItemResponse>> listarPorTipo(@PathVariable TipoItem tipo) {
-        return ResponseEntity.ok(itemService.listarPorTipo(tipo));
+        return ResponseEntity.ok(itemUseCase.listarPorTipo(tipo));
     }
 
     @PutMapping("/{id}")
@@ -55,12 +55,12 @@ public class ItemController {
             @PathVariable Long id,
             @RequestBody @Valid ItemAtualizacaoRequest request
     ) {
-        return ResponseEntity.ok(itemService.atualizar(id, request));
+        return ResponseEntity.ok(itemUseCase.atualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> inativar(@PathVariable Long id) {
-        itemService.inativar(id);
+        itemUseCase.inativar(id);
         return ResponseEntity.noContent().build();
     }
 }

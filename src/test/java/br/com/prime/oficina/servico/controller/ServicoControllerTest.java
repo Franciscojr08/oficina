@@ -5,7 +5,7 @@ import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.security.JwtService;
 import br.com.prime.oficina.servico.application.ServicoRequest;
 import br.com.prime.oficina.servico.application.ServicoResponse;
-import br.com.prime.oficina.servico.application.ServicoService;
+import br.com.prime.oficina.servico.application.usecase.ServicoUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ class ServicoControllerTest extends ControllerIntegrationTestSupport {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
-    private ServicoService service;
+    private ServicoUseCase service;
 
     @Test
     void testCriar() throws Exception {

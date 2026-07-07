@@ -2,7 +2,7 @@ package br.com.prime.oficina.auth;
 
 import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioRequest;
 import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioResponse;
-import br.com.prime.oficina.auth.gestaousuarios.application.UsuarioService;
+import br.com.prime.oficina.auth.gestaousuarios.application.usecase.UsuarioUseCase;
 import br.com.prime.oficina.auth.gestaousuarios.domain.RoleUsuario;
 import br.com.prime.oficina.config.ControllerIntegrationTestSupport;
 import br.com.prime.oficina.config.IntegrationTest;
@@ -36,7 +36,7 @@ class UsuarioControllerTest extends ControllerIntegrationTestSupport {
             .registerModule(new JavaTimeModule());
 
     @MockitoBean
-    private UsuarioService service;
+    private UsuarioUseCase service;
 
     @Test
     void testCriar() throws Exception {

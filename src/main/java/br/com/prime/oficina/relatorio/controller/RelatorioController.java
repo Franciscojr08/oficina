@@ -1,7 +1,7 @@
 package br.com.prime.oficina.relatorio.controller;
 
 import br.com.prime.oficina.relatorio.application.RelatorioResponse;
-import br.com.prime.oficina.relatorio.application.RelatorioService;
+import br.com.prime.oficina.relatorio.application.usecase.RelatorioUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirement(name = "bearerAuth")
 public class RelatorioController {
 
-	private final RelatorioService relatorioService;
+	private final RelatorioUseCase relatorioUseCase;
 
 	@GetMapping("/ordens-servico/tempo-medio")
 	@Operation(
@@ -46,7 +46,7 @@ public class RelatorioController {
 			}
 	)
 	public ResponseEntity<RelatorioResponse> calcularTempoMedioOS() {
-		return ResponseEntity.ok(relatorioService.calcularTempoMedioOS());
+		return ResponseEntity.ok(relatorioUseCase.calcularTempoMedioOS());
 	}
 
 	@GetMapping("/ordens-servico/tempo-medio-servicos")
@@ -71,6 +71,6 @@ public class RelatorioController {
 			}
 	)
 	public ResponseEntity<RelatorioResponse> calcularTempoMedioServicos() {
-		return ResponseEntity.ok(relatorioService.calcularTempoMedioServicos());
+		return ResponseEntity.ok(relatorioUseCase.calcularTempoMedioServicos());
 	}
 }

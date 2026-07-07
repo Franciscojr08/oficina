@@ -5,7 +5,7 @@ import br.com.prime.oficina.config.IntegrationTest;
 import br.com.prime.oficina.item.application.ItemAtualizacaoRequest;
 import br.com.prime.oficina.item.application.ItemRequest;
 import br.com.prime.oficina.item.application.ItemResponse;
-import br.com.prime.oficina.item.application.ItemService;
+import br.com.prime.oficina.item.application.usecase.ItemUseCase;
 import br.com.prime.oficina.item.domain.TipoItem;
 import br.com.prime.oficina.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +43,7 @@ class ItemControllerTest extends ControllerIntegrationTestSupport {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
-    private ItemService service;
+    private ItemUseCase service;
 
     @Test
     void testCriar() throws Exception {

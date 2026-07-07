@@ -1,5 +1,6 @@
 package br.com.prime.oficina.apipublica;
 
+import br.com.prime.oficina.apipublica.usecase.AcompanharOrdemServicoPublicaUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirements
 public class AcompanharOrdemServicoController {
 
-    private final AcompanharOrdemServicoPublicaService service;
+	private final AcompanharOrdemServicoPublicaUseCase useCase;
 
     @GetMapping("/codigo/{codigo}")
     @Operation(
@@ -48,6 +49,6 @@ public class AcompanharOrdemServicoController {
             }
     )
     public ResponseEntity<AcompanharOrdemServicoPublicaResponse> acompanharPorCodigo(@PathVariable String codigo) {
-        return ResponseEntity.ok(service.acompanharPorCodigo(codigo));
+	    return ResponseEntity.ok(useCase.acompanharPorCodigo(codigo));
     }
 }
