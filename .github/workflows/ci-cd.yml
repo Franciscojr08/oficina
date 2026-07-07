@@ -1,6 +1,7 @@
 name: Tech Challenge CI/CD
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -131,7 +132,7 @@ jobs:
         run: |
           kubectl run api-check \
             --rm \
-            -i \
+            --attach=true \
             --restart=Never \
             --image=curlimages/curl:latest \
             --pod-running-timeout=120s \
