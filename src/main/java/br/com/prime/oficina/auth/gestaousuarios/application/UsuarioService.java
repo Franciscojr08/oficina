@@ -1,6 +1,6 @@
 package br.com.prime.oficina.auth.gestaousuarios.application;
+import br.com.prime.oficina.auth.gestaousuarios.application.gateway.UsuarioGateway;
 import br.com.prime.oficina.auth.gestaousuarios.domain.Usuario;
-import br.com.prime.oficina.auth.gestaousuarios.infrastructure.UsuarioRepository;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,12 +13,12 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.EXISTING_US
 @RequiredArgsConstructor
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+	private final UsuarioGateway usuarioGateway;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UsuarioResponse criar(UsuarioRequest request) {
-        if (usuarioRepository.existsByEmail(request.email())) {
+	    if (usuarioGateway.existsByEmail(request.email())) {
             throw new RegraNegocioException(EXISTING_USER_SAME_EMAIL);
         }
 
@@ -29,7 +29,7 @@ public class UsuarioService {
         usuario.setRole(request.role());
         usuario.setAtivo(true);
 
-        Usuario salvo = usuarioRepository.save(usuario);
+	    Usuario salvo = usuarioGateway.save(usuario);
 
         return new UsuarioResponse(
                 salvo.getId(),

@@ -1,8 +1,8 @@
 package br.com.prime.oficina.cliente.application;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infrastructure.ClienteRepository;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
@@ -32,10 +32,10 @@ class ClienteServiceTest {
     private static final String CPF_VALIDO_INEXISTENTE = "11144477735";
 
     @Mock
-    private ClienteRepository clienteRepository;
+    private ClienteGateway clienteRepository;
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway ordemServicoGateway;
 
     @Spy
     private ClienteMapper clienteMapper;
@@ -292,7 +292,7 @@ class ClienteServiceTest {
         cliente.setVeiculos(new ArrayList<>(List.of(veiculo1, veiculo2)));
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(ordemServicoRepository.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(false);
+        when(ordemServicoGateway.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(false);
 
         clienteService.inativar(1L);
 
@@ -306,7 +306,7 @@ class ClienteServiceTest {
         assertFalse(clienteSalvo.getVeiculos().get(1).getAtivo());
 
         verify(clienteRepository).findById(1L);
-        verify(ordemServicoRepository).existsByClienteIdAndStatusIn(eq(1L), anyList());
+        verify(ordemServicoGateway).existsByClienteIdAndStatusIn(eq(1L), anyList());
     }
 
     @Test
@@ -314,7 +314,7 @@ class ClienteServiceTest {
         Cliente cliente = criarCliente(1L, "João da Silva", CPF_VALIDO);
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(ordemServicoRepository.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(true);
+        when(ordemServicoGateway.existsByClienteIdAndStatusIn(eq(1L), anyList())).thenReturn(true);
 
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
@@ -327,7 +327,7 @@ class ClienteServiceTest {
         );
 
         verify(clienteRepository).findById(1L);
-        verify(ordemServicoRepository).existsByClienteIdAndStatusIn(eq(1L), anyList());
+        verify(ordemServicoGateway).existsByClienteIdAndStatusIn(eq(1L), anyList());
         verify(clienteRepository, never()).save(any());
     }
 
@@ -343,7 +343,7 @@ class ClienteServiceTest {
         assertEquals("Cliente não encontrado", exception.getMessage());
 
         verify(clienteRepository).findById(99L);
-        verify(ordemServicoRepository, never()).existsByClienteIdAndStatusIn(anyLong(), anyList());
+        verify(ordemServicoGateway, never()).existsByClienteIdAndStatusIn(anyLong(), anyList());
         verify(clienteRepository, never()).save(any());
     }
 

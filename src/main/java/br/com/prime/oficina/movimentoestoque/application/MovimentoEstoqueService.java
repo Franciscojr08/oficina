@@ -1,9 +1,9 @@
 package br.com.prime.oficina.movimentoestoque.application;
 
-import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.item.application.gateway.ItemGateway;
+import br.com.prime.oficina.movimentoestoque.application.gateway.MovimentoEstoqueGateway;
 import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,13 +16,13 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.ITEM_NOT_FO
 @RequiredArgsConstructor
 public class MovimentoEstoqueService {
 
-    private final MovimentoEstoqueRepository movimentoEstoqueRepository;
-    private final ItemRepository itemRepository;
+    private final MovimentoEstoqueGateway movimentoEstoqueGateway;
+    private final ItemGateway itemGateway;
 
     public List<MovimentoEstoqueResponse> listarPorItem(Long itemId) {
         validarItemExiste(itemId);
 
-        return movimentoEstoqueRepository.findByItemIdOrderByDataMovimentacaoDesc(itemId)
+        return movimentoEstoqueGateway.findByItemIdOrderByDataMovimentacaoDesc(itemId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -31,14 +31,14 @@ public class MovimentoEstoqueService {
     public List<MovimentoEstoqueResponse> listarPorItemETipo(Long itemId, TipoMovimentoEstoque tipo) {
         validarItemExiste(itemId);
 
-        return movimentoEstoqueRepository.findByItemIdAndTipoOrderByDataMovimentacaoDesc(itemId, tipo)
+        return movimentoEstoqueGateway.findByItemIdAndTipoOrderByDataMovimentacaoDesc(itemId, tipo)
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     private void validarItemExiste(Long itemId) {
-        if (!itemRepository.existsById(itemId)) {
+        if (!itemGateway.existsById(itemId)) {
             throw new RecursoNaoEncontradoException(ITEM_NOT_FOUND);
         }
     }
@@ -57,7 +57,7 @@ public class MovimentoEstoqueService {
     }
 
     public List<MovimentoEstoqueResponse> listarTodos() {
-        return movimentoEstoqueRepository.findAllByOrderByDataMovimentacaoDesc()
+        return movimentoEstoqueGateway.findAllByOrderByDataMovimentacaoDesc()
                 .stream()
                 .map(this::toResponse)
                 .toList();

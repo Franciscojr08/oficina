@@ -1,7 +1,7 @@
 package br.com.prime.oficina.apipublica;
 
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,10 +12,10 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.SERVICE_ORD
 @RequiredArgsConstructor
 public class AcompanharOrdemServicoPublicaService {
 
-    private final OrdemServicoRepository ordemServicoRepository;
+    private final OrdemServicoGateway ordemServicoGateway;
 
     public AcompanharOrdemServicoPublicaResponse acompanharPorCodigo(String codigo) {
-        OrdemServico ordemServico = ordemServicoRepository.findByCodigo(codigo)
+        OrdemServico ordemServico = ordemServicoGateway.findByCodigo(codigo)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_ORDER_NOT_FOUND));
 
         return toResponse(ordemServico);

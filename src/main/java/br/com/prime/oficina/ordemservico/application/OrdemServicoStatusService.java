@@ -1,7 +1,7 @@
 package br.com.prime.oficina.ordemservico.application;
 
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.INVALID_STA
 @RequiredArgsConstructor
 public class OrdemServicoStatusService {
 
-	private final OrdemServicoRepository ordemServicoRepository;
+	private final OrdemServicoGateway ordemServicoRepository;
 	private final HistoricoOrdemServicoService historicoOrdemServicoService;
 
 	public void definirStatusInicial(OrdemServico ordemServico) {

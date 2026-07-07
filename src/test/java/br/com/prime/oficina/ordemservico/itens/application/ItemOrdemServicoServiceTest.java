@@ -3,7 +3,7 @@ package br.com.prime.oficina.ordemservico.itens.application;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
-import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.itens.application.gateway.ItemOrdemServicoGateway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class ItemOrdemServicoServiceTest {
 
     @Mock
-    private ItemOrdemServicoRepository repository;
+    private ItemOrdemServicoGateway repository;
 
     @InjectMocks
     private ItemOrdemServicoService service;

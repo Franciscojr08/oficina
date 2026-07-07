@@ -1,8 +1,8 @@
 package br.com.prime.oficina.servico.application;
 
-import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import br.com.prime.oficina.servico.domain.Servico;
-import br.com.prime.oficina.servico.infrastructure.ServicoRepository;
+import br.com.prime.oficina.servico.application.gateway.ServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,10 +27,10 @@ import static org.mockito.Mockito.*;
 class ServicoServiceTest {
 
     @Mock
-    private ServicoRepository servicoRepository;
+    private ServicoGateway servicoRepository;
 
     @Mock
-    private ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+    private ServicoOrdemServicoGateway servicoOrdemServicoGateway;
 
     @Spy
     private ServicoMapper servicoMapper;
@@ -239,7 +239,7 @@ class ServicoServiceTest {
         assertFalse(servicoSalvo.getAtivo());
 
         verify(servicoRepository).findById(1L);
-        verify(servicoOrdemServicoRepository, never()).findByServicoId(anyLong());
+        verify(servicoOrdemServicoGateway, never()).findByServicoId(anyLong());
     }
 
     @Test
@@ -254,7 +254,7 @@ class ServicoServiceTest {
         assertEquals(SERVICE_NOT_FOUND, exception.getMessage());
 
         verify(servicoRepository).findById(99L);
-        verify(servicoOrdemServicoRepository, never()).findByServicoId(anyLong());
+        verify(servicoOrdemServicoGateway, never()).findByServicoId(anyLong());
         verify(servicoRepository, never()).save(any());
     }
 

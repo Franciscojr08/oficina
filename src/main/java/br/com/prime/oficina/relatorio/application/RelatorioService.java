@@ -1,7 +1,7 @@
 package br.com.prime.oficina.relatorio.application;
 
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
+import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,16 +14,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RelatorioService {
 
-	private final OrdemServicoRepository ordemServicoRepository;
-	private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+	private final OrdemServicoGateway ordemServicoGateway;
+	private final ServicoOrdemServicoGateway servicoOrdemServicoGateway;
 
 	public RelatorioResponse calcularTempoMedioOS() {
-		Double mediaMinutos = ordemServicoRepository.calcularTempoMedioOSMinutos();
+		Double mediaMinutos = ordemServicoGateway.calcularTempoMedioOSMinutos();
 		return montarRelatorio(mediaMinutos);
 	}
 
 	public RelatorioResponse calcularTempoMedioServicos() {
-		Double mediaMinutos = servicoOrdemServicoRepository.calcularTempoMedioServicosMinutos();
+		Double mediaMinutos = servicoOrdemServicoGateway.calcularTempoMedioServicosMinutos();
 		return montarRelatorio(mediaMinutos);
 	}
 

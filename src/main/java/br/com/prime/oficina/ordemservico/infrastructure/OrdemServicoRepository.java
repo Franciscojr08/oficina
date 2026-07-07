@@ -1,6 +1,7 @@
 package br.com.prime.oficina.ordemservico.infrastructure;
 
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long> {
+public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long>, OrdemServicoGateway {
 
     List<OrdemServico> findByClienteId(Long clienteId);
 

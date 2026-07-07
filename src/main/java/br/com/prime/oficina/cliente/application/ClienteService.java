@@ -2,8 +2,9 @@ package br.com.prime.oficina.cliente.application;
 
 import java.util.List;
 
+import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.shared.validator.ValidadorCNPJ;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infrastructure.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 
 import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
@@ -22,8 +22,8 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 @RequiredArgsConstructor
 public class ClienteService {
 
-	private final ClienteRepository clienteRepository;
-	private final OrdemServicoRepository ordemServicoRepository;
+	private final ClienteGateway clienteGateway;
+	private final OrdemServicoGateway ordemServicoGateway;
 	private final ClienteMapper clienteMapper;
 
 	@Transactional
@@ -34,13 +34,13 @@ public class ClienteService {
 		Cliente cliente = new Cliente();
 		preencherCliente(request, cliente);
 
-		Cliente salvo = clienteRepository.save(cliente);
+		Cliente salvo = clienteGateway.save(cliente);
 		return clienteMapper.toResponse(salvo);
 	}
 
 	@Transactional(readOnly = true)
 	public List<ClienteResponse> listar() {
-		return clienteRepository.findAll()
+		return clienteGateway.findAll()
 				.stream()
 				.map(clienteMapper::toResponse)
 				.toList();
@@ -48,7 +48,7 @@ public class ClienteService {
 
 	@Transactional(readOnly = true)
 	public ClienteResponse buscarPorId(Long id) {
-		Cliente cliente = clienteRepository.findById(id)
+		Cliente cliente = clienteGateway.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 		return clienteMapper.toResponse(cliente);
 	}
@@ -57,17 +57,17 @@ public class ClienteService {
 	public ClienteResponse atualizar(Long id, ClienteRequest request) {
 		validarCpfCnpj(request.cpfCnpj());
 
-		Cliente cliente = clienteRepository.findById(id)
+		Cliente cliente = clienteGateway.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 
 		if (!cliente.getCpfCnpj().equals(request.cpfCnpj())
-				&& clienteRepository.existsByCpfCnpj(request.cpfCnpj())) {
+				&& clienteGateway.existsByCpfCnpj(request.cpfCnpj())) {
 			throw new RegraNegocioException(EXISTING_CUSTOMER);
 		}
 
 		preencherCliente(request, cliente);
 
-		Cliente atualizado = clienteRepository.save(cliente);
+		Cliente atualizado = clienteGateway.save(cliente);
 		return clienteMapper.toResponse(atualizado);
 	}
 
@@ -86,10 +86,10 @@ public class ClienteService {
 
 	@Transactional
 	public void inativar(Long id) {
-		Cliente cliente = clienteRepository.findById(id)
+		Cliente cliente = clienteGateway.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 
-		boolean possuiOrdemAtiva = ordemServicoRepository
+		boolean possuiOrdemAtiva = ordemServicoGateway
 				.existsByClienteIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
 
 		if (possuiOrdemAtiva) {
@@ -102,19 +102,19 @@ public class ClienteService {
 			veiculo.setAtivo(false);
 		}
 
-		clienteRepository.save(cliente);
+		clienteGateway.save(cliente);
 	}
 
 	@Transactional(readOnly = true)
 	public ClienteResponse findByCpfCnpj(String cpfCnpj) {
-		Cliente cliente = clienteRepository.findByCpfCnpj(cpfCnpj)
+		Cliente cliente = clienteGateway.findByCpfCnpj(cpfCnpj)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
 
 		return clienteMapper.toResponse(cliente);
 	}
 
 	private void validarCpfCnpjDuplicado(String cpfCnpj) {
-		if (clienteRepository.existsByCpfCnpj(cpfCnpj)) {
+		if (clienteGateway.existsByCpfCnpj(cpfCnpj)) {
 			throw new RegraNegocioException(EXISTING_CUSTOMER);
 		}
 	}

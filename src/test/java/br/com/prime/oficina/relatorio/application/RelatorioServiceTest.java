@@ -1,7 +1,7 @@
 package br.com.prime.oficina.relatorio.application;
 
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
+import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,17 +15,17 @@ import static org.mockito.Mockito.when;
 class RelatorioServiceTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway ordemServicoGateway;
 
     @Mock
-    private ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+    private ServicoOrdemServicoGateway servicoOrdemServicoGateway;
 
     @InjectMocks
     private RelatorioService relatorioService;
 
     @Test
     void deveRetornarZeroQuandoNaoHouverTempoMedioDeOS() {
-        when(ordemServicoRepository.calcularTempoMedioOSMinutos()).thenReturn(null);
+        when(ordemServicoGateway.calcularTempoMedioOSMinutos()).thenReturn(null);
 
         RelatorioResponse response = relatorioService.calcularTempoMedioOS();
 
@@ -35,7 +35,7 @@ class RelatorioServiceTest {
 
     @Test
     void deveFormatarTempoMedioDeOSComHorasEMinutos() {
-        when(ordemServicoRepository.calcularTempoMedioOSMinutos()).thenReturn(150.0);
+        when(ordemServicoGateway.calcularTempoMedioOSMinutos()).thenReturn(150.0);
 
         RelatorioResponse response = relatorioService.calcularTempoMedioOS();
 
@@ -45,7 +45,7 @@ class RelatorioServiceTest {
 
     @Test
     void deveFormatarTempoMedioDeServicosComDiasHorasEMinutos() {
-        when(servicoOrdemServicoRepository.calcularTempoMedioServicosMinutos()).thenReturn(3005.0);
+        when(servicoOrdemServicoGateway.calcularTempoMedioServicosMinutos()).thenReturn(3005.0);
 
         RelatorioResponse response = relatorioService.calcularTempoMedioServicos();
 

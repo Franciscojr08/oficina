@@ -1,12 +1,13 @@
 package br.com.prime.oficina.veiculo.infrastructure;
 
+import br.com.prime.oficina.veiculo.application.gateway.VeiculoGateway;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
+public interface VeiculoRepository extends JpaRepository<Veiculo, Long>, VeiculoGateway {
 
     boolean existsByPlaca(String placa);
 

@@ -1,14 +1,14 @@
 package br.com.prime.oficina.veiculo.application;
 
+import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infrastructure.ClienteRepository;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.shared.validator.ValidadorPlaca;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
-import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
+import br.com.prime.oficina.veiculo.application.gateway.VeiculoGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +21,9 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 @RequiredArgsConstructor
 public class VeiculoService {
 
-    private final VeiculoRepository veiculoRepository;
-    private final ClienteRepository clienteRepository;
-	private final OrdemServicoRepository ordemServicoRepository;
+    private final VeiculoGateway veiculoGateway;
+    private final ClienteGateway clienteGateway;
+	private final OrdemServicoGateway ordemServicoGateway;
 	private final VeiculoMapper veiculoMapper;
 
     @Transactional
@@ -37,7 +37,7 @@ public class VeiculoService {
 		Veiculo veiculo = new Veiculo();
 		preencherVeiculo(veiculo, request, cliente);
 
-        Veiculo salvo = veiculoRepository.save(veiculo);
+        Veiculo salvo = veiculoGateway.save(veiculo);
         return veiculoMapper.toResponse(salvo);
     }
 
@@ -48,7 +48,7 @@ public class VeiculoService {
 	}
 
     public List<VeiculoResponse> listar() {
-        return veiculoRepository.findAll()
+        return veiculoGateway.findAll()
                 .stream()
                 .map(veiculoMapper::toResponse)
                 .toList();
@@ -60,7 +60,7 @@ public class VeiculoService {
     }
 
     public List<VeiculoResponse> listarPorCliente(Long clienteId) {
-        return veiculoRepository.findByClienteId(clienteId)
+        return veiculoGateway.findByClienteId(clienteId)
                 .stream()
                 .map(veiculoMapper::toResponse)
                 .toList();
@@ -76,13 +76,13 @@ public class VeiculoService {
 		validarCliente(cliente);
 
         if (!veiculo.getPlaca().equals(request.placa()) &&
-			veiculoRepository.existsByPlaca(request.placa())
+			veiculoGateway.existsByPlaca(request.placa())
         ) {
             throw new RegraNegocioException(DUPLICATED_VEHICLE);
         }
 
         preencherVeiculo(veiculo, request, cliente);
-        Veiculo atualizado = veiculoRepository.save(veiculo);
+        Veiculo atualizado = veiculoGateway.save(veiculo);
 
         return veiculoMapper.toResponse(atualizado);
     }
@@ -91,7 +91,7 @@ public class VeiculoService {
     public void inativar(Long id) {
         Veiculo veiculo = buscarVeiculoPorId(id);
 
-		boolean possuiOrdemAtiva = ordemServicoRepository
+		boolean possuiOrdemAtiva = ordemServicoGateway
 				.existsByVeiculoIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
 
 		if (possuiOrdemAtiva) {
@@ -99,12 +99,12 @@ public class VeiculoService {
 		}
 
         veiculo.setAtivo(false);
-        veiculoRepository.save(veiculo);
+        veiculoGateway.save(veiculo);
     }
 
     @Transactional(readOnly = true)
     public VeiculoResponse buscarPorPlaca(String placa) {
-        Veiculo veiculo = veiculoRepository.findByPlaca(placa)
+        Veiculo veiculo = veiculoGateway.findByPlaca(placa)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
 
         return veiculoMapper.toResponse(veiculo);
@@ -113,7 +113,7 @@ public class VeiculoService {
     private void validarPlacaDuplicada(String placa) {
 		validarPlaca(placa);
 
-        if (veiculoRepository.existsByPlaca(placa)) {
+        if (veiculoGateway.existsByPlaca(placa)) {
             throw new RegraNegocioException(DUPLICATED_VEHICLE);
         }
     }
@@ -127,12 +127,12 @@ public class VeiculoService {
 	}
 
     private Cliente buscarClientePorId(Long clienteId) {
-        return clienteRepository.findById(clienteId)
+        return clienteGateway.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
     }
 
     private Veiculo buscarVeiculoPorId(Long id) {
-        return veiculoRepository.findById(id)
+        return veiculoGateway.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
     }
 
