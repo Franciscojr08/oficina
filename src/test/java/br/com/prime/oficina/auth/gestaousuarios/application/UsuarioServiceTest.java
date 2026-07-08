@@ -1,8 +1,10 @@
 package br.com.prime.oficina.auth.gestaousuarios.application;
 
+import br.com.prime.oficina.auth.gestaousuarios.application.dto.*;
+
 import br.com.prime.oficina.auth.gestaousuarios.domain.RoleUsuario;
 import br.com.prime.oficina.auth.gestaousuarios.domain.Usuario;
-import br.com.prime.oficina.auth.gestaousuarios.infrastructure.UsuarioRepository;
+import br.com.prime.oficina.auth.gestaousuarios.application.gateway.UsuarioGateway;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +27,7 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.EXISTING_US
 class UsuarioServiceTest {
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioGateway usuarioRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;

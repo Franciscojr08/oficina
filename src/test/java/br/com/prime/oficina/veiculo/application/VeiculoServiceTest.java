@@ -1,19 +1,21 @@
 package br.com.prime.oficina.veiculo.application;
 
+import br.com.prime.oficina.veiculo.application.dto.*;
+
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
+import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
-import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
+import br.com.prime.oficina.veiculo.application.gateway.VeiculoGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -39,13 +41,16 @@ import static org.mockito.Mockito.when;
 class VeiculoServiceTest {
 
     @Mock
-    private VeiculoRepository veiculoRepository;
+    private VeiculoGateway veiculoRepository;
 
     @Mock
-    private ClienteRepository clienteRepository;
+    private ClienteGateway clienteRepository;
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway ordemServicoGateway;
+
+    @Spy
+    private VeiculoMapper veiculoMapper;
 
     @InjectMocks
     private VeiculoService veiculoService;
@@ -293,8 +298,8 @@ class VeiculoServiceTest {
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteAtivo));
         when(veiculoRepository.existsByPlaca("XYZ9999")).thenReturn(true);
 
-        RecursoDuplicadoException exception = assertThrows(
-                RecursoDuplicadoException.class,
+        RegraNegocioException exception = assertThrows(
+                RegraNegocioException.class,
                 () -> veiculoService.atualizar(10L, requestAtualizacao)
         );
 
@@ -366,7 +371,7 @@ class VeiculoServiceTest {
         Veiculo veiculo = criarVeiculo(10L, "ABC1234", clienteAtivo);
 
         when(veiculoRepository.findById(10L)).thenReturn(Optional.of(veiculo));
-        when(ordemServicoRepository.existsByVeiculoIdAndStatusIn(eq(10L), anyList()))
+        when(ordemServicoGateway.existsByVeiculoIdAndStatusIn(eq(10L), anyList()))
                 .thenReturn(false);
 
         veiculoService.inativar(10L);
@@ -379,7 +384,7 @@ class VeiculoServiceTest {
         assertFalse(veiculoSalvo.getAtivo());
 
         verify(veiculoRepository).findById(10L);
-        verify(ordemServicoRepository).existsByVeiculoIdAndStatusIn(eq(10L), anyList());
+        verify(ordemServicoGateway).existsByVeiculoIdAndStatusIn(eq(10L), anyList());
     }
 
     @Test

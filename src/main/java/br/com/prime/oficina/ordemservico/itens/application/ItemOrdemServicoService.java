@@ -1,12 +1,16 @@
 package br.com.prime.oficina.ordemservico.itens.application;
 
+import br.com.prime.oficina.ordemservico.itens.application.dto.*;
+
 import br.com.prime.oficina.estoque.domain.Estoque;
+import br.com.prime.oficina.item.application.gateway.ItemGateway;
 import br.com.prime.oficina.item.domain.Item;
-import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.ordemservico.application.OrdemServicoStatusService;
+import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
-import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.itens.application.gateway.ItemOrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +26,13 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 @RequiredArgsConstructor
 public class ItemOrdemServicoService {
 
-	private final OrdemServicoRepository ordemServicoRepository;
-	private final ItemRepository itemRepository;
-	private final ItemOrdemServicoRepository itemOrdemServicoRepository;
+	private final OrdemServicoGateway ordemServicoGateway;
+	private final ItemGateway itemGateway;
+	private final ItemOrdemServicoGateway itemOrdemServicoGateway;
+	private final OrdemServicoStatusService ordemServicoStatusService;
 
 	public ListaItensOrdemServicoResponse listarItensPorOrdemServico(Long id) {
-		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoRepository.findByOrdemServicoId(id);
+		List<ItemOrdemServico> itemOrdemServicoList = itemOrdemServicoGateway.findByOrdemServicoId(id);
 
 		List<ItemOrdemServicoResponse> itens = itemOrdemServicoList.stream()
 				.map(this::toItemResponse)
@@ -42,25 +47,35 @@ public class ItemOrdemServicoService {
 	}
 
 	@Transactional
-	public ListaItensOrdemServicoResponse adicionarItem(Long id, ItemOrdemServicoRequest request) {
+	public void adicionarItem(Long id, ItemOrdemServicoRequest request) {
 		OrdemServico ordemServico = buscarOrdemServicoPorId(id);
 
-		if (ordemServico.getStatus().estaEmEdicao()) {
-			String mensagem = String.format(
-				"Não é possível adicionar o item, pois a ordem de serviço está %s",
-				ordemServico.getStatus().getDescricao()
-			);
-			throw new RegraNegocioException(mensagem);
-		}
+		String mensagem = String.format(
+			CANNOT_ADD_ITEM_WITH_ORDER_OUTSIDE_DIAGNOSIS,
+			StatusOrdemServico.EM_DIAGNOSTICO.getDescricao()
+		);
+		ordemServicoStatusService.validarEmDiagnostico(ordemServico, mensagem);
 
+		adicionarItemNaOrdem(ordemServico, request);
+	}
+
+	@Transactional
+	public void adicionarItemDuranteCadastro(OrdemServico ordemServico, ItemOrdemServicoRequest request) {
+		adicionarItemNaOrdem(ordemServico, request);
+	}
+
+	private void adicionarItemNaOrdem(OrdemServico ordemServico, ItemOrdemServicoRequest request) {
 		Item item = buscarItemPorId(request.itemId());
 		Estoque estoque = item.getEstoque();
 
-		if (item.getAtivo() == Boolean.FALSE) {
+		if (Boolean.FALSE.equals(item.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_ITEM);
 		}
 
-		int quantidadeAtual = itemOrdemServicoRepository.sumQuantidadeByOrdemServicoIdAndItemId(id, item.getId());
+		int quantidadeAtual = itemOrdemServicoGateway.sumQuantidadeByOrdemServicoIdAndItemId(
+				ordemServico.getId(),
+				item.getId()
+		);
 		int totalSolicitado = quantidadeAtual + request.quantidade();
 
 		if (estoque.getQuantidade() < totalSolicitado) {
@@ -70,27 +85,25 @@ public class ItemOrdemServicoService {
 		ItemOrdemServico itemOrdemServico = new ItemOrdemServico();
 		preencherItemOrdemServico(itemOrdemServico, ordemServico, item, request);
 
-		itemOrdemServicoRepository.save(itemOrdemServico);
+		itemOrdemServicoGateway.save(itemOrdemServico);
 
-		BigDecimal novoTotal = getValorTotalItens(itemOrdemServico, ordemServico);
+		BigDecimal novoTotal = calcularNovoValorTotalItens(itemOrdemServico, ordemServico);
 		ordemServico.setValorTotalItens(novoTotal);
 
-		ordemServicoRepository.saveAndFlush(ordemServico);
-
-		return listarItensPorOrdemServico(id);
+		ordemServicoGateway.saveAndFlush(ordemServico);
 	}
 
 	private Item buscarItemPorId(Long id) {
-		return itemRepository.findById(id)
+		return itemGateway.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_NOT_FOUND));
 	}
 
 	private OrdemServico buscarOrdemServicoPorId(Long id) {
-		return ordemServicoRepository.findById(id)
+		return ordemServicoGateway.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_ORDER_NOT_FOUND));
 	}
 
-	private BigDecimal getValorTotalItens(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico) {
+	private BigDecimal calcularNovoValorTotalItens(ItemOrdemServico itemOrdemServico, OrdemServico ordemServico) {
 		BigDecimal valorItem = itemOrdemServico.getValorUnitario()
 				.multiply(BigDecimal.valueOf(itemOrdemServico.getQuantidade()));
 		return ordemServico.getValorTotalItens().add(valorItem);

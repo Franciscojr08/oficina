@@ -1,5 +1,7 @@
 package br.com.prime.oficina.ordemservico.application;
 
+import br.com.prime.oficina.ordemservico.application.dto.*;
+
 import lombok.Getter;
 
 import java.util.List;
@@ -22,8 +24,8 @@ public enum StatusOrdemServico {
 		this.descricao = descricao;
 	}
 
-	public boolean estaEmEdicao() {
-		return this != RECEBIDA && this != EM_DIAGNOSTICO;
+	public boolean estaEmDiagnostico() {
+		return this == EM_DIAGNOSTICO;
 	}
 
 	public static List<StatusOrdemServico> statusAtivos() {
@@ -31,6 +33,8 @@ public enum StatusOrdemServico {
 			RECEBIDA,
 			EM_DIAGNOSTICO,
 			AGUARDANDO_APROVACAO,
+			APROVADA,
+			AGUARDANDO_ITENS,
 			EM_EXECUCAO,
 			FINALIZADA
 		);

@@ -4,7 +4,7 @@ import br.com.prime.oficina.apipublica.AcompanharOrdemServicoPublicaResponse;
 import br.com.prime.oficina.apipublica.AcompanharOrdemServicoPublicaService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +24,7 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.SERVICE_ORD
 class AcompanharOrdemServicoPublicaServiceTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway ordemServicoGateway;
 
     @InjectMocks
     private AcompanharOrdemServicoPublicaService service;
@@ -38,7 +38,7 @@ class AcompanharOrdemServicoPublicaServiceTest {
         ordemServico.setStatus(StatusOrdemServico.EM_EXECUCAO);
         ordemServico.setDataCadastro(dataCadastro);
 
-        when(ordemServicoRepository.findByCodigo("OS-2026-0001")).thenReturn(Optional.of(ordemServico));
+        when(ordemServicoGateway.findByCodigo("OS-2026-0001")).thenReturn(Optional.of(ordemServico));
 
         AcompanharOrdemServicoPublicaResponse response = service.acompanharPorCodigo("OS-2026-0001");
 
@@ -50,7 +50,7 @@ class AcompanharOrdemServicoPublicaServiceTest {
 
     @Test
     void deveLancarExcecaoQuandoCodigoNaoExistir() {
-        when(ordemServicoRepository.findByCodigo("OS-404")).thenReturn(Optional.empty());
+        when(ordemServicoGateway.findByCodigo("OS-404")).thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,

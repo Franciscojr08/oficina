@@ -15,14 +15,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-//habilitar uso de @PreAuthorize e @PreFilter
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    //definir o que é publico do que é protegido
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http

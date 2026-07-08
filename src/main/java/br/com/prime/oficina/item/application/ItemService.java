@@ -1,15 +1,17 @@
 package br.com.prime.oficina.item.application;
 
+import br.com.prime.oficina.item.application.dto.*;
+
+import br.com.prime.oficina.estoque.application.gateway.EstoqueGateway;
 import br.com.prime.oficina.estoque.domain.Estoque;
-import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
+import br.com.prime.oficina.item.application.gateway.ItemGateway;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.domain.TipoItem;
-import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.movimentoestoque.application.gateway.MovimentoEstoqueGateway;
 import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.itens.application.gateway.ItemOrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +28,11 @@ public class ItemService {
 
     private static final String OBSERVACAO_PADRAO_CADASTRO = "Cadastro inicial do item";
 
-    private final ItemRepository itemRepository;
-    private final EstoqueRepository estoqueRepository;
-    private final MovimentoEstoqueRepository movimentoEstoqueRepository;
-    private final ItemOrdemServicoRepository itemOrdemServicoRepository;
+    private final ItemGateway itemGateway;
+    private final EstoqueGateway estoqueGateway;
+    private final MovimentoEstoqueGateway movimentoEstoqueGateway;
+    private final ItemOrdemServicoGateway itemOrdemServicoGateway;
+	private final ItemMapper itemMapper;
 
     @Transactional
     public ItemResponse criar(ItemRequest request) {
@@ -41,13 +44,13 @@ public class ItemService {
 		item.setTipo(request.tipo());
 		item.setValorUnitario(request.valorUnitario());
 		item.setUnidadeMedida(request.unidadeMedida());
-		itemRepository.save(item);
+		itemGateway.save(item);
 
         Estoque estoque = new Estoque();
 		estoque.setItem(item);
         estoque.setQuantidade(request.quantidadeInicial());
         estoque.setEstoqueMinimo(request.estoqueMinimo());
-		estoqueRepository.save(estoque);
+		estoqueGateway.save(estoque);
 
         if (request.quantidadeInicial() > 0) {
             MovimentoEstoque movimento = new MovimentoEstoque();
@@ -59,37 +62,37 @@ public class ItemService {
                             ? request.observacaoInicial()
                             : OBSERVACAO_PADRAO_CADASTRO
             );
-            movimentoEstoqueRepository.save(movimento);
+            movimentoEstoqueGateway.save(movimento);
         }
 
-		return toResponse(item, estoque);
+		return itemMapper.toResponse(item, estoque);
     }
 
     public List<ItemResponse> listar() {
-        return itemRepository.findAll()
+        return itemGateway.findAll()
                 .stream()
-                .map(item -> toResponse(item, buscarEstoquePorItemId(item.getId())))
+                .map(item -> itemMapper.toResponse(item, buscarEstoquePorItemId(item.getId())))
                 .toList();
     }
 
     public List<ItemResponse> listarPorTipo(TipoItem tipo) {
-        return itemRepository.findByTipo(tipo)
+        return itemGateway.findByTipo(tipo)
                 .stream()
-                .map(item -> toResponse(item, buscarEstoquePorItemId(item.getId())))
+                .map(item -> itemMapper.toResponse(item, buscarEstoquePorItemId(item.getId())))
                 .toList();
     }
 
     public ItemResponse buscarPorId(Long id) {
         Item item = buscarItemPorId(id);
         Estoque estoque = buscarEstoquePorItemId(id);
-        return toResponse(item, estoque);
+        return itemMapper.toResponse(item, estoque);
     }
 
     @Transactional
     public ItemResponse atualizar(Long id, ItemAtualizacaoRequest request) {
         Item item = buscarItemPorId(id);
 
-        if (itemRepository.existsDuplicadoNaAtualizacao(
+        if (itemGateway.existsDuplicadoNaAtualizacao(
                 id,
                 request.tipo(),
                 request.descricao(),
@@ -103,62 +106,45 @@ public class ItemService {
 		item.setTipo(request.tipo());
 		item.setValorUnitario(request.valorUnitario());
 		item.setUnidadeMedida(request.unidadeMedida());
-		itemRepository.save(item);
+		itemGateway.save(item);
 
 		Estoque estoque = buscarEstoquePorItemId(id);
 
-		return toResponse(item, estoque);
+		return itemMapper.toResponse(item, estoque);
     }
 
     @Transactional
     public void inativar(Long id) {
         Item item = buscarItemPorId(id);
 
-		boolean estaEmOrdemAtiva = itemOrdemServicoRepository
+		boolean estaEmOrdemAtiva = itemOrdemServicoGateway
 				.existsByItemIdAndOrdemServicoStatusIn(
 						id,
 						StatusOrdemServico.statusAtivos()
 				);
 
 		if (estaEmOrdemAtiva) {
-			throw new RegraNegocioException(
-					"Não é possível inativar o item, pois ele possui ordens de serviço ativas."
-			);
+			throw new RegraNegocioException(CANNOT_INACTIVATE_ITEM_WITH_ACTIVE_SERVICE_ORDERS);
 		}
 
         item.setAtivo(false);
-        itemRepository.save(item);
+        itemGateway.save(item);
     }
 
     private void validarDuplicidade(TipoItem tipo, String descricao, String unidadeMedida) {
-        if (itemRepository.existsDuplicado(tipo, descricao, unidadeMedida)) {
+        if (itemGateway.existsDuplicado(tipo, descricao, unidadeMedida)) {
             throw new RegraNegocioException(SAME_ITEM_ERROR);
         }
     }
 
     private Item buscarItemPorId(Long id) {
-        return itemRepository.findById(id)
+        return itemGateway.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_NOT_FOUND));
     }
 
     private Estoque buscarEstoquePorItemId(Long itemId) {
-        return estoqueRepository.findByItemId(itemId)
+        return estoqueGateway.findByItemId(itemId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_STOCK_ERROR));
     }
 
-    private ItemResponse toResponse(Item item, Estoque estoque) {
-        return new ItemResponse(
-                item.getId(),
-                item.getNome(),
-                item.getDescricao(),
-                item.getTipo(),
-                item.getValorUnitario(),
-                item.getUnidadeMedida(),
-                item.getAtivo(),
-                estoque.getQuantidade(),
-                estoque.getEstoqueMinimo(),
-                item.getDataCriacao(),
-                item.getDataAtualizacao()
-        );
-    }
 }

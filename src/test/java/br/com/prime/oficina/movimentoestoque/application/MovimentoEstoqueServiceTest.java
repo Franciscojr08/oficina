@@ -1,10 +1,12 @@
 package br.com.prime.oficina.movimentoestoque.application;
 
+import br.com.prime.oficina.movimentoestoque.application.dto.*;
+
 import br.com.prime.oficina.item.domain.Item;
-import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.item.application.gateway.ItemGateway;
 import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
+import br.com.prime.oficina.movimentoestoque.application.gateway.MovimentoEstoqueGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,10 +24,10 @@ import static org.mockito.Mockito.*;
 class MovimentoEstoqueServiceTest {
 
     @Mock
-    private MovimentoEstoqueRepository movimentoEstoqueRepository;
+    private MovimentoEstoqueGateway movimentoEstoqueGateway;
 
     @Mock
-    private ItemRepository itemRepository;
+    private ItemGateway itemRepository;
 
     @InjectMocks
     private MovimentoEstoqueService movimentoEstoqueService;
@@ -53,7 +55,7 @@ class MovimentoEstoqueServiceTest {
         );
 
         when(itemRepository.existsById(1L)).thenReturn(true);
-        when(movimentoEstoqueRepository.findByItemIdOrderByDataMovimentacaoDesc(1L))
+        when(movimentoEstoqueGateway.findByItemIdOrderByDataMovimentacaoDesc(1L))
                 .thenReturn(List.of(movimento1, movimento2));
 
         List<MovimentoEstoqueResponse> responses = movimentoEstoqueService.listarPorItem(1L);
@@ -74,7 +76,7 @@ class MovimentoEstoqueServiceTest {
         assertEquals("Ajuste manual", responses.get(1).observacao());
 
         verify(itemRepository).existsById(1L);
-        verify(movimentoEstoqueRepository).findByItemIdOrderByDataMovimentacaoDesc(1L);
+        verify(movimentoEstoqueGateway).findByItemIdOrderByDataMovimentacaoDesc(1L);
     }
 
     @Test
@@ -89,7 +91,7 @@ class MovimentoEstoqueServiceTest {
         assertEquals("Item não encontrado", exception.getMessage());
 
         verify(itemRepository).existsById(99L);
-        verify(movimentoEstoqueRepository, never()).findByItemIdOrderByDataMovimentacaoDesc(anyLong());
+        verify(movimentoEstoqueGateway, never()).findByItemIdOrderByDataMovimentacaoDesc(anyLong());
     }
 
     @Test
@@ -106,7 +108,7 @@ class MovimentoEstoqueServiceTest {
         );
 
         when(itemRepository.existsById(1L)).thenReturn(true);
-        when(movimentoEstoqueRepository.findByItemIdAndTipoOrderByDataMovimentacaoDesc(
+        when(movimentoEstoqueGateway.findByItemIdAndTipoOrderByDataMovimentacaoDesc(
                 1L, TipoMovimentoEstoque.ENTRADA))
                 .thenReturn(List.of(movimento));
 
@@ -122,7 +124,7 @@ class MovimentoEstoqueServiceTest {
         assertEquals("Entrada inicial", responses.get(0).observacao());
 
         verify(itemRepository).existsById(1L);
-        verify(movimentoEstoqueRepository)
+        verify(movimentoEstoqueGateway)
                 .findByItemIdAndTipoOrderByDataMovimentacaoDesc(1L, TipoMovimentoEstoque.ENTRADA);
     }
 
@@ -138,7 +140,7 @@ class MovimentoEstoqueServiceTest {
         assertEquals("Item não encontrado", exception.getMessage());
 
         verify(itemRepository).existsById(99L);
-        verify(movimentoEstoqueRepository, never())
+        verify(movimentoEstoqueGateway, never())
                 .findByItemIdAndTipoOrderByDataMovimentacaoDesc(anyLong(), any());
     }
 
@@ -165,7 +167,7 @@ class MovimentoEstoqueServiceTest {
                 100L
         );
 
-        when(movimentoEstoqueRepository.findAllByOrderByDataMovimentacaoDesc())
+        when(movimentoEstoqueGateway.findAllByOrderByDataMovimentacaoDesc())
                 .thenReturn(List.of(movimento1, movimento2));
 
         List<MovimentoEstoqueResponse> responses = movimentoEstoqueService.listarTodos();
@@ -182,7 +184,7 @@ class MovimentoEstoqueServiceTest {
         assertEquals(TipoMovimentoEstoque.SAIDA, responses.get(1).tipo());
         assertEquals(100L, responses.get(1).ordemServicoId());
 
-        verify(movimentoEstoqueRepository).findAllByOrderByDataMovimentacaoDesc();
+        verify(movimentoEstoqueGateway).findAllByOrderByDataMovimentacaoDesc();
         verifyNoInteractions(itemRepository);
     }
 

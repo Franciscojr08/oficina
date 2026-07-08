@@ -1,11 +1,11 @@
 package br.com.prime.oficina.servico.application;
 
+import br.com.prime.oficina.servico.application.dto.*;
+
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
+import br.com.prime.oficina.servico.application.gateway.ServicoGateway;
 import br.com.prime.oficina.servico.domain.Servico;
-import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
@@ -13,17 +13,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
-import static br.com.prime.oficina.shared.exception.ExceptionMessage.EXISTING_SERVICE;
-import static br.com.prime.oficina.shared.exception.ExceptionMessage.SERVICE_NOT_FOUND;
+import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 
 @Service
 @RequiredArgsConstructor
 public class ServicoService {
 
-    private final ServicoRepository servicoRepository;
-    private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+    private final ServicoGateway servicoGateway;
+    private final ServicoOrdemServicoGateway servicoOrdemServicoGateway;
+	private final ServicoMapper servicoMapper;
 
     @Transactional
     public ServicoResponse criar(ServicoRequest request) {
@@ -32,21 +31,21 @@ public class ServicoService {
         Servico servico = new Servico();
         preencherServico(servico, request);
 
-		servicoRepository.save(servico);
+		servicoGateway.save(servico);
 
-		return toResponse(servico);
+		return servicoMapper.toResponse(servico);
     }
 
     public List<ServicoResponse> listar() {
-        return servicoRepository.findAll()
+        return servicoGateway.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(servicoMapper::toResponse)
                 .toList();
     }
 
     public ServicoResponse buscarPorId(Long id) {
         Servico servico = buscarServicoPorId(id);
-        return toResponse(servico);
+        return servicoMapper.toResponse(servico);
     }
 
     @Transactional
@@ -54,53 +53,43 @@ public class ServicoService {
         Servico servico = buscarServicoPorId(id);
 
         if (!servico.getNome().equalsIgnoreCase(request.nome())
-                && servicoRepository.existsByNomeIgnoreCase(request.nome())) {
+                && servicoGateway.existsByNomeIgnoreCase(request.nome())) {
             throw new RegraNegocioException(EXISTING_SERVICE);
         }
 
         preencherServico(servico, request);
 
-		servicoRepository.saveAndFlush(servico);
+		servicoGateway.saveAndFlush(servico);
 
-		return toResponse(servico);
+		return servicoMapper.toResponse(servico);
     }
 
     @Transactional
     public void inativar(Long id) {
         Servico servico = buscarServicoPorId(id);
 
-		boolean estaEmOrdemAtiva = servicoOrdemServicoRepository
+		boolean estaEmOrdemAtiva = servicoOrdemServicoGateway
 				.existsByServicoIdAndOrdemServicoStatusIn(
 						id,
 						StatusOrdemServico.statusAtivos()
 				);
 
 		if (estaEmOrdemAtiva) {
-			throw new RegraNegocioException(
-					"Não é possível inativar o serviço, pois ele possui ordens de serviço ativas."
-			);
+			throw new RegraNegocioException(CANNOT_INACTIVATE_SERVICE_WITH_ACTIVE_SERVICE_ORDERS);
 		}
 
         servico.setAtivo(false);
-
-        Optional<ServicoOrdemServico> servicoOrdemServico = servicoOrdemServicoRepository.findByServicoId(servico.getId());
-        if(servicoOrdemServico.isPresent()) {
-            ServicoOrdemServico servicoOrdemServicoAtualizado = servicoOrdemServico.get();
-            OrdemServico ordemServico = servicoOrdemServicoAtualizado.getOrdemServico();
-            if(StatusOrdemServico.EM_EXECUCAO.equals(ordemServico.getStatus())) throw new RegraNegocioException("Servico em execução em ordem de serviço");
-        }
-
-        servicoRepository.save(servico);
+        servicoGateway.save(servico);
     }
 
     private void validarNomeDuplicado(String nome) {
-        if (servicoRepository.existsByNomeIgnoreCase(nome)) {
+        if (servicoGateway.existsByNomeIgnoreCase(nome)) {
             throw new RegraNegocioException(EXISTING_SERVICE);
         }
     }
 
     private Servico buscarServicoPorId(Long id) {
-        return servicoRepository.findById(id)
+        return servicoGateway.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_NOT_FOUND));
     }
 
@@ -110,15 +99,4 @@ public class ServicoService {
 		servico.setValor(request.valor());
     }
 
-    private ServicoResponse toResponse(Servico servico) {
-        return new ServicoResponse(
-                servico.getId(),
-                servico.getNome(),
-                servico.getDescricao(),
-				servico.getValor(),
-                servico.getAtivo(),
-                servico.getDataCriacao(),
-                servico.getDataAtualizacao()
-        );
-    }
 }

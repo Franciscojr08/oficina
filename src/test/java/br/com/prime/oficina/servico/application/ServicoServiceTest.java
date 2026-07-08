@@ -1,11 +1,10 @@
 package br.com.prime.oficina.servico.application;
 
-import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.servico.application.dto.*;
+
+import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import br.com.prime.oficina.servico.domain.Servico;
-import br.com.prime.oficina.servico.infrasctucture.ServicoRepository;
+import br.com.prime.oficina.servico.application.gateway.ServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -29,10 +29,13 @@ import static org.mockito.Mockito.*;
 class ServicoServiceTest {
 
     @Mock
-    private ServicoRepository servicoRepository;
+    private ServicoGateway servicoRepository;
 
     @Mock
-    private ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+    private ServicoOrdemServicoGateway servicoOrdemServicoGateway;
+
+    @Spy
+    private ServicoMapper servicoMapper;
 
     @InjectMocks
     private ServicoService servicoService;
@@ -228,7 +231,6 @@ class ServicoServiceTest {
         Servico servico = criarServico(1L, "Troca de óleo", BigDecimal.valueOf(120.00));
 
         when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico));
-        when(servicoOrdemServicoRepository.findByServicoId(1L)).thenReturn(Optional.empty());
 
         servicoService.inativar(1L);
 
@@ -239,58 +241,7 @@ class ServicoServiceTest {
         assertFalse(servicoSalvo.getAtivo());
 
         verify(servicoRepository).findById(1L);
-        verify(servicoOrdemServicoRepository).findByServicoId(1L);
-    }
-
-    @Test
-    void naoDeveInativarServicoQuandoEstiverEmExecucaoEmOrdemServico() {
-        Servico servico = criarServico(1L, "Troca de óleo", BigDecimal.valueOf(120.00));
-
-        OrdemServico ordemServico = new OrdemServico();
-        ordemServico.setStatus(StatusOrdemServico.EM_EXECUCAO);
-
-        ServicoOrdemServico servicoOrdemServico = new ServicoOrdemServico();
-        servicoOrdemServico.setServico(servico);
-        servicoOrdemServico.setOrdemServico(ordemServico);
-
-        when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico));
-        when(servicoOrdemServicoRepository.findByServicoId(1L)).thenReturn(Optional.of(servicoOrdemServico));
-
-        RegraNegocioException exception = assertThrows(
-                RegraNegocioException.class,
-                () -> servicoService.inativar(1L)
-        );
-
-        assertEquals("Servico em execução em ordem de serviço", exception.getMessage());
-
-        verify(servicoRepository).findById(1L);
-        verify(servicoOrdemServicoRepository).findByServicoId(1L);
-        verify(servicoRepository, never()).save(any());
-    }
-
-    @Test
-    void deveInativarServicoQuandoVinculadoMasNaoEstiverEmExecucao() {
-        Servico servico = criarServico(1L, "Troca de óleo", BigDecimal.valueOf(120.00));
-
-        OrdemServico ordemServico = new OrdemServico();
-        ordemServico.setStatus(StatusOrdemServico.RECEBIDA);
-
-        ServicoOrdemServico servicoOrdemServico = new ServicoOrdemServico();
-        servicoOrdemServico.setServico(servico);
-        servicoOrdemServico.setOrdemServico(ordemServico);
-
-        when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico));
-        when(servicoOrdemServicoRepository.findByServicoId(1L)).thenReturn(Optional.of(servicoOrdemServico));
-
-        servicoService.inativar(1L);
-
-        ArgumentCaptor<Servico> captor = ArgumentCaptor.forClass(Servico.class);
-        verify(servicoRepository).save(captor.capture());
-
-        assertFalse(captor.getValue().getAtivo());
-
-        verify(servicoRepository).findById(1L);
-        verify(servicoOrdemServicoRepository).findByServicoId(1L);
+        verify(servicoOrdemServicoGateway, never()).findByServicoId(anyLong());
     }
 
     @Test
@@ -305,7 +256,7 @@ class ServicoServiceTest {
         assertEquals(SERVICE_NOT_FOUND, exception.getMessage());
 
         verify(servicoRepository).findById(99L);
-        verify(servicoOrdemServicoRepository, never()).findByServicoId(anyLong());
+        verify(servicoOrdemServicoGateway, never()).findByServicoId(anyLong());
         verify(servicoRepository, never()).save(any());
     }
 

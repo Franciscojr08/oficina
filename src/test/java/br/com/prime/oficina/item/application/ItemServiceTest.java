@@ -1,14 +1,16 @@
 package br.com.prime.oficina.item.application;
 
+import br.com.prime.oficina.item.application.dto.*;
+
 import br.com.prime.oficina.estoque.domain.Estoque;
-import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
+import br.com.prime.oficina.estoque.application.gateway.EstoqueGateway;
 import br.com.prime.oficina.item.domain.Item;
 import br.com.prime.oficina.item.domain.TipoItem;
-import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.item.application.gateway.ItemGateway;
 import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
-import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
+import br.com.prime.oficina.movimentoestoque.application.gateway.MovimentoEstoqueGateway;
+import br.com.prime.oficina.ordemservico.itens.application.gateway.ItemOrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -31,16 +34,19 @@ import static org.mockito.Mockito.*;
 class ItemServiceTest {
 
     @Mock
-    private ItemRepository itemRepository;
+    private ItemGateway itemRepository;
 
     @Mock
-    private EstoqueRepository estoqueRepository;
+    private EstoqueGateway estoqueRepository;
 
     @Mock
-    private MovimentoEstoqueRepository movimentoEstoqueRepository;
+    private MovimentoEstoqueGateway movimentoEstoqueGateway;
 
     @Mock
-    private ItemOrdemServicoRepository itemOrdemServicoRepository;
+    private ItemOrdemServicoGateway itemOrdemServicoGateway;
+
+    @Spy
+    private ItemMapper itemMapper;
 
     @InjectMocks
     private ItemService itemService;
@@ -100,7 +106,7 @@ class ItemServiceTest {
 
         verify(itemRepository).save(itemCaptor.capture());
         verify(estoqueRepository).save(estoqueCaptor.capture());
-        verify(movimentoEstoqueRepository).save(movimentoCaptor.capture());
+        verify(movimentoEstoqueGateway).save(movimentoCaptor.capture());
 
         Item itemSalvo = itemCaptor.getValue();
         Estoque estoqueSalvo = estoqueCaptor.getValue();
@@ -153,7 +159,7 @@ class ItemServiceTest {
         itemService.criar(requestSemObservacao);
 
         ArgumentCaptor<MovimentoEstoque> movimentoCaptor = ArgumentCaptor.forClass(MovimentoEstoque.class);
-        verify(movimentoEstoqueRepository).save(movimentoCaptor.capture());
+        verify(movimentoEstoqueGateway).save(movimentoCaptor.capture());
 
         assertEquals("Cadastro inicial do item", movimentoCaptor.getValue().getObservacao());
     }
@@ -189,7 +195,7 @@ class ItemServiceTest {
         itemService.criar(requestObservacaoVazia);
 
         ArgumentCaptor<MovimentoEstoque> movimentoCaptor = ArgumentCaptor.forClass(MovimentoEstoque.class);
-        verify(movimentoEstoqueRepository).save(movimentoCaptor.capture());
+        verify(movimentoEstoqueGateway).save(movimentoCaptor.capture());
 
         assertEquals("Cadastro inicial do item", movimentoCaptor.getValue().getObservacao());
     }
@@ -228,7 +234,7 @@ class ItemServiceTest {
 
         verify(itemRepository).save(any(Item.class));
         verify(estoqueRepository).save(any(Estoque.class));
-        verify(movimentoEstoqueRepository, never()).save(any());
+        verify(movimentoEstoqueGateway, never()).save(any());
     }
 
     @Test
@@ -246,7 +252,7 @@ class ItemServiceTest {
         verify(itemRepository).existsDuplicado(request.tipo(), request.descricao(), request.unidadeMedida());
         verify(itemRepository, never()).save(any());
         verify(estoqueRepository, never()).save(any());
-        verify(movimentoEstoqueRepository, never()).save(any());
+        verify(movimentoEstoqueGateway, never()).save(any());
     }
 
     @Test
@@ -458,7 +464,7 @@ class ItemServiceTest {
         Item item = criarItem(1L, "Óleo 5W30", TipoItem.PECA);
 
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(itemOrdemServicoRepository.existsByItemIdAndOrdemServicoStatusIn(
+        when(itemOrdemServicoGateway.existsByItemIdAndOrdemServicoStatusIn(
                 eq(1L),
                 anyList()
         )).thenReturn(false);
@@ -471,7 +477,7 @@ class ItemServiceTest {
         assertFalse(itemCaptor.getValue().getAtivo());
 
         verify(itemRepository).findById(1L);
-        verify(itemOrdemServicoRepository).existsByItemIdAndOrdemServicoStatusIn(
+        verify(itemOrdemServicoGateway).existsByItemIdAndOrdemServicoStatusIn(
                 eq(1L),
                 anyList()
         );
@@ -482,7 +488,7 @@ class ItemServiceTest {
         Item item = criarItem(1L, "Óleo 5W30", TipoItem.PECA);
 
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(itemOrdemServicoRepository.existsByItemIdAndOrdemServicoStatusIn(
+        when(itemOrdemServicoGateway.existsByItemIdAndOrdemServicoStatusIn(
                 eq(1L),
                 anyList()
         )).thenReturn(true);
@@ -498,7 +504,7 @@ class ItemServiceTest {
         );
 
         verify(itemRepository).findById(1L);
-        verify(itemOrdemServicoRepository).existsByItemIdAndOrdemServicoStatusIn(
+        verify(itemOrdemServicoGateway).existsByItemIdAndOrdemServicoStatusIn(
                 eq(1L),
                 anyList()
         );
@@ -510,7 +516,7 @@ class ItemServiceTest {
         Item item = criarItem(1L, "Óleo 5W30", TipoItem.PECA);
 
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(itemOrdemServicoRepository.existsByItemIdAndOrdemServicoStatusIn(
+        when(itemOrdemServicoGateway.existsByItemIdAndOrdemServicoStatusIn(
                 eq(1L),
                 anyList()
         )).thenReturn(false);
@@ -523,7 +529,7 @@ class ItemServiceTest {
         assertFalse(itemCaptor.getValue().getAtivo());
 
         verify(itemRepository).findById(1L);
-        verify(itemOrdemServicoRepository).existsByItemIdAndOrdemServicoStatusIn(
+        verify(itemOrdemServicoGateway).existsByItemIdAndOrdemServicoStatusIn(
                 eq(1L),
                 anyList()
         );
@@ -541,7 +547,7 @@ class ItemServiceTest {
         assertEquals("Item não encontrado", exception.getMessage());
 
         verify(itemRepository).findById(99L);
-        verify(itemOrdemServicoRepository, never()).findByItem(any());
+        verify(itemOrdemServicoGateway, never()).findByItem(any());
         verify(itemRepository, never()).save(any());
     }
 

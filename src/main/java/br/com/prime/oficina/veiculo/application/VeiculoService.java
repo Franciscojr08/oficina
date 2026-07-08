@@ -1,15 +1,16 @@
 package br.com.prime.oficina.veiculo.application;
 
+import br.com.prime.oficina.veiculo.application.dto.*;
+
+import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infraestructure.ClienteRepository;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.shared.exception.RecursoDuplicadoException;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.shared.validator.ValidadorPlaca;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
-import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
+import br.com.prime.oficina.veiculo.application.gateway.VeiculoGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +23,10 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 @RequiredArgsConstructor
 public class VeiculoService {
 
-    private final VeiculoRepository veiculoRepository;
-    private final ClienteRepository clienteRepository;
-	private final OrdemServicoRepository ordemServicoRepository;
+    private final VeiculoGateway veiculoGateway;
+    private final ClienteGateway clienteGateway;
+	private final OrdemServicoGateway ordemServicoGateway;
+	private final VeiculoMapper veiculoMapper;
 
     @Transactional
     public VeiculoResponse criar(VeiculoRequest request) {
@@ -37,32 +39,32 @@ public class VeiculoService {
 		Veiculo veiculo = new Veiculo();
 		preencherVeiculo(veiculo, request, cliente);
 
-        Veiculo salvo = veiculoRepository.save(veiculo);
-        return toResponse(salvo);
+        Veiculo salvo = veiculoGateway.save(veiculo);
+        return veiculoMapper.toResponse(salvo);
     }
 
 	private static void validarCliente(Cliente cliente) {
-		if (cliente.getAtivo() == Boolean.FALSE) {
+		if (Boolean.FALSE.equals(cliente.getAtivo())) {
 			throw new RegraNegocioException(NOT_ACTIVE_CUSTOMER);
 		}
 	}
 
     public List<VeiculoResponse> listar() {
-        return veiculoRepository.findAll()
+        return veiculoGateway.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(veiculoMapper::toResponse)
                 .toList();
     }
 
     public VeiculoResponse buscarPorId(Long id) {
         Veiculo veiculo = buscarVeiculoPorId(id);
-        return toResponse(veiculo);
+        return veiculoMapper.toResponse(veiculo);
     }
 
     public List<VeiculoResponse> listarPorCliente(Long clienteId) {
-        return veiculoRepository.findByClienteId(clienteId)
+        return veiculoGateway.findByClienteId(clienteId)
                 .stream()
-                .map(this::toResponse)
+                .map(veiculoMapper::toResponse)
                 .toList();
     }
 
@@ -75,46 +77,45 @@ public class VeiculoService {
         Cliente cliente = buscarClientePorId(request.clienteId());
 		validarCliente(cliente);
 
-        if (!veiculo.getPlaca().equals(request.placa())
-                && veiculoRepository.existsByPlaca(request.placa())) {
-            throw new RecursoDuplicadoException(DUPLICATED_VEHICLE);
+        if (!veiculo.getPlaca().equals(request.placa()) &&
+			veiculoGateway.existsByPlaca(request.placa())
+        ) {
+            throw new RegraNegocioException(DUPLICATED_VEHICLE);
         }
 
         preencherVeiculo(veiculo, request, cliente);
-        Veiculo atualizado = veiculoRepository.save(veiculo);
+        Veiculo atualizado = veiculoGateway.save(veiculo);
 
-        return toResponse(atualizado);
+        return veiculoMapper.toResponse(atualizado);
     }
 
     @Transactional
     public void inativar(Long id) {
         Veiculo veiculo = buscarVeiculoPorId(id);
 
-		boolean possuiOrdemAtiva = ordemServicoRepository
+		boolean possuiOrdemAtiva = ordemServicoGateway
 				.existsByVeiculoIdAndStatusIn(id, StatusOrdemServico.statusAtivos());
 
 		if (possuiOrdemAtiva) {
-			throw new RegraNegocioException(
-					"Não é possível inativar o veículo, pois ele possui ordens de serviço ativas."
-			);
+			throw new RegraNegocioException(CANNOT_INACTIVATE_VEHICLE_WITH_ACTIVE_SERVICE_ORDERS);
 		}
 
         veiculo.setAtivo(false);
-        veiculoRepository.save(veiculo);
+        veiculoGateway.save(veiculo);
     }
 
     @Transactional(readOnly = true)
     public VeiculoResponse buscarPorPlaca(String placa) {
-        Veiculo veiculo = veiculoRepository.findByPlaca(placa)
+        Veiculo veiculo = veiculoGateway.findByPlaca(placa)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
 
-        return toResponse(veiculo);
+        return veiculoMapper.toResponse(veiculo);
     }
 
     private void validarPlacaDuplicada(String placa) {
 		validarPlaca(placa);
 
-        if (veiculoRepository.existsByPlaca(placa)) {
+        if (veiculoGateway.existsByPlaca(placa)) {
             throw new RegraNegocioException(DUPLICATED_VEHICLE);
         }
     }
@@ -128,29 +129,13 @@ public class VeiculoService {
 	}
 
     private Cliente buscarClientePorId(Long clienteId) {
-        return clienteRepository.findById(clienteId)
+        return clienteGateway.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(CUSTOMER_NOT_FOUND));
     }
 
     private Veiculo buscarVeiculoPorId(Long id) {
-        return veiculoRepository.findById(id)
+        return veiculoGateway.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(VEHICLE_NOT_FOUND));
-    }
-
-    private VeiculoResponse toResponse(Veiculo veiculo) {
-        return new VeiculoResponse(
-                veiculo.getId(),
-                veiculo.getCliente().getId(),
-                veiculo.getPlaca(),
-                veiculo.getMarca(),
-                veiculo.getModelo(),
-                veiculo.getAno(),
-                veiculo.getCor(),
-                veiculo.getObservacao(),
-                veiculo.getAtivo(),
-                veiculo.getDataCriacao(),
-                veiculo.getDataAtualizacao()
-        );
     }
 
     private void preencherVeiculo(Veiculo veiculo, VeiculoRequest request, Cliente cliente) {
