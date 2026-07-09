@@ -33,3 +33,23 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+crash.*.log
+
+# kubeconfig/local
+infra/techchallenge-config
+*kubeconfig*
+*.kubeconfig
+
+# env/secrets
+.env
+*.env
+
+# generated k8s files
+k8s/aws/generated/
