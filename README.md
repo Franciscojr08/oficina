@@ -397,6 +397,18 @@ A pipeline usa Java 17 e executa, em ordem:
 
 O HPA e criado e sua existencia e validada na pipeline. O metrics-server nao e instalado no GitHub Actions para evitar instabilidade; a coleta real de metricas e o teste visual de escalabilidade do HPA continuam sendo validacoes locais, conforme [documentacao de infraestrutura](infra/README.md). Esta etapa usa apenas Docker, Terraform, kind e Kubernetes locais ao runner: nao usa AWS, EKS, ECS, RDS, ECR ou publicacao da imagem no Docker Hub.
 
+### Deploy AWS com EKS + RDS
+
+O deploy AWS fica separado do fluxo local e deve ser executado manualmente para evitar gasto indevido no AWS Academy/Learner Lab.
+
+- Guia copiavel: [README_AWS.md](README_AWS.md)
+- Workflow manual: [`.github/workflows/aws-deploy.yml`](.github/workflows/aws-deploy.yml)
+- Infra AWS: `infra/aws/`
+- Manifests AWS: `k8s/aws/`
+- Arquivos gerados localmente: `k8s/aws/generated/` (nao versionado)
+
+O workflow AWS usa Docker Hub, EKS, RDS privado e Service `LoadBalancer`. Ele depende das credenciais temporarias atualizadas do Learner Lab nos GitHub Secrets.
+
 ## Solucao de problemas
 
 ### Porta 5432 ja esta em uso

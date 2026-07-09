@@ -1,0 +1,277 @@
+name: AWS Deploy EKS RDS
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: deploy ou destroy
+        required: true
+        default: deploy
+        type: choice
+        options:
+          - deploy
+          - destroy
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  IMAGE_REPOSITORY: anthonymeds/oficina-api
+  TF_IN_AUTOMATION: "true"
+  TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+jobs:
+  deploy:
+    name: Deploy AWS
+    if: ${{ inputs.action == 'deploy' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: oficina
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d oficina"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x mvnw
+
+      - name: Run Maven tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/oficina
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: ./mvnw test
+
+      - name: Package application
+        run: ./mvnw package -DskipTests
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t "${IMAGE_REPOSITORY}:${GITHUB_SHA}" .
+
+      - name: Push Docker image
+        run: docker push "${IMAGE_REPOSITORY}:${GITHUB_SHA}"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Terraform init
+        run: terraform -chdir=infra/aws init
+
+      - name: Terraform fmt
+        run: terraform -chdir=infra/aws fmt -check
+
+      - name: Terraform validate
+        run: terraform -chdir=infra/aws validate
+
+      - name: Terraform plan
+        run: terraform -chdir=infra/aws plan -out=tfplan
+
+      - name: Terraform apply
+        run: terraform -chdir=infra/aws apply -auto-approve tfplan
+
+      - name: Configure kubeconfig
+        run: aws eks update-kubeconfig --region "${AWS_REGION}" --name oficina-eks
+
+      - name: Install metrics-server
+        run: |
+          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+          kubectl rollout status deployment/metrics-server -n kube-system --timeout=180s
+
+      - name: Generate AWS ConfigMap
+        run: |
+          RDS_ENDPOINT=$(aws rds describe-db-instances \
+            --db-instance-identifier oficina-db \
+            --region "${AWS_REGION}" \
+            --query 'DBInstances[0].Endpoint.Address' \
+            --output text)
+
+          mkdir -p k8s/aws/generated
+
+          sed "s|__RDS_ENDPOINT__|${RDS_ENDPOINT}|g" \
+            k8s/aws/01-configmap.yaml.tpl \
+            > k8s/aws/generated/01-configmap.yaml
+
+      - name: Update deployment image
+        run: |
+          sed -i "s|image: anthonymeds/oficina-api:.*|image: ${IMAGE_REPOSITORY}:${GITHUB_SHA}|g" k8s/aws/03-app-deployment.yaml
+          grep "image: ${IMAGE_REPOSITORY}:${GITHUB_SHA}" k8s/aws/03-app-deployment.yaml
+
+      - name: Apply namespace and config
+        run: |
+          kubectl apply -f k8s/aws/00-namespace.yaml
+          kubectl apply -f k8s/aws/generated/01-configmap.yaml
+
+      - name: Create Kubernetes secret
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SECURITY_JWT_SECRET: ${{ secrets.SECURITY_JWT_SECRET }}
+        run: |
+          kubectl create secret generic oficina-secret \
+            -n oficina \
+            --from-literal=SPRING_DATASOURCE_USERNAME=oficina_user \
+            --from-literal=SPRING_DATASOURCE_PASSWORD="${DB_PASSWORD}" \
+            --from-literal=SECURITY_JWT_SECRET="${SECURITY_JWT_SECRET}" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Apply application manifests
+        run: |
+          kubectl apply -f k8s/aws/03-app-deployment.yaml
+          kubectl apply -f k8s/aws/04-app-service-loadbalancer.yaml
+          kubectl apply -f k8s/aws/05-hpa.yaml
+
+      - name: Wait for API rollout
+        run: kubectl rollout status deployment/oficina-api -n oficina --timeout=300s
+
+      - name: Wait for Load Balancer DNS
+        run: |
+          for i in {1..60}; do
+            LB_DNS=$(kubectl get svc oficina-api -n oficina -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            if [ -n "${LB_DNS}" ]; then
+              echo "LB_DNS=${LB_DNS}" >> "${GITHUB_ENV}"
+              echo "Load Balancer DNS: ${LB_DNS}"
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "Load Balancer DNS was not assigned in time"
+          kubectl describe svc oficina-api -n oficina
+          exit 1
+
+      - name: Smoke test OpenAPI
+        run: curl --fail --retry 18 --retry-delay 10 --retry-connrefused "http://${LB_DNS}/oficina/v1/api-docs"
+
+      - name: Print service URL
+        run: |
+          echo "OpenAPI: http://${LB_DNS}/oficina/v1/api-docs"
+          echo "Swagger: http://${LB_DNS}/oficina/v1/swagger-ui.html"
+
+      - name: Collect Kubernetes diagnostics
+        if: failure()
+        run: |
+          kubectl get all -n oficina || true
+          kubectl get hpa -n oficina || true
+          kubectl get events -n oficina --sort-by=.metadata.creationTimestamp || true
+          kubectl describe deployment oficina-api -n oficina || true
+          kubectl logs deployment/oficina-api -n oficina --tail=200 || true
+
+  destroy:
+    name: Destroy AWS
+    if: ${{ inputs.action == 'destroy' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Terraform init
+        run: terraform -chdir=infra/aws init
+
+      - name: Delete Kubernetes resources
+        run: |
+          if aws eks describe-cluster --name oficina-eks --region "${AWS_REGION}" >/dev/null 2>&1; then
+            aws eks update-kubeconfig --region "${AWS_REGION}" --name oficina-eks
+
+            LB_DNS=$(kubectl get svc oficina-api -n oficina -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+            if [ -n "${LB_DNS}" ]; then
+              LB_NAME="${LB_DNS%%.*}"
+              echo "Load Balancer detected: ${LB_NAME}"
+              echo "LB_NAME=${LB_NAME}" >> "${GITHUB_ENV}"
+            fi
+
+            kubectl delete -f k8s/aws/05-hpa.yaml --ignore-not-found
+            kubectl delete -f k8s/aws/04-app-service-loadbalancer.yaml --ignore-not-found
+            kubectl delete -f k8s/aws/03-app-deployment.yaml --ignore-not-found
+            kubectl delete secret oficina-secret -n oficina --ignore-not-found
+            kubectl delete configmap oficina-config -n oficina --ignore-not-found
+            kubectl delete -f k8s/aws/00-namespace.yaml --ignore-not-found
+          else
+            echo "EKS cluster oficina-eks not found; skipping Kubernetes cleanup"
+          fi
+
+      - name: Wait for Load Balancer removal
+        run: |
+          if [ -z "${LB_NAME}" ]; then
+            echo "No Load Balancer DNS captured; skipping explicit wait"
+            exit 0
+          fi
+
+          for i in {1..30}; do
+            CLASSIC_EXISTS=0
+            V2_EXISTS=0
+
+            if aws elb describe-load-balancers --load-balancer-names "${LB_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1; then
+              CLASSIC_EXISTS=1
+            fi
+
+            if aws elbv2 describe-load-balancers --names "${LB_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1; then
+              V2_EXISTS=1
+            fi
+
+            if [ "${CLASSIC_EXISTS}" = "0" ] && [ "${V2_EXISTS}" = "0" ]; then
+              echo "Load Balancer removed"
+              exit 0
+            fi
+
+            sleep 20
+          done
+
+          echo "Load Balancer still appears to exist; continuing with Terraform destroy"
+
+      - name: Terraform destroy
+        run: terraform -chdir=infra/aws destroy -auto-approve
