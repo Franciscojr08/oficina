@@ -42,8 +42,7 @@ build/
 crash.log
 crash.*.log
 
-# kubeconfig/local
-infra/techchallenge-config
+# kubeconfig
 *kubeconfig*
 *.kubeconfig
 
