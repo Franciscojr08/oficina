@@ -1,0 +1,12 @@
+﻿aws_region = "us-east-1"
+
+project_name = "oficina"
+cluster_name = "oficina-eks"
+
+db_identifier = "oficina-db"
+db_name       = "oficina"
+db_username   = "oficina_user"
+db_password   = "Oficina12345!"
+
+node_instance_type = "t3.small"
+db_instance_class  = "db.t3.micro"
