@@ -1,13 +1,15 @@
 package br.com.prime.oficina.ordemservico.servicos.application;
 
+import br.com.prime.oficina.ordemservico.servicos.application.dto.*;
+
 import br.com.prime.oficina.ordemservico.application.OrdemServicoStatusService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import br.com.prime.oficina.servico.domain.Servico;
-import br.com.prime.oficina.servico.infrastructure.ServicoRepository;
+import br.com.prime.oficina.servico.application.gateway.ServicoGateway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,13 +30,13 @@ import static org.mockito.Mockito.when;
 class ServicoOrdemServicoServiceTest {
 
     @Mock
-    private ServicoOrdemServicoRepository repository;
+    private ServicoOrdemServicoGateway repository;
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoGateway ordemServicoGateway;
 
     @Mock
-    private ServicoRepository servicoRepository;
+    private ServicoGateway servicoRepository;
 
     @Mock
     private OrdemServicoStatusService ordemServicoStatusService;
@@ -48,7 +50,7 @@ class ServicoOrdemServicoServiceTest {
     @Test
     void testIniciarServico() {
         ServicoOrdemServico servicoOS = criarServicoOrdemServico();
-        when(ordemServicoRepository.findById(anyLong())).thenReturn(Optional.of(criarOrdemServico()));
+        when(ordemServicoGateway.findById(anyLong())).thenReturn(Optional.of(criarOrdemServico()));
         when(repository.findByOrdemServicoIdAndServicoId(anyLong(), anyLong())).thenReturn(Optional.of(servicoOS));
         when(repository.save(any(ServicoOrdemServico.class))).thenReturn(servicoOS);
 
@@ -72,7 +74,7 @@ class ServicoOrdemServicoServiceTest {
         ServicoOrdemServico servicoOS = criarServicoOrdemServico();
         servicoOS.setStatus(StatusServico.INICIADO);
         ServicoOrdemServicoResponse response = criarServicoOrdemServicoResponseFinalizado();
-        when(ordemServicoRepository.findById(anyLong())).thenReturn(Optional.of(criarOrdemServico()));
+        when(ordemServicoGateway.findById(anyLong())).thenReturn(Optional.of(criarOrdemServico()));
         when(repository.findByOrdemServicoIdAndServicoId(anyLong(), anyLong())).thenReturn(Optional.of(servicoOS));
         when(repository.save(any(ServicoOrdemServico.class))).thenReturn(servicoOS);
 

@@ -1,13 +1,15 @@
 package br.com.prime.oficina.ordemservico.application;
 
-import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
+import br.com.prime.oficina.ordemservico.application.dto.*;
+
+import br.com.prime.oficina.estoque.application.gateway.EstoqueGateway;
 import br.com.prime.oficina.item.domain.Item;
+import br.com.prime.oficina.movimentoestoque.application.gateway.MovimentoEstoqueGateway;
 import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
-import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.itens.application.gateway.ItemOrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,16 +26,16 @@ public class OrdemServicoEstoqueService {
 
 	private static final String SAIDA_DEFAULT_ITEM = "BAIXA DE ITEM NO ESTOQUE";
 
-	private final ItemOrdemServicoRepository itemOrdemServicoRepository;
-	private final EstoqueRepository estoqueRepository;
-	private final MovimentoEstoqueRepository movimentoEstoqueRepository;
+	private final ItemOrdemServicoGateway itemOrdemServicoGateway;
+	private final EstoqueGateway estoqueGateway;
+	private final MovimentoEstoqueGateway movimentoEstoqueGateway;
 
 	public boolean temEstoqueCompletoParaOrdem(Long ordemServicoId) {
-		return estoqueRepository.temEstoqueCompletoParaOrdem(ordemServicoId);
+		return estoqueGateway.temEstoqueCompletoParaOrdem(ordemServicoId);
 	}
 
 	public void baixarEstoqueDaOrdem(OrdemServico ordemServico) {
-		List<ItemOrdemServico> itens = itemOrdemServicoRepository.findByOrdemServicoId(ordemServico.getId());
+		List<ItemOrdemServico> itens = itemOrdemServicoGateway.findByOrdemServicoId(ordemServico.getId());
 		List<MovimentoEstoque> movimentos = new ArrayList<>(itens.size());
 
 		for (ItemOrdemServico itemOrdemServico : itens) {
@@ -41,7 +43,7 @@ public class OrdemServicoEstoqueService {
 			Long estoqueId = item.getEstoque().getId();
 			int quantidade = itemOrdemServico.getQuantidade();
 
-			int atualizado = estoqueRepository.baixarEstoque(estoqueId, quantidade);
+			int atualizado = estoqueGateway.baixarEstoque(estoqueId, quantidade);
 
 			if (atualizado == 0) {
 				throw new RegraNegocioException(NOT_ENOUGH_STOCK_ITEM + item.getNome());
@@ -50,7 +52,7 @@ public class OrdemServicoEstoqueService {
 			movimentos.add(criarMovimentoEstoque(item, quantidade, ordemServico.getId()));
 		}
 
-		movimentoEstoqueRepository.saveAll(movimentos);
+		movimentoEstoqueGateway.saveAll(movimentos);
 	}
 
 	private MovimentoEstoque criarMovimentoEstoque(Item item, int quantidade, Long ordemServicoId) {

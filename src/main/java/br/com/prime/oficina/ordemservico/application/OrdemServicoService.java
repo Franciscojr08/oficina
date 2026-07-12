@@ -1,19 +1,21 @@
 package br.com.prime.oficina.ordemservico.application;
 
+import br.com.prime.oficina.ordemservico.application.dto.*;
+
+import br.com.prime.oficina.cliente.application.gateway.ClienteGateway;
 import br.com.prime.oficina.cliente.domain.Cliente;
-import br.com.prime.oficina.cliente.infrastructure.ClienteRepository;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.ordemservico.itens.domain.ItemOrdemServico;
 import br.com.prime.oficina.ordemservico.itens.application.ItemOrdemServicoService;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.servicos.application.ServicoOrdemServicoService;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemservico.itens.infrastructure.ItemOrdemServicoRepository;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
-import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.itens.application.gateway.ItemOrdemServicoGateway;
+import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
-import br.com.prime.oficina.veiculo.infrastructure.VeiculoRepository;
+import br.com.prime.oficina.veiculo.application.gateway.VeiculoGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +29,11 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 @RequiredArgsConstructor
 public class OrdemServicoService {
 
-    private final OrdemServicoRepository ordemServicoRepository;
-    private final ClienteRepository clienteRepository;
-    private final VeiculoRepository veiculoRepository;
-    private final ItemOrdemServicoRepository itemOrdemServicoRepository;
-    private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+    private final OrdemServicoGateway ordemServicoRepository;
+    private final ClienteGateway clienteRepository;
+    private final VeiculoGateway veiculoRepository;
+    private final ItemOrdemServicoGateway itemOrdemServicoRepository;
+    private final ServicoOrdemServicoGateway servicoOrdemServicoRepository;
 	private final ItemOrdemServicoService itemOrdemServicoService;
 	private final ServicoOrdemServicoService servicoOrdemServicoService;
 	private final HistoricoOrdemServicoService historicoOrdemServicoService;

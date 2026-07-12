@@ -1,12 +1,14 @@
 package br.com.prime.oficina.estoque.application;
 
+import br.com.prime.oficina.estoque.application.dto.*;
+
+import br.com.prime.oficina.estoque.application.gateway.EstoqueGateway;
 import br.com.prime.oficina.estoque.domain.Estoque;
-import br.com.prime.oficina.estoque.infrastructure.EstoqueRepository;
+import br.com.prime.oficina.item.application.gateway.ItemGateway;
 import br.com.prime.oficina.item.domain.Item;
-import br.com.prime.oficina.item.infrastructure.ItemRepository;
+import br.com.prime.oficina.movimentoestoque.application.gateway.MovimentoEstoqueGateway;
 import br.com.prime.oficina.movimentoestoque.domain.MovimentoEstoque;
 import br.com.prime.oficina.movimentoestoque.domain.TipoMovimentoEstoque;
-import br.com.prime.oficina.movimentoestoque.infrastructure.MovimentoEstoqueRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,12 +23,12 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.ITEM_STOCK_
 @RequiredArgsConstructor
 public class EstoqueService {
 
-    private final EstoqueRepository estoqueRepository;
-    private final ItemRepository itemRepository;
-    private final MovimentoEstoqueRepository movimentoEstoqueRepository;
+    private final EstoqueGateway estoqueGateway;
+    private final ItemGateway itemGateway;
+    private final MovimentoEstoqueGateway movimentoEstoqueGateway;
 
     public List<EstoqueResponse> listarTodos() {
-        return estoqueRepository.findAll()
+        return estoqueGateway.findAll()
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -48,7 +50,7 @@ public class EstoqueService {
         estoque.setQuantidade(quantidadeNova);
         estoque.setEstoqueMinimo(request.estoqueMinimo());
 
-        estoqueRepository.save(estoque);
+        estoqueGateway.save(estoque);
 
 		lancarMovimentacaoEstoque(quantidadeNova, quantidadeAnterior, item);
 
@@ -72,16 +74,16 @@ public class EstoqueService {
 		movimentacao.setTipo(TipoMovimentoEstoque.AJUSTE);
 		movimentacao.setQuantidade(quantidadeMovimentacao);
 		movimentacao.setObservacao(observacao);
-		movimentoEstoqueRepository.save(movimentacao);
+		movimentoEstoqueGateway.save(movimentacao);
 	}
 
 	private Item buscarItemPorId(Long itemId) {
-        return itemRepository.findById(itemId)
+        return itemGateway.findById(itemId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_NOT_FOUND));
     }
 
     private Estoque buscarEstoquePorItemId(Long itemId) {
-        return estoqueRepository.findByItemId(itemId)
+        return estoqueGateway.findByItemId(itemId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(ITEM_STOCK_ERROR));
     }
 

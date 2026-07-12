@@ -1,13 +1,15 @@
 package br.com.prime.oficina.ordemservico.servicos.application;
 
+import br.com.prime.oficina.ordemservico.servicos.application.dto.*;
+
 import br.com.prime.oficina.ordemservico.application.OrdemServicoStatusService;
 import br.com.prime.oficina.ordemservico.application.StatusOrdemServico;
+import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
-import br.com.prime.oficina.ordemservico.infrastructure.OrdemServicoRepository;
 import br.com.prime.oficina.ordemservico.servicos.domain.ServicoOrdemServico;
-import br.com.prime.oficina.ordemservico.servicos.infrastructure.ServicoOrdemServicoRepository;
+import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
+import br.com.prime.oficina.servico.application.gateway.ServicoGateway;
 import br.com.prime.oficina.servico.domain.Servico;
-import br.com.prime.oficina.servico.infrastructure.ServicoRepository;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +26,13 @@ import static br.com.prime.oficina.shared.exception.ExceptionMessage.*;
 @RequiredArgsConstructor
 public class ServicoOrdemServicoService {
 
-	private final OrdemServicoRepository ordemServicoRepository;
-	private final ServicoRepository servicoRepository;
-	private final ServicoOrdemServicoRepository servicoOrdemServicoRepository;
+	private final OrdemServicoGateway ordemServicoGateway;
+	private final ServicoGateway servicoGateway;
+	private final ServicoOrdemServicoGateway servicoOrdemServicoGateway;
 	private final OrdemServicoStatusService ordemServicoStatusService;
 
 	public ListaServicosOrdemServicoResponse listarServicosPorOrdemServico(Long id) {
-		List<ServicoOrdemServico> lista = servicoOrdemServicoRepository.findByOrdemServicoId(id);
+		List<ServicoOrdemServico> lista = servicoOrdemServicoGateway.findByOrdemServicoId(id);
 
 		List<ServicoOrdemServicoResponse> servicos = lista.stream()
 				.map(this::toServicoResponse)
@@ -62,11 +64,11 @@ public class ServicoOrdemServicoService {
 	}
 
 	public void cancelarServicosDaOrdem(Long ordemServicoId) {
-		List<ServicoOrdemServico> servicos = servicoOrdemServicoRepository.findByOrdemServicoId(ordemServicoId);
+		List<ServicoOrdemServico> servicos = servicoOrdemServicoGateway.findByOrdemServicoId(ordemServicoId);
 
 		for (ServicoOrdemServico servico : servicos) {
 			servico.setStatus(StatusServico.CANCELADO);
-			servicoOrdemServicoRepository.saveAndFlush(servico);
+			servicoOrdemServicoGateway.saveAndFlush(servico);
 		}
 	}
 
@@ -79,12 +81,12 @@ public class ServicoOrdemServicoService {
 		ServicoOrdemServico servicoOrdemServico = new ServicoOrdemServico();
 		preencherServicoOrdemServico(servicoOrdemServico, ordemServico, servico);
 
-		servicoOrdemServicoRepository.save(servicoOrdemServico);
+		servicoOrdemServicoGateway.save(servicoOrdemServico);
 
 		BigDecimal novoTotal = calcularNovoValorTotalServicos(ordemServico, servicoOrdemServico);
 		ordemServico.setValorTotalServicos(novoTotal);
 
-		ordemServicoRepository.saveAndFlush(ordemServico);
+		ordemServicoGateway.saveAndFlush(ordemServico);
 	}
 
 	private BigDecimal calcularNovoValorTotalServicos(OrdemServico ordemServico, ServicoOrdemServico servicoOrdemServico) {
@@ -93,12 +95,12 @@ public class ServicoOrdemServicoService {
 	}
 
 	private OrdemServico buscarOrdemServicoPorId(Long id) {
-		return ordemServicoRepository.findById(id)
+		return ordemServicoGateway.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_ORDER_NOT_FOUND));
 	}
 
 	private Servico buscarServicoPorId(Long id) {
-		return servicoRepository.findById(id)
+		return servicoGateway.findById(id)
 				.orElseThrow(() -> new RecursoNaoEncontradoException(SERVICE_NOT_FOUND));
 	}
 
@@ -107,7 +109,7 @@ public class ServicoOrdemServicoService {
 
 		ordemServicoStatusService.validarPodeExecutarServico(ordemServico, "iniciar o serviço");
 
-		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository
+		ServicoOrdemServico servicoOS = servicoOrdemServicoGateway
 				.findByOrdemServicoIdAndServicoId(id, servicoId)
 				.orElseThrow(() -> new RegraNegocioException(SERVICE_NOT_FOUND_FOR_ORDER));
 
@@ -118,7 +120,7 @@ public class ServicoOrdemServicoService {
 		servicoOS.setStatus(StatusServico.INICIADO);
 		servicoOS.setDataInicio(LocalDateTime.now());
 
-		servicoOrdemServicoRepository.save(servicoOS);
+		servicoOrdemServicoGateway.save(servicoOS);
 
 		return toServicoResponse(servicoOS);
 	}
@@ -128,7 +130,7 @@ public class ServicoOrdemServicoService {
 
 		ordemServicoStatusService.validarPodeExecutarServico(ordemServico, "finalizar o serviço");
 
-		ServicoOrdemServico servicoOS = servicoOrdemServicoRepository
+		ServicoOrdemServico servicoOS = servicoOrdemServicoGateway
 				.findByOrdemServicoIdAndServicoId(id, servicoId)
 				.orElseThrow(() -> new RegraNegocioException(SERVICE_NOT_FOUND_FOR_ORDER));
 
@@ -139,7 +141,7 @@ public class ServicoOrdemServicoService {
 		servicoOS.setStatus(StatusServico.FINALIZADO);
 		servicoOS.setDataFim(LocalDateTime.now());
 
-		servicoOrdemServicoRepository.save(servicoOS);
+		servicoOrdemServicoGateway.save(servicoOS);
 
 		checarServicosOrdemServico(ordemServico);
 
@@ -147,7 +149,7 @@ public class ServicoOrdemServicoService {
 	}
 
 	private void checarServicosOrdemServico(OrdemServico ordemServico) {
-		boolean existeNaoFinalizado = servicoOrdemServicoRepository.existsByOrdemServicoIdAndStatusNot(
+		boolean existeNaoFinalizado = servicoOrdemServicoGateway.existsByOrdemServicoIdAndStatusNot(
 				ordemServico.getId(),
 				StatusServico.FINALIZADO
 		);
