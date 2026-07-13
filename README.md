@@ -398,7 +398,7 @@ Os relatorios gerados para avaliacao do projeto estao disponiveis em `docs/relat
 
 ## CI/CD
 
-O workflow [`.github/workflows/aws-deploy.yml`](.github/workflows/aws-deploy.yml) executa somente manualmente por `workflow_dispatch`, para evitar gasto indevido no AWS Academy/Learner Lab.
+O workflow [`.github/workflows/aws-deploy.yml`](.github/workflows/ci-cd.yml) executa somente manualmente por `workflow_dispatch`, para evitar gasto indevido no AWS Academy/Learner Lab.
 
 Inputs:
 
@@ -742,3 +742,5 @@ Execute `scripts/scripts-iniciais.txt` para inserir o usuario administrador inic
 ### Testes falham por conexao com banco
 
 Os testes de integracao usam PostgreSQL conforme `application-test.properties`. Verifique se o banco local esta rodando e acessivel em `localhost:5432`.
+
+teste
