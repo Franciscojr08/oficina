@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- created with diagram-js / http://bpmn.io -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-color:white" width="1090" height="1006" viewBox="-464 260 1105 1021" version="1.1"><defs><marker id="activity-black-black-6vlte1kgkufviuhnrgirtjhic" viewBox="0 0 20 20" refX="11" refY="10" markerWidth="10" markerHeight="10" orient="auto"><path d="M 1 5 L 11 10 L 1 15 Z" style="fill: black; stroke-width: 1px; stroke-linecap: round; stroke-dasharray: 10000, 1; stroke: black;"/></marker></defs><g class="djs-group"><g class="djs-element djs-shape" style = "display:block" transform="translate(-459 290)"><g class="djs-visual"><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 30; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="8" y="10" font-size="30">Abertura da Ordem de Serviço</tspan></text></g></g></g><g class="djs-group"><g class="djs-element djs-shape hover" data-element-id="shape_2308" style="display: block;" transform="matrix(1 0 0 1 -444 325)" id="group10" >
+            <style>
+              #group10 {
+                  opacity: 0;
+                  animation: visibilityControl10 20s infinite;
+              }
+              @keyframes visibilityControl10 {
+                  89% { opacity: 0; }    /* Initially invisible */
+                  90% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><rect x="0" y="0" width="1080" height="936" rx="0" ry="0" style="stroke: rgb(0, 0, 0); stroke-width: 2px; fill: none;"/><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="8" y="18.799999999999997">Abertura da Ordem de serviço</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="1080" height="936" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="1090" height="946" class="djs-outline" style="fill: none;"/></g><g class="djs-children"><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_2203" style="display: block;" transform="matrix(1 0 0 1 261 902)" id="group9" >
+            <style>
+              #group9 {
+                  opacity: 0;
+                  animation: visibilityControl9 20s infinite;
+              }
+              @keyframes visibilityControl9 {
+                  79% { opacity: 0; }    /* Initially invisible */
+                  80% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 24" x="12.5" y="12.5"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 15h7v2H7zm0-4h10v2H7zm0-4h10v2H7zm12-4h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-.14 0-.27.01-.4.04-.39.08-.74.28-1.01.55-.18.18-.33.4-.43.64-.1.23-.16.49-.16.77v14c0 .27.06.54.16.78s.25.45.43.64c.27.27.62.47 1.01.55.13.02.26.03.4.03h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-.25c.41 0 .75.34.75.75s-.34.75-.75.75-.75-.34-.75-.75.34-.75.75-.75zM19 19H5V5h14v14z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="10.822265625" y="74.75">Ordem de </tspan><tspan x="17.4931640625" y="88.75">Serviço</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_4465" style="display: block;" transform="matrix(1 0 0 1 -357 673)" id="group1" ><g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" viewBox="0 0 24 26" width="75" height="75"><path d="M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z"/><path d="M0 0h24v24H0z" fill="none"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="10.142578125" y="75">Atendente</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_2437" style="display: block;" id="group10" >
+            <style>
+              #group10 {
+                  opacity: 0;
+                  animation: visibilityControl10 20s infinite;
+              }
+              @keyframes visibilityControl10 {
+                  89% { opacity: 0; }    /* Initially invisible */
+                  90% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M342,711L541,711"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="415.1" y="726">Registra</tspan></text><path d="
+      M 362 711
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="355" y="715">10</tspan></text></g><path d="M342,711L541,711" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="337" y="706" rx="4" width="209" height="10" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_8329" style="display: block;" transform="matrix(1 0 0 1 -387 369)" id="group1" ><g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 26" x="12.5" y="12.5"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="16.4853515625" y="74.75">Lista de </tspan><tspan x="15.8232421875" y="88.75">Clientes</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_7704" style="display: block;" transform="matrix(1 0 0 1 -139 456)" id="group3" >
+            <style>
+              #group3 {
+                  opacity: 0;
+                  animation: visibilityControl3 20s infinite;
+              }
+              @keyframes visibilityControl3 {
+                  19% { opacity: 0; }    /* Initially invisible */
+                  20% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 26" x="12.5" y="12.5"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="16.4853515625" y="74.75">Lista de </tspan><tspan x="14.818359375" y="88.75">Veículos</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_9512" style="display: block;" transform="matrix(1 0 0 1 -139 603)" id="group4" >
+            <style>
+              #group4 {
+                  opacity: 0;
+                  animation: visibilityControl4 20s infinite;
+              }
+              @keyframes visibilityControl4 {
+                  29% { opacity: 0; }    /* Initially invisible */
+                  30% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 26" x="12.5" y="12.5"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="17.818359375" y="74.75">Veículo</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_1011" style="display: block;" transform="matrix(1 0 0 1 -281 456)" id="group2" >
+            <style>
+              #group2 {
+                  opacity: 0;
+                  animation: visibilityControl2 20s infinite;
+              }
+              @keyframes visibilityControl2 {
+                  9% { opacity: 0; }    /* Initially invisible */
+                  10% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" height="48.75" viewBox="0 0 24 24" width="48.75" x="12.5" y="12.5"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10.25 13c0 .69-.56 1.25-1.25 1.25S7.75 13.69 7.75 13s.56-1.25 1.25-1.25 1.25.56 1.25 1.25zM15 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm7 .25c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10zM10.66 4.12C12.06 6.44 14.6 8 17.5 8c.46 0 .91-.05 1.34-.12C17.44 5.56 14.9 4 12 4c-.46 0-.91.05-1.34.12zM4.42 9.47c1.71-.97 3.03-2.55 3.66-4.44C6.37 6 5.05 7.58 4.42 9.47zM20 12c0-.78-.12-1.53-.33-2.24-.7.15-1.42.24-2.17.24-3.13 0-5.92-1.44-7.76-3.69C8.69 8.87 6.6 10.88 4 11.86c.01.04 0 .09 0 .14 0 4.41 3.59 8 8 8s8-3.59 8-8z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="18.8232421875" y="74.75">Cliente</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_8648" style="display: block;" transform="matrix(1 0 0 1 -139 706)" id="group5" >
+            <style>
+              #group5 {
+                  opacity: 0;
+                  animation: visibilityControl5 20s infinite;
+              }
+              @keyframes visibilityControl5 {
+                  39% { opacity: 0; }    /* Initially invisible */
+                  40% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 26" x="12.5" y="12.5"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="16.4853515625" y="74.75">Lista de </tspan><tspan x="14.4931640625" y="88.75">Serviços</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_7335" style="display: block;" transform="matrix(1 0 0 1 -139 818)" id="group6" >
+            <style>
+              #group6 {
+                  opacity: 0;
+                  animation: visibilityControl6 20s infinite;
+              }
+              @keyframes visibilityControl6 {
+                  49% { opacity: 0; }    /* Initially invisible */
+                  50% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 28" x="12.5" y="12.5"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M22.61 18.99l-9.08-9.08c.93-2.34.45-5.1-1.44-7C9.79.61 6.21.4 3.66 2.26L7.5 6.11 6.08 7.52 2.25 3.69C.39 6.23.6 9.82 2.9 12.11c1.86 1.86 4.57 2.35 6.89 1.48l9.11 9.11c.39.39 1.02.39 1.41 0l2.3-2.3c.4-.38.4-1.01 0-1.41zm-3 1.6l-9.46-9.46c-.61.45-1.29.72-2 .82-1.36.2-2.79-.21-3.83-1.25C3.37 9.76 2.93 8.5 3 7.26l3.09 3.09 4.24-4.24-3.09-3.09c1.24-.07 2.49.37 3.44 1.31 1.08 1.08 1.49 2.57 1.24 3.96-.12.71-.42 1.37-.88 1.96l9.45 9.45-.88.89z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="17.4931640625" y="74.75">Serviço</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_6979" style="display: block;" transform="matrix(1 0 0 1 -139 949)" id="group7" >
+            <style>
+              #group7 {
+                  opacity: 0;
+                  animation: visibilityControl7 20s infinite;
+              }
+              @keyframes visibilityControl7 {
+                  59% { opacity: 0; }    /* Initially invisible */
+                  60% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 26" x="12.5" y="12.5"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="1.810546875" y="74.75">Lista de Itens</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_0360" style="display: block;" transform="matrix(1 0 0 1 -139 1067)" id="group8" >
+            <style>
+              #group8 {
+                  opacity: 0;
+                  animation: visibilityControl8 20s infinite;
+              }
+              @keyframes visibilityControl8 {
+                  69% { opacity: 0; }    /* Initially invisible */
+                  70% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 28" x="12.5" y="12.5"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M1 21h12v2H1v-2zM5.24 8.07l2.83-2.83 14.14 14.14-2.83 2.83L5.24 8.07zM12.32 1l5.66 5.66-2.83 2.83-5.66-5.66L12.32 1zM3.83 9.48l5.66 5.66-2.83 2.83L1 12.31l2.83-2.83z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="25.8310546875" y="74.75">Item</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_4606" style="display: block;" transform="matrix(1 0 0 1 261 673)" id="group1" ><g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" viewBox="0 0 24 26" width="75" height="75"><path d="M20,18c1.1,0,2-0.9,2-2V6c0-1.1-0.9-2-2-2H4C2.9,4,2,4.9,2,6v10c0,1.1,0.9,2,2,2H0v2h24v-2H20z M4,6h16v10H4V6z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="15.826171875" y="75">Sistema</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="shape_6779" style="display: block;" transform="matrix(1 0 0 1 541 673)" id="group10" >
+            <style>
+              #group10 {
+                  opacity: 0;
+                  animation: visibilityControl10 20s infinite;
+              }
+              @keyframes visibilityControl10 {
+                  89% { opacity: 0; }    /* Initially invisible */
+                  90% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><svg xmlns="http://www.w3.org/2000/svg" fill=" #000000" width="48.75" height="48.75" viewBox="0 0 24 28" x="12.5" y="12.5"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M19.5 3.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2v20l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5zM19 19.09H5V4.91h14v14.18zM6 15h12v2H6zm0-4h12v2H6zm0-4h12v2H6z"/></svg><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(0, 0, 0);"><tspan x="7.1513671875" y="74.75">OS Gerada</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="75" height="75" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-5" y="-5" rx="4" width="85" height="85" class="djs-outline" style="fill: none;"/></g></g></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_9361" style="display: block;" id="group7" >
+            <style>
+              #group7 {
+                  opacity: 0;
+                  animation: visibilityControl7 20s infinite;
+              }
+              @keyframes visibilityControl7 {
+                  59% { opacity: 0; }    /* Initially invisible */
+                  60% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-300,748L-226,868L-139,951"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-249.2767918494394" y="804.4821387670404">Consulta</tspan></text><path d="
+      M -282.41069383520187 768
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-286.41069383520187" y="772">7</tspan></text></g><path d="M-300,748L-226,868L-139,951" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-305" y="743" rx="4" width="171" height="213" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_4751" style="display: block;" id="group9" >
+            <style>
+              #group9 {
+                  opacity: 0;
+                  animation: visibilityControl9 20s infinite;
+              }
+              @keyframes visibilityControl9 {
+                  79% { opacity: 0; }    /* Initially invisible */
+                  80% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-356,758L-364,1194L299,1194L299,987"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-58.900000000000006" y="1209">Cadastra</tspan></text><path d="
+      M -356.4671914442417 778
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-360.4671914442417" y="782">9</tspan></text></g><path d="M-356,758L-364,1194L299,1194L299,987" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-369" y="753" rx="4" width="673" height="446" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_3159" style="display: block;" id="group9" >
+            <style>
+              #group9 {
+                  opacity: 0;
+                  animation: visibilityControl9 20s infinite;
+              }
+              @keyframes visibilityControl9 {
+                  79% { opacity: 0; }    /* Initially invisible */
+                  80% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M299,902L297,758"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="316.9557931359589" y="829.9115862719178">no</tspan></text></g><path d="M299,902L297,758" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="292" y="753" rx="4" width="12" height="154" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_2830" style="display: block;" id="group8" >
+            <style>
+              #group8 {
+                  opacity: 0;
+                  animation: visibilityControl8 20s infinite;
+              }
+              @keyframes visibilityControl8 {
+                  69% { opacity: 0; }    /* Initially invisible */
+                  70% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-319,758L-319,1105L-139,1105"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-257.95" y="1120">Seleciona</tspan></text><path d="
+      M -319 778
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-323" y="782">8</tspan></text></g><path d="M-319,758L-319,1105L-139,1105" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-324" y="753" rx="4" width="190" height="357" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_7072" style="display: block;" id="group3" >
+            <style>
+              #group3 {
+                  opacity: 0;
+                  animation: visibilityControl3 20s infinite;
+              }
+              @keyframes visibilityControl3 {
+                  19% { opacity: 0; }    /* Initially invisible */
+                  20% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-298,690L-139,532"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-206.96987613593183" y="618.5301238640682">Consulta</tspan></text><path d="
+      M -278 670.0803303041818
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-282" y="674.0803303041818">3</tspan></text></g><path d="M-298,690L-139,532" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-303" y="527" rx="4" width="169" height="168" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_2419" style="display: block;" id="group3" >
+            <style>
+              #group3 {
+                  opacity: 0;
+                  animation: visibilityControl3 20s infinite;
+              }
+              @keyframes visibilityControl3 {
+                  19% { opacity: 0; }    /* Initially invisible */
+                  20% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-68,512L261,690"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="105.23581166144443" y="594.1572077742962">no</tspan></text></g><path d="M-68,512L261,690" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-73" y="507" rx="4" width="339" height="188" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_1017" style="display: block;" id="group2" >
+            <style>
+              #group2 {
+                  opacity: 0;
+                  animation: visibilityControl2 20s infinite;
+              }
+              @keyframes visibilityControl2 {
+                  9% { opacity: 0; }    /* Initially invisible */
+                  10% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-308,680L-259,541"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-276.26358820965646" y="613.7364117903435">Seleciona</tspan></text><path d="
+      M -301.527176419313 660
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-305.527176419313" y="664">2</tspan></text></g><path d="M-308,680L-259,541" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-313" y="536" rx="4" width="59" height="149" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_3412" style="display: block;" id="group1" ><g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-332,665L-365,526L-355,454"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-330.2419633868282" y="594.0160732263436">Consulta</tspan></text><path d="
+      M -337.9357070946255 645
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-341.9357070946255" y="649">1</tspan></text></g><path d="M-332,665L-365,526L-355,454" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-370" y="449" rx="4" width="43" height="221" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_6490" style="display: block;" id="group4" >
+            <style>
+              #group4 {
+                  opacity: 0;
+                  animation: visibilityControl4 20s infinite;
+              }
+              @keyframes visibilityControl4 {
+                  29% { opacity: 0; }    /* Initially invisible */
+                  30% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-287,701L-139,653"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-196.9948566233595" y="689.0051433766405">seleciona</tspan></text><path d="
+      M -267 693.0137156710414
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-271" y="697.0137156710414">4</tspan></text></g><path d="M-287,701L-139,653" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-292" y="648" rx="4" width="158" height="58" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_2746" style="display: block;" id="group5" >
+            <style>
+              #group5 {
+                  opacity: 0;
+                  animation: visibilityControl5 20s infinite;
+              }
+              @keyframes visibilityControl5 {
+                  39% { opacity: 0; }    /* Initially invisible */
+                  40% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-274,718L-139,738"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-201.09550516308656" y="718.9363298912756">Consulta</tspan></text><path d="
+      M -254 720.8089896738269
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-258" y="724.8089896738269">5</tspan></text></g><path d="M-274,718L-139,738" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-279" y="713" rx="4" width="145" height="30" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_3944" style="display: block;" id="group6" >
+            <style>
+              #group6 {
+                  opacity: 0;
+                  animation: visibilityControl6 20s infinite;
+              }
+              @keyframes visibilityControl6 {
+                  49% { opacity: 0; }    /* Initially invisible */
+                  50% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-288,732L-139,831"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-203.89979384479298" y="775.233470770138">Seleciona</tspan></text><path d="
+      M -268 743.200412310414
+      m 11,0
+      a 11,11 0 1,0 -22,0
+      a 11,11 0 1,0 22,0
+      " style="fill: white; stroke: black;"/><text lineHeight="1.2" position="absolute" class="djs-labelNumber" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-272" y="747.200412310414">6</tspan></text></g><path d="M-288,732L-139,831" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-293" y="727" rx="4" width="159" height="109" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_6661" style="display: block;" id="group5" >
+            <style>
+              #group5 {
+                  opacity: 0;
+                  animation: visibilityControl5 20s infinite;
+              }
+              @keyframes visibilityControl5 {
+                  39% { opacity: 0; }    /* Initially invisible */
+                  40% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-62,741L261,714"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="117.70361306272254" y="741.7036130627225">no</tspan></text></g><path d="M-62,741L261,714" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-67" y="709" rx="4" width="333" height="37" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_8767" style="display: block;" id="group7" >
+            <style>
+              #group7 {
+                  opacity: 0;
+                  animation: visibilityControl7 20s infinite;
+              }
+              @keyframes visibilityControl7 {
+                  59% { opacity: 0; }    /* Initially invisible */
+                  60% { opacity: 1; }  /* Starts becoming visible */
+                  98% { opacity: 1; }   /* Stays visible */
+                  99% { opacity: 0; }   /* Starts disappearing */
+                  100% { opacity: 0; }  /* Fully invisible */
+              }
+            </style>  <g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-76,970L261,737"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="105.72337085812471" y="862.7233708581247">no</tspan></text></g><path d="M-76,970L261,737" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-81" y="732" rx="4" width="347" height="243" class="djs-outline" style="fill: none;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="connection_9664" style="display: block;" id="group1" ><g class="djs-visual"><path style="stroke: black; fill: none; stroke-width: 1.5; stroke-linejoin: round; marker-end: url('#activity-black-black-6vlte1kgkufviuhnrgirtjhic');" d="M-306,407L299,407L299,673"/><text lineHeight="1.2" wordWrap="break-word" overflowWrap="break-word" hyphens="auto" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: black;"><tspan x="-14.600000000000001" y="422">no</tspan></text></g><path d="M-306,407L299,407L299,673" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/><rect x="-311" y="402" rx="4" width="615" height="276" class="djs-outline" style="fill: none;"/></g></g></svg>
+<!-- <DST>
+{
+  "domain": {
+    "name": "default",
+    "actors": {
+      "System": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M20,18c1.1,0,2-0.9,2-2V6c0-1.1-0.9-2-2-2H4C2.9,4,2,4.9,2,6v10c0,1.1,0.9,2,2,2H0v2h24v-2H20z M4,6h16v10H4V6z\"/></svg>",
+      "Person": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z\"/><path d=\"M0 0h24v24H0z\" fill=\"none\"/></svg>"
+    },
+    "workObjects": {
+      "Receipt": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19.5 3.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2v20l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5zM19 19.09H5V4.91h14v14.18zM6 15h12v2H6zm0-4h12v2H6zm0-4h12v2H6z\"/></svg>",
+      "Gavel": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M1 21h12v2H1v-2zM5.24 8.07l2.83-2.83 14.14 14.14-2.83 2.83L5.24 8.07zM12.32 1l5.66 5.66-2.83 2.83-5.66-5.66L12.32 1zM3.83 9.48l5.66 5.66-2.83 2.83L1 12.31l2.83-2.83z\"/></svg>",
+      "Wrench": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M22.61 18.99l-9.08-9.08c.93-2.34.45-5.1-1.44-7C9.79.61 6.21.4 3.66 2.26L7.5 6.11 6.08 7.52 2.25 3.69C.39 6.23.6 9.82 2.9 12.11c1.86 1.86 4.57 2.35 6.89 1.48l9.11 9.11c.39.39 1.02.39 1.41 0l2.3-2.3c.4-.38.4-1.01 0-1.41zm-3 1.6l-9.46-9.46c-.61.45-1.29.72-2 .82-1.36.2-2.79-.21-3.83-1.25C3.37 9.76 2.93 8.5 3 7.26l3.09 3.09 4.24-4.24-3.09-3.09c1.24-.07 2.49.37 3.44 1.31 1.08 1.08 1.49 2.57 1.24 3.96-.12.71-.42 1.37-.88 1.96l9.45 9.45-.88.89z\"/></svg>",
+      "Car": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z\"/><circle cx=\"7.5\" cy=\"14.5\" r=\"1.5\"/><circle cx=\"16.5\" cy=\"14.5\" r=\"1.5\"/></svg>",
+      "Face": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 0 24 24\" width=\"24px\"><path d=\"M0 0h24v24H0V0z\" fill=\"none\"/><path d=\"M10.25 13c0 .69-.56 1.25-1.25 1.25S7.75 13.69 7.75 13s.56-1.25 1.25-1.25 1.25.56 1.25 1.25zM15 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm7 .25c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10zM10.66 4.12C12.06 6.44 14.6 8 17.5 8c.46 0 .91-.05 1.34-.12C17.44 5.56 14.9 4 12 4c-.46 0-.91.05-1.34.12zM4.42 9.47c1.71-.97 3.03-2.55 3.66-4.44C6.37 6 5.05 7.58 4.42 9.47zM20 12c0-.78-.12-1.53-.33-2.24-.7.15-1.42.24-2.17.24-3.13 0-5.92-1.44-7.76-3.69C8.69 8.87 6.6 10.88 4 11.86c.01.04 0 .09 0 .14 0 4.41 3.59 8 8 8s8-3.59 8-8z\"/></svg>",
+      "Document": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z\"/></svg>",
+      "Assignment": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24px\" height=\"24px\" viewBox=\"0 0 24 24\"><path d=\"M0 0h24v24H0V0z\" fill=\"none\"/><path d=\"M7 15h7v2H7zm0-4h10v2H7zm0-4h10v2H7zm12-4h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-.14 0-.27.01-.4.04-.39.08-.74.28-1.01.55-.18.18-.33.4-.43.64-.1.23-.16.49-.16.77v14c0 .27.06.54.16.78s.25.45.43.64c.27.27.62.47 1.01.55.13.02.26.03.4.03h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-.25c.41 0 .75.34.75.75s-.34.75-.75.75-.75-.34-.75-.75.34-.75.75-.75zM19 19H5V5h14v14z\"/></svg>"
+    }
+  },
+  "dst": [
+    {
+      "type": "domainStory:activity",
+      "name": "Seleciona",
+      "id": "connection_1017",
+      "pickedColor": "black",
+      "number": 2,
+      "waypoints": [
+        {
+          "original": {
+            "x": -319,
+            "y": 711
+          },
+          "x": -308,
+          "y": 680
+        },
+        {
+          "original": {
+            "x": -243,
+            "y": 494
+          },
+          "x": -259,
+          "y": 541
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_1011",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "no",
+      "id": "connection_2419",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -101,
+            "y": 494
+          },
+          "x": -68,
+          "y": 512
+        },
+        {
+          "original": {
+            "x": 299,
+            "y": 711
+          },
+          "x": 261,
+          "y": 690
+        }
+      ],
+      "source": "shape_7704",
+      "target": "shape_4606",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Registra",
+      "id": "connection_2437",
+      "pickedColor": "black",
+      "number": 10,
+      "waypoints": [
+        {
+          "original": {
+            "x": 299,
+            "y": 711
+          },
+          "x": 342,
+          "y": 711
+        },
+        {
+          "original": {
+            "x": 579,
+            "y": 711
+          },
+          "x": 541,
+          "y": 711
+        }
+      ],
+      "source": "shape_4606",
+      "target": "shape_6779",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Consulta",
+      "id": "connection_2746",
+      "pickedColor": "black",
+      "number": 5,
+      "waypoints": [
+        {
+          "original": {
+            "x": -319,
+            "y": 711
+          },
+          "x": -274,
+          "y": 718
+        },
+        {
+          "original": {
+            "x": -101,
+            "y": 744
+          },
+          "x": -139,
+          "y": 738
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_8648",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Seleciona",
+      "id": "connection_2830",
+      "pickedColor": "black",
+      "number": 8,
+      "waypoints": [
+        {
+          "original": {
+            "x": -319,
+            "y": 711
+          },
+          "x": -319,
+          "y": 758
+        },
+        {
+          "x": -319,
+          "y": 1105
+        },
+        {
+          "original": {
+            "x": -101,
+            "y": 1105
+          },
+          "x": -139,
+          "y": 1105
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_0360",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "no",
+      "id": "connection_3159",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 299,
+            "y": 940
+          },
+          "x": 299,
+          "y": 902
+        },
+        {
+          "original": {
+            "x": 297,
+            "y": 744
+          },
+          "x": 297,
+          "y": 758
+        }
+      ],
+      "source": "shape_2203",
+      "target": "shape_4606",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Consulta",
+      "id": "connection_3412",
+      "pickedColor": "black",
+      "number": 1,
+      "waypoints": [
+        {
+          "original": {
+            "x": -332,
+            "y": 665
+          },
+          "x": -332,
+          "y": 665
+        },
+        {
+          "x": -365,
+          "y": 526
+        },
+        {
+          "original": {
+            "x": -349,
+            "y": 407
+          },
+          "x": -355,
+          "y": 454
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_8329",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Seleciona",
+      "id": "connection_3944",
+      "pickedColor": "black",
+      "number": 6,
+      "waypoints": [
+        {
+          "original": {
+            "x": -319,
+            "y": 711
+          },
+          "x": -288,
+          "y": 732
+        },
+        {
+          "original": {
+            "x": -101,
+            "y": 856
+          },
+          "x": -139,
+          "y": 831
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_7335",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Cadastra",
+      "id": "connection_4751",
+      "pickedColor": "black",
+      "number": 9,
+      "waypoints": [
+        {
+          "original": {
+            "x": -364,
+            "y": 729
+          },
+          "x": -356,
+          "y": 758
+        },
+        {
+          "x": -364,
+          "y": 1194
+        },
+        {
+          "x": 299,
+          "y": 1194
+        },
+        {
+          "original": {
+            "x": 299,
+            "y": 940
+          },
+          "x": 299,
+          "y": 987
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_2203",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "seleciona",
+      "id": "connection_6490",
+      "pickedColor": "black",
+      "number": 4,
+      "waypoints": [
+        {
+          "original": {
+            "x": -319,
+            "y": 711
+          },
+          "x": -287,
+          "y": 701
+        },
+        {
+          "original": {
+            "x": -101,
+            "y": 641
+          },
+          "x": -139,
+          "y": 653
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_9512",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "no",
+      "id": "connection_6661",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -101,
+            "y": 744
+          },
+          "x": -62,
+          "y": 741
+        },
+        {
+          "original": {
+            "x": 299,
+            "y": 711
+          },
+          "x": 261,
+          "y": 714
+        }
+      ],
+      "source": "shape_8648",
+      "target": "shape_4606",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Consulta",
+      "id": "connection_7072",
+      "pickedColor": "black",
+      "number": 3,
+      "waypoints": [
+        {
+          "original": {
+            "x": -319,
+            "y": 711
+          },
+          "x": -298,
+          "y": 690
+        },
+        {
+          "original": {
+            "x": -101,
+            "y": 494
+          },
+          "x": -139,
+          "y": 532
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_7704",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "no",
+      "id": "connection_8767",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -101,
+            "y": 987
+          },
+          "x": -76,
+          "y": 970
+        },
+        {
+          "original": {
+            "x": 299,
+            "y": 711
+          },
+          "x": 261,
+          "y": 737
+        }
+      ],
+      "source": "shape_6979",
+      "target": "shape_4606",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Consulta",
+      "id": "connection_9361",
+      "pickedColor": "black",
+      "number": 7,
+      "waypoints": [
+        {
+          "original": {
+            "x": -319,
+            "y": 711
+          },
+          "x": -300,
+          "y": 743
+        },
+        {
+          "x": -226,
+          "y": 868
+        },
+        {
+          "original": {
+            "x": -101,
+            "y": 987
+          },
+          "x": -139,
+          "y": 951
+        }
+      ],
+      "source": "shape_4465",
+      "target": "shape_6979",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "no",
+      "id": "connection_9664",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -349,
+            "y": 407
+          },
+          "x": -306,
+          "y": 407
+        },
+        {
+          "x": 299,
+          "y": 407
+        },
+        {
+          "original": {
+            "x": 299,
+            "y": 711
+          },
+          "x": 299,
+          "y": 673
+        }
+      ],
+      "source": "shape_8329",
+      "target": "shape_4606",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:workObjectGavel",
+      "name": "Item",
+      "id": "shape_0360",
+      "x": -139,
+      "y": 1067,
+      "parent": "shape_2308"
+    },
+    {
+      "type": "domainStory:workObjectFace",
+      "name": "Cliente",
+      "id": "shape_1011",
+      "x": -281,
+      "y": 456,
+      "parent": "shape_2308"
+    },
+    {
+      "type": "domainStory:workObjectAssignment",
+      "name": "Ordem de Serviço",
+      "id": "shape_2203",
+      "x": 261,
+      "y": 902,
+      "parent": "shape_2308"
+    },
+    {
+      "type": "domainStory:group",
+      "name": "Abertura da Ordem de serviço",
+      "id": "shape_2308",
+      "pickedColor": "#000000",
+      "x": -444,
+      "y": 325,
+      "height": 936,
+      "width": 1080
+    },
+    {
+      "type": "domainStory:actorPerson",
+      "name": "Atendente",
+      "id": "shape_4465",
+      "x": -357,
+      "y": 673,
+      "parent": "shape_2308"
+    },
+    {
+      "type": "domainStory:actorSystem",
+      "name": "Sistema",
+      "id": "shape_4606",
+      "x": 261,
+      "y": 673,
+      "parent": "shape_2308"
+    },
+    {
+      "type": "domainStory:workObjectReceipt",
+      "name": "OS Gerada",
+      "id": "shape_6779",
+      "x": 541,
+      "y": 673,
+      "parent": "shape_2308"
+    },
+    {
+      "name": "Lista de Itens",
+      "id": "shape_6979",
+      "type": "domainStory:workObjectDocument",
+      "x": -139,
+      "y": 949,
+      "parent": "shape_2308"
+    },
+    {
+      "type": "domainStory:workObjectWrench",
+      "name": "Serviço",
+      "id": "shape_7335",
+      "x": -139,
+      "y": 818,
+      "parent": "shape_2308"
+    },
+    {
+      "name": "Lista de Veículos",
+      "id": "shape_7704",
+      "type": "domainStory:workObjectDocument",
+      "x": -139,
+      "y": 456,
+      "parent": "shape_2308"
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Lista de Clientes",
+      "id": "shape_8329",
+      "x": -387,
+      "y": 369,
+      "parent": "shape_2308"
+    },
+    {
+      "name": "Lista de Serviços",
+      "id": "shape_8648",
+      "type": "domainStory:workObjectDocument",
+      "x": -139,
+      "y": 706,
+      "parent": "shape_2308"
+    },
+    {
+      "type": "domainStory:workObjectCar",
+      "name": "Veículo",
+      "id": "shape_9512",
+      "x": -139,
+      "y": 603,
+      "parent": "shape_2308"
+    },
+    {
+      "info": ""
+    },
+    {
+      "version": "3.2.1"
+    }
+  ]
+}
+ </DST> -->
