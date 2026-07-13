@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_REGION: us-east-1
   EKS_CLUSTER_NAME: oficina-eks
   K8S_NAMESPACE: oficina
   DEPLOYMENT_NAME: oficina-api
