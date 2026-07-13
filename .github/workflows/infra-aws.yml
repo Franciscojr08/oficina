@@ -1,0 +1,46 @@
+name: Validate AWS Infrastructure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Check Terraform formatting
+        run: terraform -chdir=infra/aws fmt -check
+
+      - name: Initialize Terraform without backend
+        run: terraform -chdir=infra/aws init -backend=false
+
+      - name: Validate Terraform configuration
+        run: terraform -chdir=infra/aws validate
+
+      - name: Print infrastructure instructions
+        run: |
+          echo "A configuração Terraform está válida."
+          echo
+          echo "O apply e o destroy não são executados pelo GitHub Actions."
+          echo "O Terraform usa state local."
+          echo
+          echo "Provisionamento:"
+          echo "  terraform -chdir=infra/aws plan -out=tfplan"
+          echo "  terraform -chdir=infra/aws apply tfplan"
+          echo
+          echo "Destruição:"
+          echo "  terraform -chdir=infra/aws destroy"
+          echo
+          echo "Esses comandos devem ser executados na máquina que mantém:"
+          echo "  infra/aws/terraform.tfstate"
