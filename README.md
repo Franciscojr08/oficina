@@ -87,6 +87,50 @@ Os módulos principais seguem uma organização inspirada em Clean Architecture 
 
 Essa estrutura aparece nos módulos `cliente`, `veiculo`, `servico`, `item`, `estoque`, `movimentoestoque`, `ordemservico` e `auth.gestaousuarios`. Pacotes como `shared`, `security`, `config`, `relatorio` e `apipublica` possuem organização propria por tratarem preocupações transversais ou fluxos mais específicos.
 
+## Arquitetura proposta
+
+O desenho abaixo resume os componentes da aplicação, a infraestrutura provisionada e o fluxo de deploy automatizado.
+
+![Arquitetura proposta - Oficina API](docs/arquitetura-proposta-gerada.png)
+
+A aplicação é uma API Spring Boot 4 com Java 17, organizada em controllers REST, autenticação e filtros JWT, casos de uso/services, domínio, repositories Spring Data JPA e componentes compartilhados de validação, exceção e documentação OpenAPI. O banco transacional é PostgreSQL, com versionamento de schema por Flyway.
+
+Em ambiente local, o `docker-compose.yml` sobe dois serviços principais:
+
+- `app_oficina`: container da API, exposto na porta `8080`.
+- `postgres_oficina`: PostgreSQL, exposto na porta `5432` e persistido no volume `postgres_data`.
+
+Na infraestrutura AWS, o Terraform em `infra/aws` provisiona os recursos principais:
+
+- EKS cluster `oficina-eks` com node group gerenciado.
+- RDS PostgreSQL privado para persistência da aplicação.
+- Security group permitindo acesso PostgreSQL dentro da VPC.
+- Uso da VPC default e subnets compatíveis com o ambiente AWS Academy/Learner Lab.
+
+Os manifests em `k8s/aws` publicam a API no Kubernetes com:
+
+- `Namespace` `oficina`.
+- `Deployment` `oficina-api`, usando a imagem Docker da aplicação.
+- `Service` do tipo `LoadBalancer` para expor a API.
+- `ConfigMap` para configurações não sensíveis, incluindo endpoint do RDS.
+- `Secret` para credenciais de banco e chave JWT.
+- `HPA` para ajuste automático de réplicas conforme uso de recursos.
+
+O deploy automatizado fica em `.github/workflows/aws-deploy.yml` e executa, em alto nível:
+
+1. Checkout do repositório.
+2. Execução dos testes Maven com PostgreSQL como serviço do GitHub Actions.
+3. Empacotamento da aplicação.
+4. Build da imagem Docker.
+5. Push da imagem para `anthonymeds/oficina-api:<SHA>`.
+6. `terraform init`, `plan` e `apply` para provisionar EKS e RDS.
+7. Configuração do `kubeconfig` para acessar o EKS.
+8. Geração do `ConfigMap` com o endpoint do RDS.
+9. Aplicação dos manifests Kubernetes com `kubectl apply`.
+10. Validação do rollout e smoke test em `/oficina/v1/api-docs`.
+
+Uma versão editável do diagrama está disponível em `docs/arquitetura-proposta.svg`.
+
 ## Autenticacao e seguranca
 
 As rotas administrativas usam autenticacao JWT.
