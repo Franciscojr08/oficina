@@ -76,6 +76,61 @@ O projeto usa Docker Compose para subir o banco e a aplicacao em ambiente local.
 `-- README.md
 ```
 
+Os módulos principais seguem uma organização inspirada em Clean Architecture e Ports and Adapters:
+
+- `domain`: entidades e enums do domínio.
+- `application`: regras de negócio, casos de uso, DTOs e portas.
+- `application/usecase`: contratos de entrada usados pelos controllers.
+- `application/gateway`: portas de saída para persistência ou integrações.
+- `entrypoint/controller`: adapters de entrada HTTP/REST.
+- `output/persistence`: adapters de saída que implementam os gateways usando Spring Data/JPA.
+
+Essa estrutura aparece nos módulos `cliente`, `veiculo`, `servico`, `item`, `estoque`, `movimentoestoque`, `ordemservico` e `auth.gestaousuarios`. Pacotes como `shared`, `security`, `config`, `relatorio` e `apipublica` possuem organização propria por tratarem preocupações transversais ou fluxos mais específicos.
+
+## Arquitetura proposta
+
+O desenho abaixo resume os componentes da aplicação, a infraestrutura provisionada e o fluxo de deploy automatizado.
+
+![Arquitetura proposta - Oficina API](docs/arquitetura-proposta-gerada.png)
+
+A aplicação é uma API Spring Boot 4 com Java 17, organizada em controllers REST, autenticação e filtros JWT, casos de uso/services, domínio, repositories Spring Data JPA e componentes compartilhados de validação, exceção e documentação OpenAPI. O banco transacional é PostgreSQL, com versionamento de schema por Flyway.
+
+Em ambiente local, o `docker-compose.yml` sobe dois serviços principais:
+
+- `app_oficina`: container da API, exposto na porta `8080`.
+- `postgres_oficina`: PostgreSQL, exposto na porta `5432` e persistido no volume `postgres_data`.
+
+Na infraestrutura AWS, o Terraform em `infra/aws` provisiona os recursos principais:
+
+- EKS cluster `oficina-eks` com node group gerenciado.
+- RDS PostgreSQL privado para persistência da aplicação.
+- Security group permitindo acesso PostgreSQL dentro da VPC.
+- Uso da VPC default e subnets compatíveis com o ambiente AWS Academy/Learner Lab.
+
+Os manifests em `k8s/aws` publicam a API no Kubernetes com:
+
+- `Namespace` `oficina`.
+- `Deployment` `oficina-api`, usando a imagem Docker da aplicação.
+- `Service` do tipo `LoadBalancer` para expor a API.
+- `ConfigMap` para configurações não sensíveis, incluindo endpoint do RDS.
+- `Secret` para credenciais de banco e chave JWT.
+- `HPA` para ajuste automático de réplicas conforme uso de recursos.
+
+O deploy automatizado fica em `.github/workflows/aws-deploy.yml` e executa, em alto nível:
+
+1. Checkout do repositório.
+2. Execução dos testes Maven com PostgreSQL como serviço do GitHub Actions.
+3. Empacotamento da aplicação.
+4. Build da imagem Docker.
+5. Push da imagem para `anthonymeds/oficina-api:<SHA>`.
+6. `terraform init`, `plan` e `apply` para provisionar EKS e RDS.
+7. Configuração do `kubeconfig` para acessar o EKS.
+8. Geração do `ConfigMap` com o endpoint do RDS.
+9. Aplicação dos manifests Kubernetes com `kubectl apply`.
+10. Validação do rollout e smoke test em `/oficina/v1/api-docs`.
+
+Uma versão editável do diagrama está disponível em `docs/arquitetura-proposta.svg`.
+
 ## Autenticacao e seguranca
 
 As rotas administrativas usam autenticacao JWT.
@@ -130,10 +185,10 @@ Um fluxo basico para operar a oficina pela API:
 4. Cadastrar servicos em `POST /servicos`.
 5. Cadastrar itens/pecas em `POST /itens`.
 6. Ajustar estoque de itens em `PUT /estoques/item/{itemId}`.
-7. Criar ordem de servico em `POST /ordens`.
-8. Adicionar itens em `POST /ordens/{id}/itens`.
-9. Adicionar servicos em `POST /ordens/{id}/servicos`.
-10. Iniciar diagnostico em `PATCH /ordens/{id}/iniciar-diagnostico`.
+7. Criar ordem de servico em `POST /ordens`, informando os servicos e, se necessario, os itens.
+8. Iniciar diagnostico em `PATCH /ordens/{id}/iniciar-diagnostico`.
+9. Adicionar itens complementares em `POST /ordens/{id}/itens`, se necessario.
+10. Adicionar servicos complementares em `POST /ordens/{id}/servicos`, se necessario.
 11. Solicitar aprovacao em `PATCH /ordens/{id}/solicitar-aprovacao`.
 12. Aprovar ou reprovar em `PATCH /ordens/{id}/aprovar` ou `PATCH /ordens/{id}/reprovar`.
 13. Iniciar e finalizar servicos em `PATCH /ordens/{id}/servicos/{servicoId}/iniciar` e `PATCH /ordens/{id}/servicos/{servicoId}/finalizar`.
@@ -141,6 +196,8 @@ Um fluxo basico para operar a oficina pela API:
 15. Consultar o andamento publico em `GET /public/ordens/codigo/{codigo}`.
 
 Todos os caminhos acima consideram o prefixo `/oficina/v1`.
+
+No cadastro da OS, serviços e itens podem ser enviados diretamente no corpo do `POST /ordens`. Para adicionar novos itens ou serviços depois da criacao, a OS precisa estar com status `EM_DIAGNOSTICO`; nesse caso, primeiro execute `PATCH /ordens/{id}/iniciar-diagnostico` e depois use `POST /ordens/{id}/itens` ou `POST /ordens/{id}/servicos`.
 
 ## Exemplos rapidos
 
@@ -166,6 +223,10 @@ curl -X POST http://localhost:8080/oficina/v1/clientes \
 
 ### Criar ordem de servico
 
+A ordem de serviço pode ser cadastrada já com serviços e itens vinculados. O campo `servicos` recebe uma lista de IDs de serviços, e o campo `itens` recebe os IDs dos itens com suas respectivas quantidades.
+
+O campo `servicos` é obrigatório e deve conter pelo menos um serviço.
+
 ```bash
 curl -X POST http://localhost:8080/oficina/v1/ordens \
   -H "Authorization: Bearer <token>" \
@@ -175,7 +236,18 @@ curl -X POST http://localhost:8080/oficina/v1/ordens \
     "observacoesGerais": "Cliente relata ruido ao ligar",
     "descricaoServicosExecutados": "Diagnostico inicial",
     "clienteId": 1,
-    "veiculoId": 1
+    "veiculoId": 1,
+    "servicos": [1, 2],
+    "itens": [
+      {
+        "itemId": 1,
+        "quantidade": 2
+      },
+      {
+        "itemId": 3,
+        "quantidade": 1
+      }
+    ]
   }'
 ```
 
@@ -184,6 +256,75 @@ curl -X POST http://localhost:8080/oficina/v1/ordens \
 ```bash
 curl http://localhost:8080/oficina/v1/public/ordens/codigo/OS-2026-0001
 ```
+
+### Aprovar ou reprovar ordem de servico
+
+Depois do diagnostico, a OS deve ser enviada para aprovacao:
+
+```bash
+curl -X PATCH http://localhost:8080/oficina/v1/ordens/1/solicitar-aprovacao \
+  -H "Authorization: Bearer <token>"
+```
+
+A solicitacao de aprovacao exige que a OS tenha pelo menos um item e um servico vinculados.
+
+Para aprovar a OS:
+
+```bash
+curl -X PATCH http://localhost:8080/oficina/v1/ordens/1/aprovar \
+  -H "Authorization: Bearer <token>"
+```
+
+A aprovacao so e permitida quando a OS esta com status `AGUARDANDO_APROVACAO`. Ao aprovar, a API tenta processar o estoque dos itens da OS. Se houver estoque suficiente, a OS segue para `EM_EXECUCAO`; se faltar estoque, ela segue para `AGUARDANDO_ITENS`.
+
+Para reprovar a OS:
+
+```bash
+curl -X PATCH http://localhost:8080/oficina/v1/ordens/1/reprovar \
+  -H "Authorization: Bearer <token>"
+```
+
+A reprovacao tambem so e permitida quando a OS esta com status `AGUARDANDO_APROVACAO`. Ao reprovar, os servicos vinculados sao cancelados e a OS passa para `CANCELADA`.
+
+### Atualizar status da ordem de servico
+
+As mudancas de status da OS sao feitas por endpoints `PATCH` especificos. A API valida a transicao permitida para cada acao e retorna erro de regra de negocio quando a OS esta em um status invalido para a operacao.
+
+| Endpoint | Transicao / efeito | Regra principal |
+| --- | --- | --- |
+| `PATCH /ordens/{id}/iniciar-diagnostico` | `RECEBIDA` -> `EM_DIAGNOSTICO` | A OS deve estar `RECEBIDA`. |
+| `PATCH /ordens/{id}/solicitar-aprovacao` | `EM_DIAGNOSTICO` -> `AGUARDANDO_APROVACAO` | A OS deve estar `EM_DIAGNOSTICO` e ter pelo menos um item e um servico. |
+| `PATCH /ordens/{id}/aprovar` | `AGUARDANDO_APROVACAO` -> `APROVADA`; depois `EM_EXECUCAO` ou `AGUARDANDO_ITENS` | Se houver estoque suficiente, baixa estoque e inicia execucao; se faltar estoque, aguarda itens. |
+| `PATCH /ordens/{id}/reprovar` | `AGUARDANDO_APROVACAO` -> `CANCELADA` | Cancela os servicos vinculados. |
+| `PATCH /ordens/{id}/iniciar-execucao` | `AGUARDANDO_ITENS` -> `EM_EXECUCAO` | Usado apos reposicao/ajuste de estoque. |
+| `PATCH /ordens/{id}/entregar` | `FINALIZADA` -> `ENTREGUE` | A OS deve estar `FINALIZADA`. |
+
+Os servicos vinculados a OS tambem possuem transicoes proprias:
+
+| Endpoint | Transicao / efeito | Regra principal |
+| --- | --- | --- |
+| `PATCH /ordens/{id}/servicos/{servicoId}/iniciar` | Servico da OS: `PENDENTE` -> `INICIADO` | A OS deve estar `EM_EXECUCAO`. |
+| `PATCH /ordens/{id}/servicos/{servicoId}/finalizar` | Servico da OS: `INICIADO` -> `FINALIZADO` | A OS deve estar `EM_EXECUCAO`; ao finalizar todos os servicos, a OS passa para `FINALIZADA`. |
+
+### Consultar status da ordem de servico
+
+Para consultar apenas o status atual de uma OS pelo ID:
+
+```bash
+curl http://localhost:8080/oficina/v1/ordens/1/status \
+  -H "Authorization: Bearer <token>"
+```
+
+Resposta esperada:
+
+```json
+{
+  "codigo": "OS-2026-000001",
+  "status": "EM_DIAGNOSTICO"
+}
+```
+
+Esse endpoint retorna somente o codigo publico da OS e o status atual.
 
 ## Endpoints principais
 
@@ -197,7 +338,9 @@ curl http://localhost:8080/oficina/v1/public/ordens/codigo/OS-2026-0001
 | Itens | `POST /itens`, `GET /itens`, `GET /itens/{id}`, `GET /itens/tipo/{tipo}`, `PUT /itens/{id}`, `DELETE /itens/{id}` |
 | Estoques | `GET /estoques`, `GET /estoques/item/{itemId}`, `PUT /estoques/item/{itemId}` |
 | Movimentacoes de estoque | `GET /movimentacoes-estoque`, `GET /movimentacoes-estoque/item/{itemId}`, `GET /movimentacoes-estoque/item/{itemId}/tipo/{tipo}` |
-| Ordens de servico | `POST /ordens`, `GET /ordens`, `GET /ordens/cliente/{id}`, `GET /ordens/codigo/{codigo}`, `GET /ordens/status/{status}`, `PATCH /ordens/{id}/...` |
+| Ordens de servico | `POST /ordens`, `GET /ordens`, `GET /ordens/cliente/{id}`, `GET /ordens/codigo/{codigo}`, `GET /ordens/status/{status}`, `GET /ordens/{id}/status`, `PUT /ordens/{id}` |
+| Fluxo da OS | `PATCH /ordens/{id}/iniciar-diagnostico`, `PATCH /ordens/{id}/solicitar-aprovacao`, `PATCH /ordens/{id}/aprovar`, `PATCH /ordens/{id}/reprovar`, `PATCH /ordens/{id}/iniciar-execucao`, `PATCH /ordens/{id}/entregar` |
+| Servicos da OS | `PATCH /ordens/{id}/servicos/{servicoId}/iniciar`, `PATCH /ordens/{id}/servicos/{servicoId}/finalizar` |
 | Relatorios | `GET /relatorios/ordens-servico/tempo-medio`, `GET /relatorios/ordens-servico/tempo-medio-servicos` |
 | API publica | `GET /public/ordens/codigo/{codigo}` |
 
@@ -383,9 +526,15 @@ Os relatorios gerados para avaliacao do projeto estao disponiveis em `docs/relat
 
 ## Decisoes tecnicas
 
-- Organizacao por modulos de dominio, como `cliente`, `veiculo`, `ordemservico`, `estoque` e `auth`.
-- Camada `application` para regras de negocio e DTOs de entrada/saida.
-- Spring Data JPA para persistencia.
+- Organizacao por modulos de dominio, como `cliente`, `veiculo`, `ordemservico`, `estoque`, `item`, `servico` e `auth`.
+- Aplicacao de Clean Architecture e Ports and Adapters nos modulos principais.
+- Controllers em `entrypoint/controller`, responsaveis pela entrada HTTP.
+- Casos de uso, regras de negocio e DTOs em `application`.
+- Contratos de entrada em `application/usecase`.
+- Portas de saida em `application/gateway`.
+- Adapters de persistencia em `output/persistence`, implementando os gateways.
+- Entidades e enums em `domain`.
+- Spring Data JPA encapsulado pelos adapters de persistencia.
 - Flyway para versionamento do banco de dados.
 - JWT para autenticacao das rotas administrativas.
 - Springdoc OpenAPI para documentacao interativa.
@@ -395,6 +544,24 @@ Os relatorios gerados para avaliacao do projeto estao disponiveis em `docs/relat
 
 - [Linguagem Ubiqua](docs/ddd/linguagem-ubiqua.md)
 - Event Storming de pecas, servicos e ordem de servico: https://miro.com/app/board/uXjVGgeRsuQ=/?share_link_id=397857444241
+
+### Storytelling de dominio
+
+#### Registro da OS
+
+![Registro da OS](docs/storytelling/domain_storyelling_registro_os.png)
+
+#### Diagnostico da OS
+
+![Diagnostico da OS](docs/storytelling/domain_storyelling_diagnostico_os.png)
+
+#### Aprovacao e reprovacao da OS
+
+![Aprovacao e reprovacao da OS](docs/storytelling/domain_storytelling_aprovacao_reprovacao_os.png)
+
+#### Execucao e entrega da OS
+
+![Execucao e entrega da OS](docs/storytelling/domain_storytelling_execucao_entrega_os.png)
 
 ## CI/CD
 
