@@ -3,6 +3,7 @@ name: Deploy API to EKS
 on:
   push:
     branches:
+      - main
       - refatoração-cicd
   workflow_dispatch:
 
