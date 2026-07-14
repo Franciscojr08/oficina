@@ -1,0 +1,296 @@
+name: Deploy API to EKS
+
+on:
+  push:
+    branches:
+      - main
+      - refatoração-cicd
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: oficina-api-eks-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: oficina-eks
+  K8S_NAMESPACE: oficina
+  DEPLOYMENT_NAME: oficina-api
+  CONTAINER_NAME: oficina-api
+  SERVICE_NAME: oficina-api
+  IMAGE_REPOSITORY: anthonymeds/oficina-api
+
+jobs:
+  deploy:
+    name: Build and deploy API
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: oficina
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d oficina"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x mvnw
+
+      - name: Run Maven tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/oficina
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: ./mvnw -B test
+
+      - name: Package application
+        run: ./mvnw -B package -DskipTests
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Validate EKS cluster
+        run: |
+          set -euo pipefail
+
+          if ! CLUSTER_STATUS=$(aws eks describe-cluster \
+            --name "${EKS_CLUSTER_NAME}" \
+            --region "${AWS_REGION}" \
+            --query 'cluster.status' \
+            --output text 2>/tmp/eks-error.txt); then
+
+            cat /tmp/eks-error.txt
+
+            echo "::error::Não foi possível acessar o cluster ${EKS_CLUSTER_NAME}."
+            echo "::error::Verifique se o Learner Lab está ativo, se os GitHub Secrets AWS estão válidos e se a infraestrutura foi provisionada manualmente."
+
+            exit 1
+          fi
+
+          if [ "${CLUSTER_STATUS}" != "ACTIVE" ]; then
+            echo "::error::O cluster ${EKS_CLUSTER_NAME} está com status ${CLUSTER_STATUS}, e não ACTIVE."
+            exit 1
+          fi
+
+          echo "Cluster ${EKS_CLUSTER_NAME} está ACTIVE."
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t "${IMAGE_REPOSITORY}:${GITHUB_SHA}" \
+            .
+
+      - name: Push Docker image
+        run: docker push "${IMAGE_REPOSITORY}:${GITHUB_SHA}"
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region "${AWS_REGION}" \
+            --name "${EKS_CLUSTER_NAME}"
+
+      - name: Validate Kubernetes bootstrap
+        run: |
+          set -euo pipefail
+
+          if ! kubectl get namespace "${K8S_NAMESPACE}" >/dev/null 2>&1; then
+            echo "::error::O namespace ${K8S_NAMESPACE} não existe."
+            echo "::error::Execute primeiro o bootstrap manual dos manifests Kubernetes."
+            exit 1
+          fi
+
+          if ! kubectl get deployment "${DEPLOYMENT_NAME}" \
+            -n "${K8S_NAMESPACE}" >/dev/null 2>&1; then
+
+            echo "::error::O Deployment ${DEPLOYMENT_NAME} não existe."
+            echo "::error::Aplique primeiro os manifests Kubernetes de bootstrap."
+            exit 1
+          fi
+
+          if ! kubectl get service "${SERVICE_NAME}" \
+            -n "${K8S_NAMESPACE}" >/dev/null 2>&1; then
+
+            echo "::error::O Service ${SERVICE_NAME} não existe."
+            exit 1
+          fi
+
+      - name: Update Kubernetes secret
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SECURITY_JWT_SECRET: ${{ secrets.SECURITY_JWT_SECRET }}
+        run: |
+          kubectl create secret generic oficina-secret \
+            --namespace "${K8S_NAMESPACE}" \
+            --from-literal=SPRING_DATASOURCE_USERNAME=oficina_user \
+            --from-literal=SPRING_DATASOURCE_PASSWORD="${DB_PASSWORD}" \
+            --from-literal=SECURITY_JWT_SECRET="${SECURITY_JWT_SECRET}" \
+            --dry-run=client \
+            --output yaml \
+            | kubectl apply -f -
+
+      - name: Update deployment image
+        run: |
+          set -euo pipefail
+
+          EXPECTED_IMAGE="${IMAGE_REPOSITORY}:${GITHUB_SHA}"
+
+          echo "EXPECTED_IMAGE=${EXPECTED_IMAGE}" >> "${GITHUB_ENV}"
+
+          kubectl set image \
+            deployment/"${DEPLOYMENT_NAME}" \
+            "${CONTAINER_NAME}"="${EXPECTED_IMAGE}" \
+            --namespace "${K8S_NAMESPACE}"
+
+      - name: Annotate deployment
+        run: |
+          kubectl annotate deployment "${DEPLOYMENT_NAME}" \
+            --namespace "${K8S_NAMESPACE}" \
+            kubernetes.io/change-cause="GitHub commit ${GITHUB_SHA} - run ${GITHUB_RUN_ID}" \
+            techchallenge.oficina/commit="${GITHUB_SHA}" \
+            techchallenge.oficina/run-id="${GITHUB_RUN_ID}" \
+            techchallenge.oficina/run-number="${GITHUB_RUN_NUMBER}" \
+            --overwrite
+
+      - name: Wait for API rollout
+        run: |
+          kubectl rollout status \
+            deployment/"${DEPLOYMENT_NAME}" \
+            --namespace "${K8S_NAMESPACE}" \
+            --timeout=300s
+
+      - name: Validate deployed image
+        run: |
+          set -euo pipefail
+
+          ACTUAL_IMAGE=$(kubectl get deployment "${DEPLOYMENT_NAME}" \
+            --namespace "${K8S_NAMESPACE}" \
+            --output jsonpath='{.spec.template.spec.containers[?(@.name=="oficina-api")].image}')
+
+          echo "Imagem esperada: ${EXPECTED_IMAGE}"
+          echo "Imagem aplicada:  ${ACTUAL_IMAGE}"
+
+          if [ "${ACTUAL_IMAGE}" != "${EXPECTED_IMAGE}" ]; then
+            echo "::error::A imagem aplicada não corresponde à imagem do commit."
+            exit 1
+          fi
+
+      - name: Validate running Pods
+        run: |
+          set -euo pipefail
+
+          kubectl get pods \
+            --namespace "${K8S_NAMESPACE}" \
+            --selector app.kubernetes.io/name=oficina-api \
+            --output custom-columns='POD:.metadata.name,IMAGE:.spec.containers[0].image,STATUS:.status.phase'
+
+          INVALID_IMAGES=$(kubectl get pods \
+            --namespace "${K8S_NAMESPACE}" \
+            --selector app.kubernetes.io/name=oficina-api \
+            --output jsonpath='{range .items[*]}{.spec.containers[?(@.name=="oficina-api")].image}{"\n"}{end}' \
+            | grep -v "^${EXPECTED_IMAGE}$" || true)
+
+          if [ -n "${INVALID_IMAGES}" ]; then
+            echo "::error::Existem Pods executando uma imagem diferente da esperada:"
+            echo "${INVALID_IMAGES}"
+            exit 1
+          fi
+
+      - name: Wait for Load Balancer DNS
+        run: |
+          set -euo pipefail
+
+          for i in {1..60}; do
+            LB_DNS=$(kubectl get service "${SERVICE_NAME}" \
+              --namespace "${K8S_NAMESPACE}" \
+              --output jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+            if [ -n "${LB_DNS}" ]; then
+              echo "LB_DNS=${LB_DNS}" >> "${GITHUB_ENV}"
+              echo "Load Balancer DNS: ${LB_DNS}"
+              exit 0
+            fi
+
+            echo "Aguardando DNS do Load Balancer... tentativa ${i}/60"
+            sleep 10
+          done
+
+          echo "::error::O DNS do Load Balancer não foi atribuído no tempo esperado."
+
+          kubectl describe service "${SERVICE_NAME}" \
+            --namespace "${K8S_NAMESPACE}"
+
+          exit 1
+
+      - name: Smoke test OpenAPI
+        run: |
+          curl \
+            --fail \
+            --show-error \
+            --retry 18 \
+            --retry-delay 10 \
+            --retry-connrefused \
+            "http://${LB_DNS}/oficina/v1/api-docs"
+
+      - name: Print deployment summary
+        run: |
+          echo "Commit: ${GITHUB_SHA}"
+          echo "Imagem: ${EXPECTED_IMAGE}"
+          echo "OpenAPI: http://${LB_DNS}/oficina/v1/api-docs"
+          echo "Swagger: http://${LB_DNS}/oficina/v1/swagger-ui.html"
+
+          kubectl rollout history \
+            deployment/"${DEPLOYMENT_NAME}" \
+            --namespace "${K8S_NAMESPACE}"
+
+      - name: Collect Kubernetes diagnostics
+        if: failure()
+        run: |
+          kubectl get all -n "${K8S_NAMESPACE}" || true
+          kubectl get hpa -n "${K8S_NAMESPACE}" || true
+          kubectl get events \
+            -n "${K8S_NAMESPACE}" \
+            --sort-by=.metadata.creationTimestamp || true
+          kubectl describe deployment "${DEPLOYMENT_NAME}" \
+            -n "${K8S_NAMESPACE}" || true
+          kubectl logs deployment/"${DEPLOYMENT_NAME}" \
+            -n "${K8S_NAMESPACE}" \
+            --tail=200 || true
