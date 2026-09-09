@@ -22,6 +22,17 @@ O projeto usa Docker Compose para subir o banco e a aplicacao em ambiente local.
 - Maven opcional, pois o projeto inclui Maven Wrapper (`mvnw` e `mvnw.cmd`)
 - PostgreSQL apenas se optar por rodar sem Docker
 
+## Fase 3 — arquitetura em múltiplos repositórios
+
+A partir da Fase 3 do Tech Challenge, a infraestrutura deste projeto foi dividida em repositórios próprios:
+
+- **[oficina-kubernetes](https://github.com/rremiao/oficina-kubernetes)** — Terraform do cluster EKS.
+- **[oficina-database](https://github.com/rremiao/oficina-database)** — Terraform do RDS PostgreSQL.
+- **oficina-lambda** — Function Serverless de autenticação por CPF + API Gateway (em desenvolvimento).
+- **oficina** (este repositório) — aplicação Spring Boot + manifests Kubernetes (`k8s/aws/`) que rodam sobre o cluster/banco provisionados pelos repositórios acima.
+
+O deploy deste repositório **assume que o cluster e o banco já estão provisionados** (rode `deploy` nos outros dois repos primeiro). Este repositório não roda mais `terraform apply`/`destroy` — só builda, publica a imagem e aplica os manifests Kubernetes.
+
 ## Estrutura
 
 ```text
@@ -52,14 +63,7 @@ O projeto usa Docker Compose para subir o banco e a aplicacao em ambiente local.
 |-- docker-compose.yml
 |-- .github/
 |   `-- workflows/
-|       `-- aws-deploy.yml
-|-- infra/
-|   `-- aws/
-|       |-- main.tf
-|       |-- outputs.tf
-|       |-- providers.tf
-|       |-- variables.tf
-|       `-- versions.tf
+|       `-- app-deploy.yml
 |-- k8s/
 |   `-- aws/
 |       |-- 00-namespace.yaml
@@ -75,6 +79,8 @@ O projeto usa Docker Compose para subir o banco e a aplicacao em ambiente local.
 |   `-- scripts-iniciais.txt
 `-- README.md
 ```
+
+> A pasta `infra/aws/` (Terraform) saiu deste repositório na Fase 3 — foi dividida entre `oficina-kubernetes` e `oficina-database`.
 
 Os módulos principais seguem uma organização inspirada em Clean Architecture e Ports and Adapters:
 
@@ -100,12 +106,11 @@ Em ambiente local, o `docker-compose.yml` sobe dois serviços principais:
 - `app_oficina`: container da API, exposto na porta `8080`.
 - `postgres_oficina`: PostgreSQL, exposto na porta `5432` e persistido no volume `postgres_data`.
 
-Na infraestrutura AWS, o Terraform em `infra/aws` provisiona os recursos principais:
+Na infraestrutura AWS, o cluster EKS e o RDS são provisionados por repositórios Terraform próprios, criados na Fase 3:
 
-- EKS cluster `oficina-eks` com node group gerenciado.
-- RDS PostgreSQL privado para persistência da aplicação.
-- Security group permitindo acesso PostgreSQL dentro da VPC.
-- Uso da VPC default e subnets compatíveis com o ambiente AWS Academy/Learner Lab.
+- **[oficina-kubernetes](https://github.com/rremiao/oficina-kubernetes)**: EKS cluster `oficina-eks` com node group gerenciado.
+- **[oficina-database](https://github.com/rremiao/oficina-database)**: RDS PostgreSQL privado, security group liberando acesso dentro da VPC e DB subnet group.
+- Ambos usam a VPC default e subnets compatíveis com o ambiente AWS Academy/Learner Lab.
 
 Os manifests em `k8s/aws` publicam a API no Kubernetes com:
 
@@ -116,18 +121,18 @@ Os manifests em `k8s/aws` publicam a API no Kubernetes com:
 - `Secret` para credenciais de banco e chave JWT.
 - `HPA` para ajuste automático de réplicas conforme uso de recursos.
 
-O deploy automatizado fica em `.github/workflows/aws-deploy.yml` e executa, em alto nível:
+O deploy automatizado fica em `.github/workflows/app-deploy.yml` (job `Deploy API to EKS`) e assume que o cluster EKS (`oficina-kubernetes`) e o RDS (`oficina-database`) já foram provisionados nos repositórios correspondentes — este workflow não roda mais Terraform. Em alto nível, ele executa:
 
 1. Checkout do repositório.
 2. Execução dos testes Maven com PostgreSQL como serviço do GitHub Actions.
 3. Empacotamento da aplicação.
-4. Build da imagem Docker.
-5. Push da imagem para `anthonymeds/oficina-api:<SHA>`.
-6. `terraform init`, `plan` e `apply` para provisionar EKS e RDS.
-7. Configuração do `kubeconfig` para acessar o EKS.
-8. Geração do `ConfigMap` com o endpoint do RDS.
-9. Aplicação dos manifests Kubernetes com `kubectl apply`.
-10. Validação do rollout e smoke test em `/oficina/v1/api-docs`.
+4. Configuração das credenciais AWS e validação de que o cluster `oficina-eks` está `ACTIVE`.
+5. Build e push da imagem para `anthonymeds/oficina-api:<SHA>` no Docker Hub.
+6. Configuração do `kubectl`/`kubeconfig` para o EKS já existente e validação de que o namespace/Deployment/Service de bootstrap já existem (criados manualmente uma vez, ver `k8s/aws/`).
+7. Atualização do Secret Kubernetes a partir dos GitHub Secrets e atualização da imagem do Deployment.
+8. Validação do rollout, da imagem aplicada e dos Pods, e smoke test em `/oficina/v1/api-docs`.
+
+A validação estática do Terraform (fmt/validate, sem apply/destroy) roda em `.github/workflows/infra-aws.yml` nos repositórios `oficina-kubernetes`/`oficina-database` — o `infra-aws.yml` que existia aqui apontando para `infra/aws/` foi removido junto com a pasta na Fase 3.
 
 Uma versão editável do diagrama está disponível em `docs/arquitetura-proposta.svg`.
 
@@ -565,18 +570,25 @@ Os relatorios gerados para avaliacao do projeto estao disponiveis em `docs/relat
 
 ## CI/CD
 
-O workflow [`.github/workflows/aws-deploy.yml`](.github/workflows/ci-cd.yml) executa somente manualmente por `workflow_dispatch`, para evitar gasto indevido no AWS Academy/Learner Lab.
+O workflow [`.github/workflows/aws-deploy.yml`](.github/workflows/aws-deploy.yml) executa somente manualmente por `workflow_dispatch`, para evitar gasto indevido no AWS Academy/Learner Lab.
+
+A partir da Fase 3, este workflow **não provisiona mais infraestrutura** (isso ficou em [`oficina-kubernetes`](https://github.com/rremiao/oficina-kubernetes) e [`oficina-database`](https://github.com/rremiao/oficina-database)). Ele assume que o cluster e o banco já existem.
 
 Inputs:
 
-- `deploy`: roda testes Maven, empacota a aplicacao, publica imagem no Docker Hub, cria/atualiza AWS com Terraform, aplica manifests no EKS e executa smoke test no OpenAPI.
-- `destroy`: remove recursos Kubernetes primeiro, aguarda a remocao do Load Balancer e depois executa `terraform destroy`.
+- `deploy`: roda testes Maven, empacota a aplicacao, publica imagem no Docker Hub, conecta no cluster já existente, busca o endpoint do RDS já provisionado e aplica os manifests no EKS, com smoke test no OpenAPI.
+- `destroy`: remove só os recursos Kubernetes da aplicação (deployment, service, hpa, secret, configmap, namespace) — não destrói o cluster nem o banco.
+
+Ordem recomendada para subir o ambiente do zero: `deploy` em `oficina-database` → `deploy` em `oficina-kubernetes` → `deploy` neste repositório. Para derrubar, a ordem inversa.
 
 Os secrets e o modo de execucao manual estao detalhados na secao `Deploy pelo GitHub Actions`.
 
-## Deploy AWS com EKS + RDS
+## Deploy da aplicação (assume cluster e banco já provisionados)
 
-Esta secao assume que o AWS Academy/Learner Lab ja esta iniciado e que o AWS CLI ja esta configurado com o profile `academy`.
+Esta secao assume que:
+
+- O AWS Academy/Learner Lab ja esta iniciado e o AWS CLI configurado com o profile `academy`;
+- O cluster EKS (`oficina-kubernetes`) e o RDS (`oficina-database`) ja foram provisionados (rode `deploy` nesses dois repositórios primeiro).
 
 Arquitetura:
 
@@ -584,13 +596,12 @@ Arquitetura:
 Usuario
   -> AWS Load Balancer publico
       -> Kubernetes Service oficina-api
-          -> Pod oficina-api no EKS
-              -> RDS PostgreSQL privado
+          -> Pod oficina-api no EKS (provisionado por oficina-kubernetes)
+              -> RDS PostgreSQL privado (provisionado por oficina-database)
 ```
 
 Pastas usadas:
 
-- Terraform AWS: `infra/aws/`
 - Manifests Kubernetes AWS: `k8s/aws/`
 - Arquivos gerados localmente: `k8s/aws/generated/` (nao versionado)
 - Imagem Docker Hub: `anthonymeds/oficina-api:aws-v1`
@@ -605,7 +616,6 @@ Execute os comandos abaixo a partir da raiz do projeto.
 
 ```bash
 aws sts get-caller-identity --profile academy
-aws ec2 describe-vpcs --region us-east-1 --profile academy
 aws eks list-clusters --region us-east-1 --profile academy
 aws rds describe-db-instances --region us-east-1 --profile academy
 ```
@@ -634,55 +644,14 @@ docker build -t anthonymeds/oficina-api:aws-v1 .
 docker push anthonymeds/oficina-api:aws-v1
 ```
 
-4. Definir a senha do RDS para o Terraform:
-
-```bash
-export TF_VAR_db_password='Oficina12345!'
-```
-
-No Windows PowerShell:
-
-```powershell
-$env:TF_VAR_db_password='Oficina12345!'
-```
-
-5. Criar a infraestrutura AWS:
-
-```bash
-terraform -chdir=infra/aws init
-terraform -chdir=infra/aws fmt
-terraform -chdir=infra/aws validate
-terraform -chdir=infra/aws plan
-terraform -chdir=infra/aws apply
-```
-
-O Terraform cria:
-
-- tags nas subnets;
-- Security Group;
-- DB Subnet Group;
-- RDS;
-- EKS;
-- Managed Node Group.
-
-A AZ `us-east-1e` fica fora das subnets do EKS porque o control plane retornou `UnsupportedAvailabilityZoneException` nesse Learner Lab.
-
-6. Configurar o `kubectl` para o EKS:
+4. Configurar o `kubectl` para o EKS (já provisionado por `oficina-kubernetes`):
 
 ```bash
 aws eks update-kubeconfig --region us-east-1 --name oficina-eks --profile academy
 kubectl get nodes
 ```
 
-7. Instalar o metrics-server:
-
-```bash
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-kubectl get deployment metrics-server -n kube-system
-kubectl top nodes
-```
-
-8. Gerar o ConfigMap com o endpoint do RDS:
+5. Gerar o ConfigMap com o endpoint do RDS (já provisionado por `oficina-database`):
 
 ```bash
 RDS_ENDPOINT=$(aws rds describe-db-instances \
@@ -716,7 +685,7 @@ New-Item -ItemType Directory -Force k8s/aws/generated | Out-Null
   | Set-Content k8s/aws/generated/01-configmap.yaml
 ```
 
-9. Aplicar os manifests no EKS:
+6. Aplicar os manifests no EKS:
 
 ```bash
 kubectl apply -f k8s/aws/00-namespace.yaml
@@ -729,7 +698,7 @@ kubectl apply -f k8s/aws/05-hpa.yaml
 
 O arquivo `k8s/aws/02-secret.yaml` existe para simplicidade academica do Lab. No CI/CD, a Secret Kubernetes e gerada a partir de GitHub Secrets.
 
-10. Aguardar o rollout da API:
+7. Aguardar o rollout da API:
 
 ```bash
 kubectl rollout status deployment/oficina-api -n oficina --timeout=300s
@@ -738,7 +707,7 @@ kubectl get svc oficina-api -n oficina
 kubectl get hpa -n oficina
 ```
 
-11. Obter o DNS publico do Load Balancer:
+8. Obter o DNS publico do Load Balancer:
 
 ```bash
 LB_DNS=$(kubectl get svc oficina-api -n oficina -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
@@ -752,7 +721,7 @@ $LB_DNS = kubectl get svc oficina-api -n oficina -o jsonpath='{.status.loadBalan
 $LB_DNS
 ```
 
-12. Testar OpenAPI e Swagger:
+9. Testar OpenAPI e Swagger:
 
 ```bash
 curl "http://$LB_DNS/oficina/v1/api-docs"
@@ -834,7 +803,7 @@ O workflow AWS e manual para evitar gasto acidental no Lab.
 
 1. Atualize os secrets do repositorio com as credenciais temporarias da sessao atual do Learner Lab.
 2. Acesse `Actions`.
-3. Selecione `AWS Deploy EKS RDS`.
+3. Selecione `AWS Deploy App`.
 4. Clique em `Run workflow`.
 5. Escolha `deploy`.
 6. Acompanhe o log ate a impressao das URLs de OpenAPI e Swagger.
@@ -848,45 +817,23 @@ AWS_SESSION_TOKEN
 AWS_REGION=us-east-1
 DOCKERHUB_USERNAME=anthonymeds
 DOCKERHUB_TOKEN
-DB_PASSWORD=Oficina12345!
 SECURITY_JWT_SECRET
 ```
 
-### Como destruir o ambiente AWS no final do Lab
-
-EKS, EC2 node group, RDS, Load Balancer, EBS e snapshots podem consumir credito. Execute o destroy ao final dos testes.
+### Como remover a aplicação do cluster ao final do Lab
 
 ```bash
-# Remover recursos Kubernetes que criam Load Balancer
 kubectl delete -f k8s/aws/05-hpa.yaml --ignore-not-found
 kubectl delete -f k8s/aws/04-app-service-loadbalancer.yaml --ignore-not-found
 kubectl delete -f k8s/aws/03-app-deployment.yaml --ignore-not-found
 kubectl delete -f k8s/aws/02-secret.yaml --ignore-not-found
 kubectl delete -f k8s/aws/generated/01-configmap.yaml --ignore-not-found
 kubectl delete -f k8s/aws/00-namespace.yaml --ignore-not-found
-
-# Aguardar remocao do Load Balancer
-aws elbv2 describe-load-balancers --region us-east-1 --profile academy
-aws elb describe-load-balancers --region us-east-1 --profile academy
-
-# Destruir infraestrutura Terraform
-terraform -chdir=infra/aws destroy
-
-# Conferencias finais
-aws eks list-clusters --region us-east-1 --profile academy
-aws rds describe-db-instances --region us-east-1 --profile academy
-aws ec2 describe-instances \
-  --region us-east-1 \
-  --profile academy \
-  --filters Name=instance-state-name,Values=running,pending \
-  --query 'Reservations[*].Instances[*].[InstanceId,InstanceType,State.Name,Tags]' \
-  --output table
-
-aws elbv2 describe-load-balancers --region us-east-1 --profile academy
-aws elb describe-load-balancers --region us-east-1 --profile academy
 ```
 
-Pelo GitHub Actions, execute o mesmo workflow `AWS Deploy EKS RDS` com a opcao `destroy`.
+Depois disso, rode `destroy` em `oficina-kubernetes` (cluster) e `oficina-database` (RDS) para não deixar nada provisionado sem necessidade — ambos cobram por hora mesmo ociosos.
+
+Pelo GitHub Actions, execute o workflow `AWS Deploy App` com a opcao `destroy` (remove só os recursos da aplicação, não o cluster nem o banco).
 
 ## Solucao de problemas
 
@@ -909,5 +856,3 @@ Execute `scripts/scripts-iniciais.txt` para inserir o usuario administrador inic
 ### Testes falham por conexao com banco
 
 Os testes de integracao usam PostgreSQL conforme `application-test.properties`. Verifique se o banco local esta rodando e acessivel em `localhost:5432`.
-
-teste
