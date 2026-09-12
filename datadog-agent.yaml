@@ -1,0 +1,44 @@
+kind: "DatadogAgent"
+apiVersion: "datadoghq.com/v2alpha1"
+metadata:
+  name: "datadog"
+  namespace: "datadog"
+spec:
+  global:
+    clusterName: "datadog-agent"
+    site: "datadoghq.com"
+    credentials:
+      apiSecret:
+        secretName: "datadog-secret"
+        keyName: "AgentLocal"
+  features:
+    clusterChecks:
+      enabled: true
+    orchestratorExplorer:
+      enabled: true
+    apm:
+      instrumentation:
+        enabled: true
+        targets:
+          - name: "default-target"
+            ddTraceVersions:
+              java: "1"
+              python: "4"
+              js: "6"
+              php: "1"
+              dotnet: "3"
+              ruby: "2"
+            ddTraceConfigs:
+              - name: "DD_RUM_ENABLED"
+                value: "true"
+              - name: "DD_RUM_APPLICATION_ID"
+                value: "43596811-d117-4e81-89b0-242f4bf21f9b"
+              - name: "DD_RUM_CLIENT_TOKEN"
+                value: "pubcbad2776fb4d623bc4055a3ef8ff2a0c"
+              - name: "DD_RUM_REMOTE_CONFIGURATION_ID"
+                value: "f105be08-477e-45bc-8d65-6f41b0a11ecf"
+              - name: "DD_RUM_SITE"
+                value: "datadoghq.com"
+    logCollection:
+      enabled: true
+      containerCollectAll: true

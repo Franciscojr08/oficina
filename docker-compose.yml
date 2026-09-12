@@ -17,6 +17,7 @@ services:
     container_name: app_oficina
     depends_on:
       - postgres
+#      - datadog
     ports:
       - "8080:8080"
     environment:
@@ -26,7 +27,37 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET}
       SECURITY_JWT_EXPIRATION: ${SECURITY_JWT_EXPIRATION}
+      DD_API_KEY: ${DD_API_KEY}
+      DD_AGENT_HOST: datadog-agent
+      DD_SERVICE: datadog-local
     restart: on-failure
+
+#
+#  redis:
+#    image: redis
+#  datadog:
+#      image: gcr.io/datadoghq/agent:7
+#      container_name: datadog-agent
+#      hostname: datadog-local
+#      pid: host
+#      build: .
+#      environment:
+#        - DD_API_KEY=${DD_API_KEY}
+#        - DD_SITE=datadoghq.com
+#        - DD_HOSTNAME=datadog-local
+#        - DD_LOGS_ENABLED=true
+#        - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+#        - DD_APM_ENABLED=true
+#        - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+#
+#      volumes:
+#        - /var/run/docker.sock:/var/run/docker.sock
+#        - /proc/:/host/proc/:ro
+#        - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+#      ports:
+#        - "8126:8126"
+#        - "8125:8125/udp"
+#      restart: unless-stopped
 
 volumes:
   postgres_data:

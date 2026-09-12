@@ -9,3 +9,7 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+#FROM registry.datadoghq.com/agent:latest
+#WORKDIR /app
+#ADD ./redisdb.yaml /etc/datadog-agent/conf.d/redisdb.yaml
