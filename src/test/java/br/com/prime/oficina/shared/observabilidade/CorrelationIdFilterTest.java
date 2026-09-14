@@ -135,8 +135,9 @@ class CorrelationIdFilterTest {
                 .map(ILoggingEvent::getFormattedMessage)
                 .reduce("", (a, b) -> a + b);
 
-        assertThat(registrado).doesNotContain("52998224725");
-        assertThat(registrado).contains("/clientes/documento/***");
+        assertThat(registrado)
+                .doesNotContain("52998224725")
+                .contains("/clientes/documento/***");
     }
 
     private ListAppender<ILoggingEvent> capturarLog() {

@@ -64,13 +64,17 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } finally {
-            log.info(
-                    "requisicao_atendida metodo={} rota={} status={} duracaoMs={}",
-                    request.getMethod(),
-                    rotaSemDocumento(request),
-                    response.getStatus(),
-                    System.currentTimeMillis() - inicio
-            );
+            // Guarda o nível pra não pagar o custo de rotaSemDocumento() (regex sobre a URI) quando
+            // o log de INFO estiver desligado (Sonar java:S2629).
+            if (log.isInfoEnabled()) {
+                log.info(
+                        "requisicao_atendida metodo={} rota={} status={} duracaoMs={}",
+                        request.getMethod(),
+                        rotaSemDocumento(request),
+                        response.getStatus(),
+                        System.currentTimeMillis() - inicio
+                );
+            }
 
             // Sem isso o valor vaza para a próxima requisição atendida pela mesma thread.
             MDC.remove(CHAVE_DE_LOG);

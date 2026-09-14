@@ -160,7 +160,9 @@ public class OrdemServicoStatusService {
 			case ENTREGUE -> ordemServicoObservabilidade.registrarDuracaoEtapa(
 					ordemServico, "FINALIZACAO", ordemServico.getDataFimExecucao(), ordemServico.getDataEntregue()
 			);
-			default -> { }
+			// Demais status (RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, APROVADA,
+			// AGUARDANDO_ITENS, CANCELADA) não têm etapa de duração mapeada pro dashboard.
+			default -> { /* intencional: nada a registrar */ }
 		}
 	}
 

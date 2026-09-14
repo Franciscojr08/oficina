@@ -293,9 +293,10 @@ class OrdemServicoServiceTest {
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(itemRepository.findById(20L)).thenReturn(Optional.of(item));
 
+        ItemOrdemServicoRequest request = new ItemOrdemServicoRequest(20L, 2);
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
-                () -> itemOrdemServicoService.adicionarItem(100L, new ItemOrdemServicoRequest(20L, 2))
+                () -> itemOrdemServicoService.adicionarItem(100L, request)
         );
 
         assertEquals("O Item informado não está ativo", exception.getMessage());
@@ -346,9 +347,10 @@ class OrdemServicoServiceTest {
         when(repository.findById(100L)).thenReturn(Optional.of(os));
         when(servicoRepository.findById(30L)).thenReturn(Optional.of(servico));
 
+        ServicoOrdemServicoRequest request = new ServicoOrdemServicoRequest(30L);
         RegraNegocioException exception = assertThrows(
                 RegraNegocioException.class,
-                () -> servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L))
+                () -> servicoOrdemServicoService.adicionarServico(100L, request)
         );
 
         assertEquals("O Serviço informado não está ativo", exception.getMessage());
@@ -444,9 +446,10 @@ class OrdemServicoServiceTest {
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
 
+        ItemOrdemServicoRequest requestItem = new ItemOrdemServicoRequest(20L, 1);
         RegraNegocioException exAdicionarItem = assertThrows(
                 RegraNegocioException.class,
-                () -> itemOrdemServicoService.adicionarItem(100L, new ItemOrdemServicoRequest(20L, 1))
+                () -> itemOrdemServicoService.adicionarItem(100L, requestItem)
         );
 
         assertEquals(
@@ -468,9 +471,10 @@ class OrdemServicoServiceTest {
 
         when(repository.findById(100L)).thenReturn(Optional.of(os));
 
+        ServicoOrdemServicoRequest requestServico = new ServicoOrdemServicoRequest(30L);
         RegraNegocioException exAdicionarServico = assertThrows(
                 RegraNegocioException.class,
-                () -> servicoOrdemServicoService.adicionarServico(100L, new ServicoOrdemServicoRequest(30L))
+                () -> servicoOrdemServicoService.adicionarServico(100L, requestServico)
         );
 
         assertEquals(
