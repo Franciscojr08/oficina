@@ -61,6 +61,17 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!--
+			API pra métricas/eventos customizados do New Relic (dashboards de negócio: volume de OS,
+			tempo médio por status, falhas de processamento). Sem efeito quando o agent Java não está
+			anexado ao processo (as chamadas viram no-op) — não cria acoplamento rígido com o New Relic
+			em ambientes sem instrumentação (testes locais, outra ferramenta de observabilidade, etc.).
+		-->
+		<dependency>
+			<groupId>com.newrelic.agent.java</groupId>
+			<artifactId>newrelic-api</artifactId>
+			<version>8.17.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

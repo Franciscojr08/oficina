@@ -540,6 +540,17 @@ Os relatorios gerados para avaliacao do projeto estao disponiveis em `docs/relat
 - Springdoc OpenAPI para documentacao interativa.
 - Testes unitarios e testes de controller com Spring.
 
+## Observabilidade
+
+- Logs estruturados em JSON (formato ECS, suporte nativo do Spring Boot 4) com `correlationId` em
+  toda linha, propagado desde o API Gateway/Lambda (`oficina-lambda`) até aqui.
+- Eventos customizados de negócio do módulo `ordemservico`, enviados pro New Relic — alimentam os
+  dashboards de volume diário de OS, tempo médio de execução por status e erros de processamento.
+- Detalhes completos, incluindo os atributos de cada evento e como validar:
+  [`docs/observabilidade/eventos-customizados.md`](docs/observabilidade/eventos-customizados.md).
+- Configuração do lado do New Relic (Infrastructure agent, APM, dashboards, alertas, Synthetic
+  Monitor) está no repositório [`oficina-kubernetes`](https://github.com/rremiao/oficina-kubernetes).
+
 ## Documentacao DDD
 
 - [Linguagem Ubiqua](docs/ddd/linguagem-ubiqua.md)

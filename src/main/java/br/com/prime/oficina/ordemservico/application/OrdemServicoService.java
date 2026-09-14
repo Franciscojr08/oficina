@@ -14,6 +14,7 @@ import br.com.prime.oficina.ordemservico.itens.application.gateway.ItemOrdemServ
 import br.com.prime.oficina.ordemservico.servicos.application.gateway.ServicoOrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
+import br.com.prime.oficina.shared.observabilidade.OrdemServicoObservabilidade;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import br.com.prime.oficina.veiculo.application.gateway.VeiculoGateway;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class OrdemServicoService {
 	private final OrdemServicoStatusService ordemServicoStatusService;
 	private final OrdemServicoEstoqueService ordemServicoEstoqueService;
 	private final OrdemServicoMapper ordemServicoMapper;
+	private final OrdemServicoObservabilidade ordemServicoObservabilidade;
 
     @jakarta.persistence.PersistenceContext
     private jakarta.persistence.EntityManager entityManager;
@@ -97,6 +99,10 @@ public class OrdemServicoService {
 
 		ordemServicoRepository.saveAndFlush(ordemServico);
 		entityManager.refresh(ordemServico);
+
+		// Só aqui a OS já tem id (sequence) e código (trigger do banco) — é o ponto certo pra
+		// registrar a criação pro dashboard de "volume diário de ordens de serviço".
+		ordemServicoObservabilidade.registrarMudancaStatus(ordemServico, null, StatusOrdemServico.RECEBIDA);
 
 		historicoOrdemServicoService.registrar(ordemServico, StatusOrdemServico.RECEBIDA);
 		adicionarServicosDoCadastro(ordemServico, request);
