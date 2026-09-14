@@ -28,10 +28,29 @@ A partir da Fase 3 do Tech Challenge, a infraestrutura deste projeto foi dividid
 
 - **[oficina-kubernetes](https://github.com/rremiao/oficina-kubernetes)** — Terraform do cluster EKS.
 - **[oficina-database](https://github.com/rremiao/oficina-database)** — Terraform do RDS PostgreSQL.
-- **oficina-lambda** — Function Serverless de autenticação por CPF + API Gateway (em desenvolvimento).
-- **oficina** (este repositório) — aplicação Spring Boot + manifests Kubernetes (`k8s/aws/`) que rodam sobre o cluster/banco provisionados pelos repositórios acima.
+- **[oficina-lambda](https://github.com/rremiao/oficina-lambda)** — Function Serverless de autenticação por CPF, Lambda Authorizer e API Gateway.
+- **oficina** (este repositório) — aplicação Spring Boot, migrations Flyway e a documentação arquitetural do sistema.
+
+> Os manifests Kubernetes oficiais, incluindo os do New Relic, são mantidos em
+> [`oficina-kubernetes/k8s/`](https://github.com/rremiao/oficina-kubernetes/tree/main/k8s). A cópia em
+> `k8s/aws/` deste repositório é anterior à separação e permanece apenas como referência histórica —
+> para subir o ambiente, use a do `oficina-kubernetes`.
 
 O deploy deste repositório **assume que o cluster e o banco já estão provisionados** (rode `deploy` nos outros dois repos primeiro). Este repositório não roda mais `terraform apply`/`destroy` — só builda, publica a imagem e aplica os manifests Kubernetes.
+
+## Documentacao arquitetural
+
+A documentação arquitetural da Fase 3 está em [`docs/arquitetura/`](docs/arquitetura/README.md), que
+serve de índice para os documentos deste repositório e dos outros três.
+
+| Documento | Conteúdo |
+| --- | --- |
+| [`docs/arquitetura/README.md`](docs/arquitetura/README.md) | Índice dos 8 RFCs e 19 ADRs do projeto, mapeando em qual repositório cada um vive |
+| [`docs/arquitetura/diagrama-componentes.md`](docs/arquitetura/diagrama-componentes.md) | Visão de nuvem: APIs, banco, serverless e monitoramento |
+| [`docs/arquitetura/diagrama-sequencia-autenticacao.md`](docs/arquitetura/diagrama-sequencia-autenticacao.md) | Emissão do token por CPF e consumo de rota protegida |
+| [`docs/arquitetura/diagrama-sequencia-abertura-os.md`](docs/arquitetura/diagrama-sequencia-abertura-os.md) | Abertura de ordem de serviço |
+| [`docs/fase3/contrato-autenticacao.md`](docs/fase3/contrato-autenticacao.md) | Contrato do token entre esta API e o `oficina-lambda` |
+| [`docs/fase3/roteiro-validacao-fase3.md`](docs/fase3/roteiro-validacao-fase3.md) | Como subir o ambiente e comprovar cada requisito do enunciado |
 
 ## Estrutura
 
