@@ -28,6 +28,7 @@ import br.com.prime.oficina.servico.domain.Servico;
 import br.com.prime.oficina.servico.application.gateway.ServicoGateway;
 import br.com.prime.oficina.shared.exception.RecursoNaoEncontradoException;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
+import br.com.prime.oficina.shared.observabilidade.OrdemServicoObservabilidade;
 import br.com.prime.oficina.veiculo.domain.Veiculo;
 import br.com.prime.oficina.veiculo.application.gateway.VeiculoGateway;
 import jakarta.persistence.EntityManager;
@@ -109,8 +110,10 @@ class OrdemServicoServiceTest {
     void setUp() {
 		HistoricoOrdemServicoService historicoOrdemServicoService =
 				new HistoricoOrdemServicoService(historicoOrdemServicoGateway);
+		// New Relic API vira no-op sem o agent anexado (não é o caso nos testes) — não precisa mock.
+		OrdemServicoObservabilidade ordemServicoObservabilidade = new OrdemServicoObservabilidade();
 		OrdemServicoStatusService ordemServicoStatusService =
-				new OrdemServicoStatusService(repository, historicoOrdemServicoService);
+				new OrdemServicoStatusService(repository, historicoOrdemServicoService, ordemServicoObservabilidade);
 		OrdemServicoEstoqueService ordemServicoEstoqueService =
 				new OrdemServicoEstoqueService(itemOrdemServicoGateway, estoqueRepository, movimentoEstoqueGateway);
 		OrdemServicoMapper ordemServicoMapper = new OrdemServicoMapper();
@@ -138,7 +141,8 @@ class OrdemServicoServiceTest {
 				historicoOrdemServicoService,
 				ordemServicoStatusService,
 				ordemServicoEstoqueService,
-				ordemServicoMapper
+				ordemServicoMapper,
+				ordemServicoObservabilidade
 		);
         ReflectionTestUtils.setField(ordemServicoService, "entityManager", entityManager);
 

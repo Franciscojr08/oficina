@@ -5,6 +5,7 @@ import br.com.prime.oficina.ordemservico.application.dto.*;
 import br.com.prime.oficina.ordemservico.domain.OrdemServico;
 import br.com.prime.oficina.ordemservico.application.gateway.OrdemServicoGateway;
 import br.com.prime.oficina.shared.exception.RegraNegocioException;
+import br.com.prime.oficina.shared.observabilidade.OrdemServicoObservabilidade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +21,12 @@ public class OrdemServicoStatusService {
 
 	private final OrdemServicoGateway ordemServicoRepository;
 	private final HistoricoOrdemServicoService historicoOrdemServicoService;
+	private final OrdemServicoObservabilidade ordemServicoObservabilidade;
 
 	public void definirStatusInicial(OrdemServico ordemServico) {
+		// Não registra o evento de observabilidade aqui: a OS ainda não tem id/código nesse ponto
+		// (são atribuídos no INSERT — id por sequence, código por trigger). Quem registra a criação
+		// é o chamador, depois do saveAndFlush + refresh (ver OrdemServicoService.criar).
 		ordemServico.setStatus(StatusOrdemServico.RECEBIDA);
 	}
 
@@ -115,14 +120,17 @@ public class OrdemServicoStatusService {
 
 	private void validarStatus(OrdemServico ordemServico, List<StatusOrdemServico> statusPermitidos, String acao) {
 		if (!statusPermitidos.contains(ordemServico.getStatus())) {
-			throw new RegraNegocioException(
-					INVALID_ORDER_STATUS_FOR_ACTION
-							.formatted(acao, ordemServico.getStatus().getDescricao())
-			);
+			String motivo = INVALID_ORDER_STATUS_FOR_ACTION
+					.formatted(acao, ordemServico.getStatus().getDescricao());
+
+			ordemServicoObservabilidade.registrarTransicaoInvalida(ordemServico, acao, motivo);
+
+			throw new RegraNegocioException(motivo);
 		}
 	}
 
 	private void atualizarStatus(OrdemServico ordemServico, StatusOrdemServico status) {
+		StatusOrdemServico statusAnterior = ordemServico.getStatus();
 		ordemServico.setStatus(status);
 
 		if (status.deveAtualizarDatas()) {
@@ -131,6 +139,29 @@ public class OrdemServicoStatusService {
 
 		ordemServicoRepository.saveAndFlush(ordemServico);
 		historicoOrdemServicoService.registrar(ordemServico, status);
+
+		ordemServicoObservabilidade.registrarMudancaStatus(ordemServico, statusAnterior, status);
+		registrarDuracaoDeEtapa(ordemServico, status);
+	}
+
+	/**
+	 * Alimenta o dashboard de "tempo médio de execução por status" pedido no desafio, mapeando as
+	 * três etapas nomeadas (Diagnóstico, Execução, Finalização) pras datas que a própria entidade já
+	 * mantém — sem precisar de nenhuma tabela ou consulta nova.
+	 */
+	private void registrarDuracaoDeEtapa(OrdemServico ordemServico, StatusOrdemServico status) {
+		switch (status) {
+			case AGUARDANDO_APROVACAO -> ordemServicoObservabilidade.registrarDuracaoEtapa(
+					ordemServico, "DIAGNOSTICO", ordemServico.getDataCadastro(), ordemServico.getDataEnvioAprovacao()
+			);
+			case FINALIZADA -> ordemServicoObservabilidade.registrarDuracaoEtapa(
+					ordemServico, "EXECUCAO", ordemServico.getDataInicioExecucao(), ordemServico.getDataFimExecucao()
+			);
+			case ENTREGUE -> ordemServicoObservabilidade.registrarDuracaoEtapa(
+					ordemServico, "FINALIZACAO", ordemServico.getDataFimExecucao(), ordemServico.getDataEntregue()
+			);
+			default -> { }
+		}
 	}
 
 	private void aplicarRegrasDeStatus(OrdemServico ordemServico, StatusOrdemServico status) {
