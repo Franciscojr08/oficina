@@ -1,0 +1,52 @@
+%%{init: { 'theme': 'base', 'themeVariables': { 'fontFamily': 'Arial', 'primaryColor': '#e0f2fe', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0284c7', 'lineColor': '#1d4ed8', 'secondaryColor': '#dcfce7', 'tertiaryColor': '#fef3c7', 'background': '#f8fafc', 'actorBkg': '#f8fafc', 'actorBorder': '#1d4ed8', 'actorTextColor': '#111827', 'signalColor': '#1d4ed8', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#cbd5e1', 'labelTextColor': '#111827', 'noteBkgColor': '#fff7ed', 'noteTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'activationBorderColor': '#22c55e', 'activationBkgColor': '#dcfce7' } } }%%
+sequenceDiagram
+    autonumber
+    actor Atendente as Atendente
+    participant API as Oficina API
+    participant Controller as OrdemServicoController
+    participant Service as OrdemServicoService
+    participant ClienteRepo as ClienteRepository
+    participant VeiculoRepo as VeiculoRepository
+    participant Validacao as Validações de Negócio
+    participant ServicoRepo as ServicoRepository
+    participant ItemRepo as ItemRepository
+    participant OSRepo as OrdemServicoRepository
+    participant DB as PostgreSQL
+
+    Atendente->>API: POST /oficina/v1/ordens
+    API->>Controller: body: clienteId, veiculoId, descricaoProblema, serviços, itens
+    Controller->>Service: criarOrdemServico(dto)
+
+    Service->>ClienteRepo: buscarCliente(id)
+    ClienteRepo-->>Service: cliente
+    Service->>VeiculoRepo: buscarVeiculo(id)
+    VeiculoRepo-->>Service: veiculo
+
+    Service->>Validacao: validar regras do domínio
+    Note over Service,Validacao: cliente ativo?<br/>veículo ativo?<br/>veículo pertence ao cliente?<br/>serviços e itens válidos?
+
+    alt Dados inválidos
+        Service-->>Controller: BusinessException / 422
+        Controller-->>API: 400/422
+        API-->>Atendente: erro de validação
+    else Dados válidos
+        Service->>ServicoRepo: validar serviços informados
+        ServicoRepo-->>Service: serviços válidos
+        Service->>ItemRepo: validar itens e estoque
+        ItemRepo-->>Service: itens válidos
+
+        Service->>OSRepo: gerar código e salvar OS
+        OSRepo->>DB: INSERT ordem_servico
+        DB-->>OSRepo: OS salva com status RECEBIDA
+
+        Service->>OSRepo: vincular serviços à OS
+        OSRepo->>DB: INSERT servico_ordem_servico
+
+        Service->>OSRepo: vincular itens à OS
+        OSRepo->>DB: INSERT item_ordem_servico
+
+        OSRepo-->>Service: ordem criada
+        Service-->>Controller: OS criada
+        Controller-->>API: 201 Created
+        API-->>Atendente: retorno com código da OS
+    end

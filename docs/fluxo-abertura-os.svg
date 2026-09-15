@@ -1,0 +1,106 @@
+<svg width="1400" height="980" viewBox="0 0 1400 980" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagrama de sequência do fluxo de abertura de ordem de serviço">
+  <defs>
+    <style>
+      .title { font: 700 30px Arial, sans-serif; fill: #1f2937; }
+      .label { font: 600 16px Arial, sans-serif; fill: #111827; }
+      .small { font: 500 13px Arial, sans-serif; fill: #374151; }
+      .participant { fill: #e0f2fe; stroke: #0284c7; stroke-width: 2; }
+      .system { fill: #dcfce7; stroke: #16a34a; stroke-width: 2; }
+      .service { fill: #fef3c7; stroke: #d97706; stroke-width: 2; }
+      .repo { fill: #f3e8ff; stroke: #7c3aed; stroke-width: 2; }
+      .db { fill: #fee2e2; stroke: #dc2626; stroke-width: 2; }
+      .lifeline { stroke: #94a3b8; stroke-width: 2; }
+      .msg { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .msg-alt { stroke: #475569; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .note { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; }
+      .noteText { font: 500 12px Arial, sans-serif; fill: #334155; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#334155" />
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="980" fill="#ffffff"/>
+  <text x="700" y="50" text-anchor="middle" class="title">Fluxo de abertura de Ordem de Serviço</text>
+
+  <!-- Participants -->
+  <rect x="70" y="90" width="150" height="60" rx="8" class="participant"/>
+  <text x="145" y="127" text-anchor="middle" class="label">Atendente</text>
+
+  <rect x="290" y="90" width="180" height="60" rx="8" class="system"/>
+  <text x="380" y="127" text-anchor="middle" class="label">Oficina API</text>
+
+  <rect x="540" y="90" width="180" height="60" rx="8" class="system"/>
+  <text x="630" y="127" text-anchor="middle" class="label">Controller</text>
+
+  <rect x="790" y="90" width="180" height="60" rx="8" class="service"/>
+  <text x="880" y="127" text-anchor="middle" class="label">OrdemServicoService</text>
+
+  <rect x="1020" y="90" width="180" height="60" rx="8" class="repo"/>
+  <text x="1110" y="127" text-anchor="middle" class="label">Repositories</text>
+
+  <rect x="1250" y="90" width="90" height="60" rx="8" class="db"/>
+  <text x="1295" y="127" text-anchor="middle" class="label">DB</text>
+
+  <!-- Lifelines -->
+  <line x1="145" y1="150" x2="145" y2="930" class="lifeline"/>
+  <line x1="380" y1="150" x2="380" y2="930" class="lifeline"/>
+  <line x1="630" y1="150" x2="630" y2="930" class="lifeline"/>
+  <line x1="880" y1="150" x2="880" y2="930" class="lifeline"/>
+  <line x1="1110" y1="150" x2="1110" y2="930" class="lifeline"/>
+  <line x1="1295" y1="150" x2="1295" y2="930" class="lifeline"/>
+
+  <!-- Messages -->
+  <path d="M145 200 L380 200" class="msg"/>
+  <text x="255" y="185" text-anchor="middle" class="small">POST /ordens</text>
+
+  <path d="M380 245 L630 245" class="msg-alt"/>
+  <text x="505" y="230" text-anchor="middle" class="small">request body</text>
+
+  <path d="M630 290 L880 290" class="msg"/>
+  <text x="755" y="275" text-anchor="middle" class="small">criarOrdemServico(dto)</text>
+
+  <path d="M880 335 L1110 335" class="msg-alt"/>
+  <text x="995" y="320" text-anchor="middle" class="small">buscar cliente por id</text>
+
+  <path d="M1110 380 L880 380" class="msg-alt"/>
+  <text x="995" y="365" text-anchor="middle" class="small">cliente</text>
+
+  <path d="M880 420 L1110 420" class="msg-alt"/>
+  <text x="995" y="405" text-anchor="middle" class="small">buscar veiculo por id</text>
+
+  <path d="M1110 465 L880 465" class="msg-alt"/>
+  <text x="995" y="450" text-anchor="middle" class="small">veiculo</text>
+
+  <rect x="880" y="500" width="390" height="65" rx="10" class="note"/>
+  <text x="900" y="530" class="noteText">Valida regras de negócio:</text>
+  <text x="900" y="550" class="noteText">cliente ativo, veículo ativo, pertence ao cliente, serviços/itens válidos</text>
+
+  <path d="M880 600 L1110 600" class="msg-alt"/>
+  <text x="995" y="585" text-anchor="middle" class="small">validar serviços</text>
+
+  <path d="M1110 645 L880 645" class="msg-alt"/>
+  <text x="995" y="630" text-anchor="middle" class="small">serviços válidos</text>
+
+  <path d="M880 690 L1110 690" class="msg-alt"/>
+  <text x="995" y="675" text-anchor="middle" class="small">validar itens e estoque</text>
+
+  <path d="M1110 735 L880 735" class="msg-alt"/>
+  <text x="995" y="720" text-anchor="middle" class="small">itens com estoque ok</text>
+
+  <path d="M880 780 L1295 780" class="msg"/>
+  <text x="1088" y="765" text-anchor="middle" class="small">salvar OS + vincular serviços/itens</text>
+
+  <path d="M1295 825 L880 825" class="msg-alt"/>
+  <text x="1088" y="810" text-anchor="middle" class="small">OS criada com status RECEBIDA</text>
+
+  <path d="M880 870 L630 870" class="msg"/>
+  <text x="755" y="855" text-anchor="middle" class="small">retorna OS criada</text>
+
+  <path d="M630 905 L380 905" class="msg-alt"/>
+  <text x="505" y="890" text-anchor="middle" class="small">201 Created + código da OS</text>
+
+  <path d="M380 930 L145 930" class="msg"/>
+  <text x="255" y="915" text-anchor="middle" class="small">resposta final</text>
+
+</svg>
