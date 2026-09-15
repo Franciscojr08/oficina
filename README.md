@@ -3,6 +3,22 @@
 Backend para gestao de oficina mecanica, desenvolvido com Spring Boot e PostgreSQL.
 O projeto usa Docker Compose para subir o banco e a aplicacao em ambiente local.
 
+## Fluxo de uso em poucas palavras
+
+Para quem quer entender rápido o que a API faz, antes de entrar em detalhes de arquitetura:
+
+1. Um operador autentica com e-mail/senha (`POST /auth/login`) e recebe um JWT.
+2. Com o token, cadastra os dados base da oficina: clientes, veículos, serviços e itens/peças.
+3. Abre uma ordem de serviço (`POST /ordens`) vinculando cliente, veículo, serviços e itens.
+4. A ordem percorre um fluxo de status controlado pela API — diagnóstico, aprovação, execução e
+   entrega — cada mudança feita por um endpoint `PATCH` específico, que valida a transição.
+5. O cliente final (autenticado por CPF via o serverless `oficina-lambda`) ou qualquer pessoa sem
+   login consulta o andamento pelo código público da OS (`GET /public/ordens/codigo/{codigo}`).
+
+O detalhamento completo de cada passo, com todos os endpoints envolvidos, está na seção
+[Fluxo mínimo de uso](#fluxo-minimo-de-uso) mais abaixo, e exemplos de requisição/resposta em
+[Exemplos rápidos](#exemplos-rapidos).
+
 ## Tecnologias
 
 - Java 17+
@@ -245,6 +261,27 @@ curl -X POST http://localhost:8080/oficina/v1/clientes \
   }'
 ```
 
+Resposta esperada (`201 Created`):
+
+```json
+{
+  "id": 1,
+  "nome": "Joao da Silva",
+  "cpfCnpj": "12345678901",
+  "telefone": "85999999999",
+  "email": "joao@email.com",
+  "cep": "60000000",
+  "logradouro": "Rua A",
+  "bairro": "Centro",
+  "cidade": "Fortaleza",
+  "uf": "CE",
+  "dataNascimento": "1990-01-01",
+  "ativo": true,
+  "dataCriacao": "2026-01-10T09:15:00",
+  "dataAtualizacao": null
+}
+```
+
 ### Criar ordem de servico
 
 A ordem de serviço pode ser cadastrada já com serviços e itens vinculados. O campo `servicos` recebe uma lista de IDs de serviços, e o campo `itens` recebe os IDs dos itens com suas respectivas quantidades.
@@ -275,6 +312,34 @@ curl -X POST http://localhost:8080/oficina/v1/ordens \
   }'
 ```
 
+Resposta esperada (`201 Created`, valores ilustrativos — dependem do preço cadastrado de cada
+serviço/item):
+
+```json
+{
+  "id": 1,
+  "codigo": "OS-2026-000001",
+  "descricaoProblema": "Barulho no motor",
+  "observacoesGerais": "Cliente relata ruido ao ligar",
+  "descricaoServicosExecutados": "Diagnostico inicial",
+  "status": "RECEBIDA",
+  "valorTotalServicos": 200.00,
+  "valorTotalItens": 139.80,
+  "dataCadastro": "2026-01-10T09:20:00",
+  "dataEnvioAprovacao": null,
+  "dataAprovacao": null,
+  "dataInicioExecucao": null,
+  "dataFimExecucao": null,
+  "dataEntregue": null,
+  "dataCancelada": null
+}
+```
+
+O `codigo` (`OS-<ano>-<sequencial>`) é gerado automaticamente pelo banco e é o identificador público
+usado na API pública de acompanhamento. Tanto `servicos` quanto `itens` enviados no corpo da
+criação já são processados na mesma transação, então `valorTotalServicos` e `valorTotalItens` vêm
+preenchidos já na resposta — não é preciso nenhuma chamada extra pra isso.
+
 ### Acompanhar ordem pela API publica
 
 ```bash
@@ -292,6 +357,19 @@ curl -X PATCH http://localhost:8080/oficina/v1/ordens/1/solicitar-aprovacao \
 
 A solicitacao de aprovacao exige que a OS tenha pelo menos um item e um servico vinculados.
 
+Resposta esperada (`200 OK`) — a OS avança de `EM_DIAGNOSTICO` para `AGUARDANDO_APROVACAO`:
+
+```json
+{
+  "id": 1,
+  "codigo": "OS-2026-000001",
+  "status": "AGUARDANDO_APROVACAO",
+  "dataCadastro": "2026-01-10T09:20:00",
+  "dataEnvioAprovacao": "2026-01-10T09:25:00",
+  "dataAprovacao": null
+}
+```
+
 Para aprovar a OS:
 
 ```bash
@@ -301,6 +379,18 @@ curl -X PATCH http://localhost:8080/oficina/v1/ordens/1/aprovar \
 
 A aprovacao so e permitida quando a OS esta com status `AGUARDANDO_APROVACAO`. Ao aprovar, a API tenta processar o estoque dos itens da OS. Se houver estoque suficiente, a OS segue para `EM_EXECUCAO`; se faltar estoque, ela segue para `AGUARDANDO_ITENS`.
 
+Resposta esperada (`200 OK`, caso com estoque suficiente):
+
+```json
+{
+  "id": 1,
+  "codigo": "OS-2026-000001",
+  "status": "EM_EXECUCAO",
+  "dataAprovacao": "2026-01-10T09:30:00",
+  "dataInicioExecucao": "2026-01-10T09:30:00"
+}
+```
+
 Para reprovar a OS:
 
 ```bash
@@ -309,6 +399,29 @@ curl -X PATCH http://localhost:8080/oficina/v1/ordens/1/reprovar \
 ```
 
 A reprovacao tambem so e permitida quando a OS esta com status `AGUARDANDO_APROVACAO`. Ao reprovar, os servicos vinculados sao cancelados e a OS passa para `CANCELADA`.
+
+### Exemplo de erro de regra de negocio
+
+Endpoints de transição de status validam o status atual da OS e retornam `422 Unprocessable Entity`
+no formato `application/problem+json` quando a transição não é permitida — por exemplo, tentar
+aprovar uma OS que já foi entregue:
+
+```bash
+curl -i -X PATCH http://localhost:8080/oficina/v1/ordens/1/aprovar \
+  -H "Authorization: Bearer <token>"
+```
+
+```json
+{
+  "title": "Regra de negocio violada",
+  "status": 422,
+  "detail": "Não é possível aprovar a ordem de serviço, pois a ordem de serviço está Entregue",
+  "instance": "/oficina/v1/ordens/1/aprovar"
+}
+```
+
+O mesmo formato se repete em qualquer transição inválida (`iniciar-diagnostico`, `solicitar-aprovacao`,
+`iniciar-execucao`, `entregar`, e nos endpoints de serviço da OS).
 
 ### Atualizar status da ordem de servico
 
@@ -329,6 +442,33 @@ Os servicos vinculados a OS tambem possuem transicoes proprias:
 | --- | --- | --- |
 | `PATCH /ordens/{id}/servicos/{servicoId}/iniciar` | Servico da OS: `PENDENTE` -> `INICIADO` | A OS deve estar `EM_EXECUCAO`. |
 | `PATCH /ordens/{id}/servicos/{servicoId}/finalizar` | Servico da OS: `INICIADO` -> `FINALIZADO` | A OS deve estar `EM_EXECUCAO`; ao finalizar todos os servicos, a OS passa para `FINALIZADA`. |
+
+### Listar ordens de servico de um cliente
+
+```bash
+curl http://localhost:8080/oficina/v1/ordens/cliente/1 \
+  -H "Authorization: Bearer <token>"
+```
+
+Resposta esperada (`200 OK`) — lista vazia quando o cliente não tem nenhuma OS:
+
+```json
+[
+  {
+    "id": 1,
+    "codigo": "OS-2026-000001",
+    "descricaoProblema": "Barulho no motor",
+    "status": "ENTREGUE",
+    "valorTotalServicos": 120.00,
+    "valorTotalItens": 59.90,
+    "dataCadastro": "2026-01-10T09:20:00",
+    "dataEntregue": "2026-01-10T11:45:00"
+  }
+]
+```
+
+Esse mesmo endpoint é usado pelo cliente final autenticado por CPF (token emitido pelo
+`oficina-lambda`) para consultar as próprias ordens de serviço.
 
 ### Consultar status da ordem de servico
 
